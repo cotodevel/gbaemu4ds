@@ -1,19 +1,22 @@
-/***********************************************************/
-/* This source is part of SNEmulDS                         */
-/* ------------------------------------------------------- */
-/* (c) 1997-1999, 2006-2007 archeide, All rights reserved. */
-/***********************************************************/
 /*
- This program is free software; you can redistribute it and/or 
- modify it under the terms of the GNU General Public License as 
- published by the Free Software Foundation; either version 2 of 
- the License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful, 
- but WITHOUT ANY WARRANTY; without even the implied warranty of 
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
- GNU General Public License for more details.
- */
+			Copyright (C) 2017  Coto
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+USA
+
+*/
 #include "socket.h"
 #include "in.h"
 #include <netdb.h>
@@ -40,15 +43,12 @@
 #include "typedefs.h"
 #include "console.h"
 #include "toolchain_utils.h"
-
 #include "devoptab_devices.h"
 #include "fsfat_layer.h"
 #include "usrsettings.h"
-
 #include "video.h"
 #include "keypad.h"
 #include "gui.h"
-
 #include "dswnifi_lib.h"
 
 int argc;
@@ -74,21 +74,32 @@ int main(int _argc, sint8 **_argv) {
 		printf("FS Init error.");
 	}
 	
-	
 	//single player:
 	switch_dswnifi_mode(dswifi_idlemode);
 	//udp nifi: 
-	//switch_dswnifi_mode(dswifi_udpnifimode);	//UDP NIFI: Check readme
+	//switch_dswnifi_mode(dswifi_udpnifimode);	//UDP NIFI: Check https://github.com/cotodevel/ToolchainGenericDS-multiplayer-example
 	//local nifi: 
 	//switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:
 	
+	printf("GBAEMU4DS Stub Template");
+	
 	while (1)
 	{
-        /*	//todo
+        /*	//handle GUI todo
 		if (REG_POWERCNT & POWER_SWAP_LCDS){
 			GUI_update();
 		}
         */
+		
+		if ((keysPressed() & KEY_A)){
+			clrscr();
+		}
+		
+		if ((keysPressed() & KEY_B)){
+			printf("test!:%d",rand());
+		}
+		
+		IRQVBlankWait();
 		
 		/*
 		//Press L to send a frame to the other DS
