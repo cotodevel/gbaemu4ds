@@ -101,13 +101,18 @@ export DIRS_ARM9_SRC = source/	\
 			source/interrupts/	\
 			source/gui/	\
 			source/wnifilib/	\
+			source/cpu_misc/	\
 			source/sound/	\
+			source/fs_ext/	\
 			../common/
 			
 export DIRS_ARM9_HEADER = include/	\
+			source/interrupts/	\
 			source/gui/	\
 			source/wnifilib/	\
+			source/cpu_misc/	\
 			source/sound/	\
+			source/fs_ext/	\
 			../common/
 
 #cleanup default C/C++/ASM flags

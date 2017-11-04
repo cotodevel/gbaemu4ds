@@ -30,6 +30,7 @@ USA
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "main.h"
 #include "InterruptsARMCores_h.h"
@@ -53,17 +54,85 @@ USA
 
 int argc;
 sint8 **argv;
+
+//dmabuffer (old gbaemu4ds way)
+//volatile u8 arm7exchangefild[0x100];
+
+/*
+#ifdef anyarmcom
+u32 amr7sendcom = 0;
+u32 amr7senddma1 = 0;
+u32 amr7senddma2 = 0;
+u32 amr7recmuell = 0;
+u32 amr7directrec = 0;
+u32 amr7indirectrec = 0;
+u32 amr7fehlerfeld[10];
+#endif
+*/
+
+
+char biosPath[MAXPATHLEN * 2];
+char patchPath[MAXPATHLEN * 2];
+char savePath[MAXPATHLEN * 2];
+char szFile[MAXPATHLEN * 2];
+
+char* savetypeschar[7] =
+	{"SaveTypeAutomatic","SaveTypeEeprom","SaveTypeSram","SaveTypeFlash64KB","SaveTypeEepromSensor","SaveTypeNone","SaveTypeFlash128KB"};
+
+char* memoryWaitrealram[8] =
+  { "10 and 6","8 and 6","6 and 6","18 and 6","10 and 4","8 and 4","6 and 4","18 and 4" };
+
 int main(int _argc, sint8 **_argv) {
 	
 	IRQInit();
 	
+	//ori
+	/*
+		//set the first two banks as background memory and the third as sub background memory
+		//D is not used..if you need a bigger background then you will need to map
+		//more vram banks consecutivly (VRAM A-D are all 0x20000 bytes in size)
+		vramSetPrimaryBanks(
+		VRAM_A_MAIN_BG_0x06000000,//for gba 
+		VRAM_B_LCD, 
+		VRAM_C_SUB_BG_0x06200000,
+		VRAM_D_MAIN_BG_0x06020000
+		); //needed for main emulator
+		
+		vramSetBanks_EFG(
+		VRAM_E_MAIN_SPRITE//for gba sprite,
+		VRAM_F_LCD,
+		VRAM_G_LCD
+		);
+		vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screen 
+		vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
+	*/
+	
+	//todo this
+	//coto: fixed mode1 (partially)
+	/*
+	vramSetPrimaryBanks(	
+	VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode
+	VRAM_B_MAIN_BG_0x06020000,      //Mode 1/2/3/4 special bitmap/rotscale modes (engine A bg0,1,2,3 needs them)
+	VRAM_C_LCD,
+	VRAM_D_LCD
+	); //needed for main emulator
+	*/
+
 	bool project_specific_console = true;	//set default console or custom console: custom console
 	GUI_init(project_specific_console);
 	GUI_clear();
 	
+	REG_POWERCNT &= ~((POWER_3D_CORE | POWER_MATRIX) & 0xFFFF);//powerOff(POWER_3D_CORE | POWER_MATRIX); //3D use power so that is not needed
+	
 	sint32 fwlanguage = (sint32)getLanguage();
 	GUI_setLanguage(fwlanguage);
 	
+	//videoSetModeSub(MODE_5_2D); //todo this
+	
+	biosPath[0] = 0;
+	savePath[0] = 0;
+	patchPath[0] = 0;
+
 	int ret=FS_init();
 	if (ret == 0)
 	{
@@ -81,24 +150,180 @@ int main(int _argc, sint8 **_argv) {
 	//local nifi: 
 	switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
 	
-	printf("GBAEMU4DS Stub Template");
+	//set up GBA part
+	DISPCNT  = 0x0080;
 	
+	//coto:
+	/*
+	//dma shared buffer (old)
+	#ifdef arm9advsound
+	REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
+	REG_IPC_FIFO_TX =  (u32)&arm7exchangefild[0]; //buffer for arm7
+	#endif
+	*/
+
+	/*REG_IPC_FIFO_TX = 0;
+	while(true)
+	{
+		int i = REG_IPC_FIFO_RX;
+		printf("%08X\r\n",i);
+		REG_IPC_FIFO_TX = i;
+
+	}*/
+	
+	//main menü ende aber bleibe im while
+	//set up paths.. todo
+	strcpy(szFile,"");
+	strcpy(savePath,"");
+	strcpy(biosPath,"");
+	strcpy(patchPath,"");
+	
+	//64K default Savesize
+	int myflashsize = 0x10000;
+	
+	#ifdef usebuffedVcout
+	initspeedupfelder();
+	#endif
+	
+	clrscr();
+	printf("CPULoadRom...");
+	
+	failed = !CPULoadRom(szFile,extraram);
+
+	if(failed)
+	{
+		printf("failed");
+		while(1);
+	}
+	else{
+		printf("OK\n");
+	}
+	
+	//coto: save detection code from whitelist...
+	if(save_decider()==0){
+		if(manual_save_type == 6)
+		{
+			myflashsize = 0x20000;
+			cpuSaveType = 3;
+		}
+		else
+		{
+			cpuSaveType = manual_save_type;
+		}
+	}
+	
+	//printf("Hello World2!");
+	printf("CPUInit\n");
+	CPUInit(biosPath, useBios,extraram);
+	
+	printf("CPUReset\n");
+	CPUReset();
+	
+	//Create new savefile or load if exists...
+	int filepathlen = strlen(szFile);
+	char  fn_noext[filepathlen] = {0};
+	memcpy(fn_noext,szFile,filepathlen-3);
+
+	//detect savefile (filename.sav)
+	sprintf(fn_noext,"%ssav",fn_noext);
+	FILE * frh = fopen(fn_noext,"r");
+
+	//if(frh)
+	//    printf("current save path: %s DO exists",fn_noext);
+	//else
+	//    printf("current save path: %s DONT exists",fn_noext);  
+	//while(1);
+	
+	//coto: added create new savefile
+	if(!frh){
+		printf("no savefile found, creating new one... \n");
+		//append "sav"
+		
+		//void * memcpy ( void * destination, const void * source, size_t num );
+		
+		//char * strcat ( char * destination, const char * source );
+		
+		savePath[0] = 0;
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		CPUWriteBatteryFile(savePath);
+	}
+	else
+	{
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		if(CPUReadBatteryFile(savePath))
+		{
+			if(cpuSaveType == 0)printf("SaveReadOK![AUTO]\n");
+			if(cpuSaveType == 1)printf("SaveReadOK![EEPROM]\n");
+			if(cpuSaveType == 2)printf("SaveReadOK![SRAM]\n");
+			if(cpuSaveType == 3)printf("SaveReadOK![FLASHROM]\n");
+			if(cpuSaveType == 4)printf("SaveReadOK![EEPROM+SENSOR]\n");
+			if(cpuSaveType == 5)printf("SaveReadOK![NONE]\n");			
+		}
+		else
+		{
+			printf("failed reading: %s\n",savePath);
+			while(1);
+		}
+		fclose(frh);
+	}
+	
+	printf("BIOS_RegisterRamReset\n");
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
+	BIOS_RegisterRamReset(0xFF);
+	pu_Enable();
+	
+	printf("dmaCopy\n");
+	dmaCopy( (void*)rom,(void*)0x2000000, 0x40000);	//256K
+	printf("arm7init\n");
+	
+	anytimejmpfilter = 0;
+	
+	VblankHandler();
+	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
+	REG_IPC_FIFO_TX = syncline;
+	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX;
+	printf("irqinit\n");
+	
+	printf("emulateedbiosstart\n");
+	emulateedbiosstart();
+	
+	printf("ndsMode\n");
+	ndsMode();
+	
+	SendMultipleWordACK(0xc1710001,0x0,0x0,0x0);//fifotest
+	printf("gbaInit\n");
+	
+	#ifdef capture_and_pars
+		videoBgDisableSub(0);
+		vramSetBankH(VRAM_H_LCD); //only sub
+		vramSetBankI(VRAM_I_LCD); //only sub
+		 int iback = bgInitSub(3, BgType_ExRotation, BgSize_B16_256x256, 0,0);
+
+		//bgSetScale(3,0x111,0x133);
+		//bgSetRotateScale(iback,0,0x111,0x133);
+		//bgSetRotateScale(iback,0,0x0F0,0x0D5);
+		bgSetRotateScale(iback,0,0x0F0,0x0D6);
+		bgUpdate();
+	#endif
+
+	gbaInit(slow);
+	
+	#ifndef capture_and_pars
+		printf("gbaMode2\n");
+	#endif
+		REG_IME = IME_ENABLE;
+		gbaMode2();
+	#ifndef capture_and_pars
+		printf("jump to (%08X) : RTC: %d:%d:%d \n\r",(unsigned int)rom,(unsigned int)gba_get_hourrtc(),(unsigned int)gba_get_minrtc(),(unsigned int)gba_get_secrtc());
+	#endif
+
+	//printf("\x1b[2J"); //reset (not working huh)
+	//show_mem();
+	
+	cpu_ArmJumpforstackinit((u32)rom, 0);
 	while (1)
 	{
-        /*	//handle GUI todo
-		if (REG_POWERCNT & POWER_SWAP_LCDS){
-			GUI_update();
-		}
-        */
-		
-		if ((keysPressed() & KEY_A)){
-			clrscr();
-		}
-		
-		if ((keysPressed() & KEY_B)){
-			printf("test!:%d",rand());
-		}
-		
+        /*
 		//Press L to send a frame to the other DS
 		if ((keysPressed() & KEY_L)){
 			//Send This DS Time
@@ -107,9 +332,8 @@ int main(int _argc, sint8 **_argv) {
 			FrameSenderUser = HandleSendUserspace((uint8*)somebuf,sizeof(somebuf));
 		}
 		
+		*/
 		IRQVBlankWait();
-		
-		//EntryPoint here.
 	}
 
 }

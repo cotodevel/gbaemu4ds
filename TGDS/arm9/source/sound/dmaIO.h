@@ -28,6 +28,7 @@ USA
 extern "C" {
 #endif
 
+extern void triggerdmairq(u8 num);
 
 #ifdef __cplusplus
 }
