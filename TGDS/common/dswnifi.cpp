@@ -74,28 +74,35 @@ bool do_multi(struct frameBlock * frameBlockRecv)
 	//frameBlockRecv->framebuffer	//Pointer to received Frame
 	//frameBlockRecv->frameSize		//Size of received Frame
 	
+	//frameBlockRecv->framebuffer	//Pointer to received Frame
+	//frameBlockRecv->frameSize		//Size of received Frame
+	
 	switch(getMULTIMode()){
-		
 		//single player, has no access to shared buffers.
 		case(dswifi_idlemode):{
-			//nothing to do
+			//DSWNIFIStatus:SinglePlayer
 			return false;
 		}
 		break;
 		
 		//NIFI local
-		case(dswifi_localnifimode):{
-			//todo
+		case(dswifi_localnifimode):{	//detect nifi_stat here if nifi_stat = 0 for disconnect when nifi was issued
+			clrscr();
+			printf("DSWNIFIStatus:LocalNifi!");
+			printf("%s",(char*)frameBlockRecv->framebuffer);
 			return true;
 		}
 		break;
 		
 		//UDP NIFI
-		case(dswifi_udpnifimode):{
-			//todo
+		case(dswifi_udpnifimode):{	//detect nifi_stat here if nifi_stat = 0 for disconnect when nifi was issued
+			clrscr();
+			printf("DSWNIFIStatus:UDPNifi!");
+			printf("%s",(char*)frameBlockRecv->framebuffer);
 			return true;
 		}
 		break;
+		
 	}
 	return false;
 }

@@ -23,31 +23,45 @@ USA
 #include "dswnifi_lib.h"
 #include "dswnifi.h"
 
+//User Handler Definitions
+#ifdef ARM9
 __attribute__((section(".itcm")))
-//---------------------------------------------------------------------------------
-void Vcounter(){
-//---------------------------------------------------------------------------------
-
+#endif
+void Timer0handlerUser(){
 }
 
-
-//---------------------------------------------------------------------------------
+#ifdef ARM9
 __attribute__((section(".itcm")))
-void Vblank() {
-//---------------------------------------------------------------------------------
-	//handles DS-DS Comms
-	if(doMULTIDaemon() >=0){
-	}
-	
-	//key event between frames
-	do_keys();
-	
+#endif
+void Timer1handlerUser(){
 }
 
-
-//---------------------------------------------------------------------------------
+#ifdef ARM9
 __attribute__((section(".itcm")))
-void Hblank() {
-//---------------------------------------------------------------------------------
-	
+#endif
+void Timer2handlerUser(){
+}
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void Timer3handlerUser(){
+}
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void HblankUser(){
+}
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void VblankUser(){
+}
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void VcounterUser(){
 }

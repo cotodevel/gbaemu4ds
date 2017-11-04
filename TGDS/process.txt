@@ -1,0 +1,5 @@
+using as template:
+28092017-alpha2fix5_dmalogicnew_9112016.zip
+
+then add changes from:
+28092017-gbaemu4ds-newhwirq-stable-sleepmode-vcountirqfailing.zip

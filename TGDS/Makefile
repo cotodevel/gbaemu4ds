@@ -87,10 +87,12 @@ MAKEFLAGS += --no-builtin-rules
 
 export DIRS_ARM7_SRC = source/	\
 			source/interrupts/	\
+			source/sound/	\
 			../common/
 			
 export DIRS_ARM7_HEADER = source/	\
 			source/interrupts/	\
+			source/sound/	\
 			include/	\
 			../common/
 #####################################################ARM9#####################################################
@@ -99,11 +101,13 @@ export DIRS_ARM9_SRC = source/	\
 			source/interrupts/	\
 			source/gui/	\
 			source/wnifilib/	\
+			source/sound/	\
 			../common/
 			
 export DIRS_ARM9_HEADER = include/	\
 			source/gui/	\
 			source/wnifilib/	\
+			source/sound/	\
 			../common/
 
 #cleanup default C/C++/ASM flags

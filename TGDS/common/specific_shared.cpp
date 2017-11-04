@@ -31,6 +31,8 @@ USA
 #include "main.h"
 #include "wifi_arm7.h"
 #include "spifw.h"
+#include "dmaIO.h"
+
 #endif
 
 #ifdef ARM9
@@ -48,8 +50,50 @@ __attribute__((section(".itcm")))
 #endif
 void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 	
-	switch (cmd1) {		
+	switch (cmd1) {
 		
+		//NDS7: uses NDS IPC FIFO as a layer from GBA IO @ ARM9
+		#ifdef ARM7
+		//debug
+		case(0xc0700100):{
+			SendMultipleWordACK(0xc0700101,0x0,0x0,0x0);
+		}
+		break;
+		
+		//vcounter
+		case(0xc1710000):{
+			
+		}
+		break;
+		
+		//fifo test
+		case(0xc1710001):{
+			SendMultipleWordACK(0xc1710002,0x0,0x0,0x0);
+		}
+		break;
+		
+		//FIFO DMA SA update FIFO_INTERNAL_BUFFER(A)
+		case(0xc1710004):{
+			SendMultipleWordACK(0xc6760000,0x0,0x0,0x0);
+		}
+		break;
+		
+		//FIFO DMA SB update FIFO_INTERNAL_BUFFER(B)
+		case(0xc1710005):{
+			SendMultipleWordACK(0xc6760001,0x0,0x0,0x0);
+		}
+		break;
+		
+		case(0xc3730000):{
+			iowrite(cmd2,cmd3);
+		}
+		break;
+		#endif
+		
+		//NDS9: uses NDS IPC FIFO as a layer from GBA IO @ ARM7
+		#ifdef ARM9
+		
+		#endif
 	}
 	
 }

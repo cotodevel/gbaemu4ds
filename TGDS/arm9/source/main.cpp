@@ -75,11 +75,11 @@ int main(int _argc, sint8 **_argv) {
 	}
 	
 	//single player:
-	switch_dswnifi_mode(dswifi_idlemode);
+	//switch_dswnifi_mode(dswifi_idlemode);
 	//udp nifi: 
-	//switch_dswnifi_mode(dswifi_udpnifimode);	//UDP NIFI: Check https://github.com/cotodevel/ToolchainGenericDS-multiplayer-example
+	//switch_dswnifi_mode(dswifi_udpnifimode);	//UDP NIFI: Check https://github.com/cotodevel/ToolchainGenericDS-multiplayer-example	//so far NDS7 works
 	//local nifi: 
-	//switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:
+	switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
 	
 	printf("GBAEMU4DS Stub Template");
 	
@@ -99,14 +99,15 @@ int main(int _argc, sint8 **_argv) {
 			printf("test!:%d",rand());
 		}
 		
-		IRQVBlankWait();
-		
-		/*
 		//Press L to send a frame to the other DS
 		if ((keysPressed() & KEY_L)){
-			FrameSenderUser = HandleSendUserspace((uint8*)nfdata,sizeof(nfdata));	//make room for crc16 frame
+			//Send This DS Time
+			volatile uint8 somebuf[128];
+			sprintf((char*)somebuf,"DSTime:%d:%d:%d",getTime()->tm_hour,getTime()->tm_min,getTime()->tm_sec);
+			FrameSenderUser = HandleSendUserspace((uint8*)somebuf,sizeof(somebuf));
 		}
-		*/
+		
+		IRQVBlankWait();
 		
 		//EntryPoint here.
 	}

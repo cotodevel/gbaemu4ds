@@ -26,11 +26,11 @@ USA
 #include "dsregs_asm.h"
 #include "common_shared.h"
 #include "dswnifi.h"
-
+#include "mem_handler_shared.h"
 
 //gba dma fifo
-#define INTERNAL_FIFO_SIZE 	(16)	//each DMA
-#define FIFO_BUFFER_SIZE	(4)		//FIFO_A/FIFO_B = 4 Bytes
+#define INTERNAL_FIFO_SIZE 	(sint32)(16)	//each DMA
+#define FIFO_BUFFER_SIZE	(sint32)(4)		//FIFO_A/FIFO_B = 4 Bytes
 
 
 typedef struct
@@ -51,11 +51,11 @@ typedef struct
 
 
 //aligned struct, shared code works just fine from here
-struct coreStruct
+struct sAlignedIPCProy	//sAlignedIPC as in common_shared.h but project specific implementation
 {
-	uint16 GBA_IE;
-    uint16 GBA_IF;
-    uint16 GBA_IME;
+	uint16 GBA_IE;	//a.k.a GBAEMU4DS_IPC->IE
+    uint16 GBA_IF;	//a.k.a GBAEMU4DS_IPC->IF
+    uint16 GBA_IME;	//a.k.a GBAEMU4DS_IPC->IME
 	
 	//The next hardware mapped here: DMA 1,2 and Timers 0,1 since they belong to GBA sound system
     //These two registers may receive 32bit (4 bytes) of audio data (Data 0-3, Data 0 being located in least significant byte which is replayed first).
@@ -176,8 +176,7 @@ struct coreStruct
 	//SoundBias
 	uint16 SOUNDBIAS;
 	
-	
-}__attribute__ ((aligned (4)));
+};
 
 //---------------------------------------------------------------------------------
 typedef struct sSpecificIPC {
@@ -190,9 +189,19 @@ typedef struct sSpecificIPC {
 
 //project specific IPC. tMyIPC is used by TGDS so don't overlap
 #define SpecificIPCUnalign ((volatile tSpecificIPC*)(getUserIPCAddress()))
-#define SpecificIPCAlign ((volatile struct coreStruct*)(getUserIPCAddress()+(sizeof(tSpecificIPC))))
+#define SpecificIPCAlign ((volatile struct sAlignedIPCProy*)(getUserIPCAddress()+(sizeof(tSpecificIPC))))
 
 // Project Specific
+#define neu_sound_16fifo
+
+#define setdmasoundbuff 0x1FFFFFFA					//sets DMA NDS Channels to a desired sound buffer source
+#define WaitforVblancarmcmd 0x1FFFFFFB				//frameasync on ARM9 (render async image from vmem)
+#define enableWaitforVblancarmcmdirq 0x1FFFFFFC		//enable the above frame async render
+//unused: #define getarm7keys 0x1FFFFFFD	//read XY Touch from IPC
+#define set_callline 0x1FFFFFFF	//set vcounter irq line
+
+//#define anyarmcom
+//#define arm7dmapluscheats		//for dma fifo sound + cheats (old implementation)
 
 #endif
 
