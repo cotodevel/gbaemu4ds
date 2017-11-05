@@ -23,7 +23,7 @@ u8* CreateBMPImage()
   pbuf=(u8*)&buf[0];
   
   if(pbuf==NULL){
-    iprintf("memory overflow!! CreateBMPImage. malloc(%d)=NULL;\n",bufsize);
+    printf("memory overflow!! CreateBMPImage. malloc(%d)=NULL;\n",bufsize);
 	while(1);
     return (u8*)0;
   }
@@ -103,9 +103,9 @@ int writebuf2file(char * filename,u8 * buf,int size){
 	int sizewritten=fwrite((u8*)buf, 1, size, fh_dump);
 	
 	if(sizewritten > 0)
-		iprintf("write ok! \n");
+		printf("write ok! \n");
 	else{
-		iprintf("write was 0.. :(");
+		printf("write was 0.. :(");
 	}
 	
 	fclose(fh_dump);

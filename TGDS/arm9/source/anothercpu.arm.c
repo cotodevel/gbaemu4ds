@@ -9565,7 +9565,7 @@ case 0x28:
    {
      // LDM R0~R7!, {Rlist}
      u8 myregsist = (opcode >> 8) & 7;
-	//iprintf("%x\n",myregs[myregsist].I);
+	//printf("%x\n",myregs[myregsist].I);
 	//myregs[myregsist].I -= 4; //ichfly - 4 by me // idont think also ds need that
      u32 address = myregs[myregsist].I & 0xFFFFFFFC;
      u32 temp = myregs[myregsist].I + 4*cpuBitsSet[opcode & 0xFF]; 
@@ -9581,7 +9581,7 @@ case 0x28:
      THUMB_LDM_myregs(128, 7);
      if(!(opcode & (1<<myregsist)))
        myregs[myregsist].I = temp;
-	   //iprintf("%x\n",myregs[myregsist].I);
+	   //printf("%x\n",myregs[myregsist].I);
    }
    break;
 /* case 0xd0:

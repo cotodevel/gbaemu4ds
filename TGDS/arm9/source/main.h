@@ -5,7 +5,7 @@
 
 
 #include <stdio.h>
-#define Log(...) iprintf(__VA_ARGS__)
+#define Log(...) printf(__VA_ARGS__)
 
 #define MAXPATHLEN 256 
 

@@ -70,8 +70,8 @@ u32 userinputval(u32 original_val,u32 bits)
 			scanKeys();
 			pressed = (keysDownRepeat()& ~0xFC00);
 		} while (!pressed);
-		iprintf("\x1b[2J");
-		iprintf("val %08X multi: %08X\n",original_val,srctempmulti);
+		printf("\x1b[2J");
+		printf("val %08X multi: %08X\n",original_val,srctempmulti);
 
 		if (pressed&KEY_UP) original_val+= srctempmulti;
 		if (pressed&KEY_DOWN) original_val-=srctempmulti;
@@ -93,7 +93,7 @@ void show_gba_mem()
 	u16 pointer = 0;
 	while(1) 
 	{
-		iprintf("gba src %08X multi: %08X\n",src,srctempmulti);
+		printf("gba src %08X multi: %08X\n",src,srctempmulti);
 		switch (type)
 		{
 			case 1:
@@ -102,11 +102,11 @@ void show_gba_mem()
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%02X\x1b[39[0m",CPUReadBytereal(src + i));
+						printf("\x1b[33[0m%02X\x1b[39[0m",CPUReadBytereal(src + i));
 					}
 					else
 					{
-						iprintf("%02X",CPUReadBytereal(src + i));
+						printf("%02X",CPUReadBytereal(src + i));
 					}
 				}
 			}
@@ -121,7 +121,7 @@ void show_gba_mem()
 					type= 2;
 				}
 			}
-			iprintf("Byte mode");
+			printf("Byte mode");
 			break;
 			case 2:
 			{
@@ -129,11 +129,11 @@ void show_gba_mem()
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%04X\x1b[39[0m",CPUReadHalfWordreal(src + i));
+						printf("\x1b[33[0m%04X\x1b[39[0m",CPUReadHalfWordreal(src + i));
 					}
 					else
 					{
-						iprintf("%04X",CPUReadHalfWordreal(src + i));
+						printf("%04X",CPUReadHalfWordreal(src + i));
 					}
 				}
 			}
@@ -148,7 +148,7 @@ void show_gba_mem()
 					type= 4;
 				}
 			}
-			iprintf("Hword mode");
+			printf("Hword mode");
 			break;
 			case 4:
 			{
@@ -156,15 +156,15 @@ void show_gba_mem()
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%08X\x1b[39[0m",CPUReadMemoryreal(src + i));
+						printf("\x1b[33[0m%08X\x1b[39[0m",CPUReadMemoryreal(src + i));
 					}
 					else
 					{
-						iprintf("%08X",CPUReadMemoryreal(src + i));
+						printf("%08X",CPUReadMemoryreal(src + i));
 					}
 				}
 			}
-			iprintf("Word mode");
+			printf("Word mode");
 			if (pressed&KEY_A)
 			{
 				if(writeon)
@@ -201,7 +201,7 @@ void show_gba_mem()
 		if (pressed&KEY_SELECT) writeon = writeon ? 0 : 1;
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-		iprintf("\x1b[2J");
+		printf("\x1b[2J");
 	}
 	pu_Enable(); //back to normal code
 }
@@ -218,7 +218,7 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 	u16 pointer = 0;
 	while(1) 
 	{
-		iprintf("nds src %08X multi: %08X\n",src,srctempmulti);
+		printf("nds src %08X multi: %08X\n",src,srctempmulti);
 		switch (type)
 		{
 			case 1:
@@ -227,11 +227,11 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%02X\x1b[39[0m",*(u8*)(src + i));
+						printf("\x1b[33[0m%02X\x1b[39[0m",*(u8*)(src + i));
 					}
 					else
 					{
-						iprintf("%02X",*(u8*)(src + i));
+						printf("%02X",*(u8*)(src + i));
 					}
 				}
 			}
@@ -246,7 +246,7 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 					type= 2;
 				}
 			}
-			iprintf("Byte mode");
+			printf("Byte mode");
 			break;
 			case 2:
 			{
@@ -254,11 +254,11 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%04X\x1b[39[0m",*(u16*)(src + i));
+						printf("\x1b[33[0m%04X\x1b[39[0m",*(u16*)(src + i));
 					}
 					else
 					{
-						iprintf("%04X",*(u16*)(src + i));
+						printf("%04X",*(u16*)(src + i));
 					}
 				}
 			}
@@ -273,7 +273,7 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 					type= 4;
 				}
 			}
-			iprintf("Hword mode");
+			printf("Hword mode");
 			break;
 			case 4:
 			{
@@ -281,15 +281,15 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 				{
 					if(writeon && pointer == i)
 					{
-						iprintf("\x1b[33[0m%08X\x1b[39[0m",*(u32*)(src + i));
+						printf("\x1b[33[0m%08X\x1b[39[0m",*(u32*)(src + i));
 					}
 					else
 					{
-						iprintf("%08X",*(u32*)(src + i));
+						printf("%08X",*(u32*)(src + i));
 					}
 				}
 			}
-			iprintf("Word mode");
+			printf("Word mode");
 			if (pressed&KEY_A)
 			{
 				if(writeon)
@@ -326,7 +326,7 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 		if (pressed&KEY_SELECT) writeon = writeon ? 0 : 1;
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-		iprintf("\x1b[2J");
+		printf("\x1b[2J");
 	}
 	pu_Enable(); //back to normal code
 }
@@ -346,18 +346,18 @@ extern u32 recdel;
 extern u32 amr7fehlerfeld[10];
 void showcomdebug()
 {
-	iprintf("%04X\n",CPUReadHalfWordreal(0x4000200));
-	iprintf("%08X %08X\n",amr7recmuell,amr7sendcom);
-	iprintf("%08X %08X\n",amr7directrec,amr7indirectrec);
-	iprintf("%08X %08X\n",amr7senddma1,amr7senddma2);
-	iprintf("%08X %08X\n",recDMA1,recDMA2);
-	iprintf("%08X %08X\n",recdir,recdel);
+	printf("%04X\n",CPUReadHalfWordreal(0x4000200));
+	printf("%08X %08X\n",amr7recmuell,amr7sendcom);
+	printf("%08X %08X\n",amr7directrec,amr7indirectrec);
+	printf("%08X %08X\n",amr7senddma1,amr7senddma2);
+	printf("%08X %08X\n",recDMA1,recDMA2);
+	printf("%08X %08X\n",recdir,recdel);
 	for (int i = 0;i < 8;i+=2)
 	{
-		iprintf("%08X %08X\n",amr7fehlerfeld[i],amr7fehlerfeld[i + 1]);
+		printf("%08X %08X\n",amr7fehlerfeld[i],amr7fehlerfeld[i + 1]);
 	}
 #ifdef countpagefalts
-	iprintf("%08X",pagefehler);
+	printf("%08X",pagefehler);
 #endif
 }
 #endif
@@ -369,15 +369,15 @@ void show_mem()
 	int ausgewauhlt = 0;
 	while(1)
 	{
-		iprintf("\x1b[2J");
-		iprintf("show mem\n");
-		iprintf ("--------------------------------");
+		printf("\x1b[2J");
+		printf("show mem\n");
+		printf ("--------------------------------");
 		for(int i = 0; i < 7; i++)
 		{
-			if(i == ausgewauhlt) iprintf("->");
-			else iprintf("  ");
-			iprintf(seloptionsshowmem[i]);
-			iprintf("\n");
+			if(i == ausgewauhlt) printf("->");
+			else printf("  ");
+			printf(seloptionsshowmem[i]);
+			printf("\n");
 		}
 		do {
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -385,7 +385,7 @@ void show_mem()
 			scanKeys();
 			pressed = (keysDownRepeat()& ~0xFC00);
 		} while (!pressed); //no communication here with arm7 so no more update
-		//iprintf("%x",ausgewauhlt);
+		//printf("%x",ausgewauhlt);
 		FILE *file;
 		if (pressed&KEY_A)
 		{
@@ -427,7 +427,7 @@ void show_mem()
 							int src = 0x023F0000; 
 							int srctempmulti = 0x80000;
 							while(1) {		
-								iprintf("src %08X multi: %08X\n",src,srctempmulti);
+								printf("src %08X multi: %08X\n",src,srctempmulti);
 								if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 								while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 								scanKeys();		
@@ -436,12 +436,12 @@ void show_mem()
 								if (keysDown()&KEY_DOWN && src != 0) src-=srctempmulti;
 								if (keysDown()&KEY_RIGHT) srctempmulti *= 2;
 								if (keysDown()&KEY_LEFT && srctempmulti != 1) srctempmulti /= 2;
-								iprintf("\x1b[2J");
+								printf("\x1b[2J");
 							}
 							int size = 0x10000; 
 							int sizetempmulti = 0x10000;
 							while(1) {		
-								iprintf("size %08X multi: %08X\n",size,sizetempmulti);
+								printf("size %08X multi: %08X\n",size,sizetempmulti);
 								scanKeys();		
 								if (keysDown()&KEY_A) break;
 								if (keysDown()&KEY_UP) size+= sizetempmulti;
@@ -450,9 +450,9 @@ void show_mem()
 								if (keysDown()&KEY_LEFT && sizetempmulti != 1) sizetempmulti /= 2;
 								if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 								while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-								iprintf("\x1b[2J");
+								printf("\x1b[2J");
 							}
-							iprintf("src %08X size: %X\n",src,size);
+							printf("src %08X size: %X\n",src,size);
 							while(1) {
 								scanKeys();
 								if (keysDown()&KEY_START) break;

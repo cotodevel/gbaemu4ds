@@ -8,18 +8,6 @@ then add changes from:
 
 //
 
-todo:
-
-can we move 256K the ewram code?
-
-
-can we use the below linker??
-
-vectors : ORIGIN = 0x01FF8000, LENGTH = 1K - 256
-       
-itcm    : ORIGIN = 0x01FF8300, LENGTH = 32K - 1K + 256
-gbaew   : ORIGIN = 0x02000000, LENGTH = 256k
-
 
 C:\Users\Coto\Desktop\alpha2fix5\gbaemu4ds
 

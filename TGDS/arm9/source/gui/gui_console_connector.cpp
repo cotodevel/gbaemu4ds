@@ -61,27 +61,24 @@ vramSetup * GBAEMU4DS_2DVRAM_SETUP(){
 	
 	vramSetup * vramSetupDefault = (vramSetup *)&vramSetupGlobal[0];
 	
-	//vramSetBankA(VRAM_A_MAIN_BG_0x06020000);
-	vramSetupDefault->vramBankSetupInst[VRAM_A_INDEX].vrambankCR = VRAM_A_0x06020000_ENGINE_A_BG;
+	//VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode
+	vramSetupDefault->vramBankSetupInst[VRAM_A_INDEX].vrambankCR = VRAM_A_0x06000000_ENGINE_A_BG;
 	vramSetupDefault->vramBankSetupInst[VRAM_A_INDEX].enabled = true;
 	
-	//vramSetBankB(VRAM_B_MAIN_BG_0x06040000);
-	vramSetupDefault->vramBankSetupInst[VRAM_B_INDEX].vrambankCR = VRAM_B_0x06040000_ENGINE_A_BG;
+	//VRAM_B_MAIN_BG_0x06020000,      //Mode 1/2/3/4 special bitmap/rotscale modes (engine A bg0,1,2,3 needs them)
+	vramSetupDefault->vramBankSetupInst[VRAM_B_INDEX].vrambankCR = VRAM_B_0x06020000_ENGINE_A_BG;
 	vramSetupDefault->vramBankSetupInst[VRAM_B_INDEX].enabled = true;
 	
 	// 128Ko (+48kb) for sub screen / GUI / Console
-	//vramSetBankC(VRAM_C_SUB_BG_0x06200000);
 	vramSetupDefault->vramBankSetupInst[VRAM_C_INDEX].vrambankCR = VRAM_C_0x06200000_ENGINE_B_BG;
 	vramSetupDefault->vramBankSetupInst[VRAM_C_INDEX].enabled = true;
 	
-	// Some memory for ARM7 (128 Ko!)
-	//vramSetBankD(VRAM_D_ARM7_0x06000000);
+	//128K ARM7 (unused as of now)
 	vramSetupDefault->vramBankSetupInst[VRAM_D_INDEX].vrambankCR = VRAM_D_0x06000000_ARM7;
 	vramSetupDefault->vramBankSetupInst[VRAM_D_INDEX].enabled = true;
 	
-	// 80Ko for Sprites (SNES : 32-64Ko)
-	//vramSetBankE(VRAM_E_MAIN_SPRITE); // 0x6400000
-	vramSetupDefault->vramBankSetupInst[VRAM_E_INDEX].vrambankCR = VRAM_E_0x06400000_ENGINE_A_BG;
+	// unused
+	vramSetupDefault->vramBankSetupInst[VRAM_E_INDEX].vrambankCR = VRAM_E_LCDC_MODE;
 	vramSetupDefault->vramBankSetupInst[VRAM_E_INDEX].enabled = true;
 	
 	//vramSetBankF(VRAM_F_MAIN_SPRITE);
@@ -92,15 +89,15 @@ vramSetup * GBAEMU4DS_2DVRAM_SETUP(){
 	vramSetupDefault->vramBankSetupInst[VRAM_G_INDEX].vrambankCR = VRAM_G_SLOT_ENGINE_A_BG_EXTENDED;
 	vramSetupDefault->vramBankSetupInst[VRAM_G_INDEX].enabled = true;
 	
-	// 48ko For CPU 
+	// unused
 	//vramSetBankH(VRAM_H_LCD);
 	vramSetupDefault->vramBankSetupInst[VRAM_H_INDEX].vrambankCR = VRAM_H_LCDC_MODE;
 	vramSetupDefault->vramBankSetupInst[VRAM_H_INDEX].enabled = true;
 	
+	// unused
 	//vramSetBankI(VRAM_I_LCD);
 	vramSetupDefault->vramBankSetupInst[VRAM_I_INDEX].vrambankCR = VRAM_I_LCDC_MODE;
 	vramSetupDefault->vramBankSetupInst[VRAM_I_INDEX].enabled = true;
-	
 	
 	return vramSetupDefault;
 }

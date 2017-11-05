@@ -127,7 +127,7 @@ int main(int _argc, sint8 **_argv) {
 	sint32 fwlanguage = (sint32)getLanguage();
 	GUI_setLanguage(fwlanguage);
 	
-	//videoSetModeSub(MODE_5_2D); //todo this
+	//SETDISPCNT_SUB(MODE_5_2D);	//already handled by the TGDS console
 	
 	biosPath[0] = 0;
 	savePath[0] = 0;
@@ -144,11 +144,11 @@ int main(int _argc, sint8 **_argv) {
 	}
 	
 	//single player:
-	//switch_dswnifi_mode(dswifi_idlemode);
+	switch_dswnifi_mode(dswifi_idlemode);
 	//udp nifi: 
 	//switch_dswnifi_mode(dswifi_udpnifimode);	//UDP NIFI: Check https://github.com/cotodevel/ToolchainGenericDS-multiplayer-example	//so far NDS7 works
 	//local nifi: 
-	switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
+	//switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
 	
 	//set up GBA part
 	DISPCNT  = 0x0080;
@@ -272,10 +272,10 @@ int main(int _argc, sint8 **_argv) {
 	BIOS_RegisterRamReset(0xFF);
 	pu_Enable();
 	
-	printf("dmaCopy\n");
-	dmaCopy( (void*)rom,(void*)0x2000000, 0x40000);	//256K
-	printf("arm7init\n");
+	dmaTransfer(0, (void*)rom, 0x2000000, 0x40000);	//file copy: 256K minimal payload
+	printf("dmaCopy Success:%x",(uint32)*(uint32*)0x2000000);
 	
+	printf("arm7init ");
 	anytimejmpfilter = 0;
 	
 	VblankHandler();
@@ -293,6 +293,7 @@ int main(int _argc, sint8 **_argv) {
 	SendMultipleWordACK(0xc1710001,0x0,0x0,0x0);//fifotest
 	printf("gbaInit\n");
 	
+	/*
 	#ifdef capture_and_pars
 		videoBgDisableSub(0);
 		vramSetBankH(VRAM_H_LCD); //only sub
@@ -305,7 +306,8 @@ int main(int _argc, sint8 **_argv) {
 		bgSetRotateScale(iback,0,0x0F0,0x0D6);
 		bgUpdate();
 	#endif
-
+	*/
+	
 	gbaInit(slow);
 	
 	#ifndef capture_and_pars
@@ -321,18 +323,9 @@ int main(int _argc, sint8 **_argv) {
 	//show_mem();
 	
 	cpu_ArmJumpforstackinit((u32)rom, 0);
+
 	while (1)
 	{
-        /*
-		//Press L to send a frame to the other DS
-		if ((keysPressed() & KEY_L)){
-			//Send This DS Time
-			volatile uint8 somebuf[128];
-			sprintf((char*)somebuf,"DSTime:%d:%d:%d",getTime()->tm_hour,getTime()->tm_min,getTime()->tm_sec);
-			FrameSenderUser = HandleSendUserspace((uint8*)somebuf,sizeof(somebuf));
-		}
-		
-		*/
 		IRQVBlankWait();
 	}
 

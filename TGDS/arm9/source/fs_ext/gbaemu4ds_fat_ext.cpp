@@ -56,7 +56,7 @@ void generatefilemap(int size)
 	partitionlocked = partition;
 
 	readSectorslocked = file->partition->disc->readSectors;
-	iprintf("generating file map (size %d Byte)",((size/chucksize) + 1)*8);
+	printf("generating file map (size %d Byte)",((size/chucksize) + 1)*8);
 	sectortabel =(u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
 	greatownfilebuffer =(u8*)malloc(chucksize * buffslots);
 
@@ -290,7 +290,7 @@ pagefehler++;
 			if(currsize > c) currsize = c;
 
 			u16* asd = (u16*)(sectortabel[mappoffset*2]);
-			//iprintf("%X %X %X %X %X %X\n\r",sectoroffset,mappoffset,currsize,pos,c,chucksize);
+			//printf("%X %X %X %X %X %X\n\r",sectoroffset,mappoffset,currsize,pos,c,chucksize);
 			if(asd != (u16*)0x0)//found exit here
 			{
 				int i = 0; //copy

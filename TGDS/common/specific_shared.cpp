@@ -124,25 +124,25 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 			asm("nop");
 			asm("nop");
 			
-			iprintf("\n \n [Timer %d] dma Source A %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>10)&1),GBAEMU4DS_IPC->DM1SAD_H,GBAEMU4DS_IPC->DM1SAD_L);
-			iprintf("\n \n dma Dest A %x %x \n ",GBAEMU4DS_IPC->DM1DAD_H,GBAEMU4DS_IPC->DM1DAD_L);
-			iprintf("dma A : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasA[3],GBAEMU4DS_IPC->fifodmasA[2],GBAEMU4DS_IPC->fifodmasA[1],GBAEMU4DS_IPC->fifodmasA[0]);
-			iprintf("DMA1CNT_H: %x \n ",GBAEMU4DS_IPC->DM1CNT_H);
+			printf("\n \n [Timer %d] dma Source A %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>10)&1),GBAEMU4DS_IPC->DM1SAD_H,GBAEMU4DS_IPC->DM1SAD_L);
+			printf("\n \n dma Dest A %x %x \n ",GBAEMU4DS_IPC->DM1DAD_H,GBAEMU4DS_IPC->DM1DAD_L);
+			printf("dma A : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasA[3],GBAEMU4DS_IPC->fifodmasA[2],GBAEMU4DS_IPC->fifodmasA[1],GBAEMU4DS_IPC->fifodmasA[0]);
+			printf("DMA1CNT_H: %x \n ",GBAEMU4DS_IPC->DM1CNT_H);
 			
 			int reg;
 			
 			for(reg = 0; reg <= 15; reg++) {
-				iprintf("R%d=%X t", (int)reg, (unsigned int)exRegs[reg]);
+				printf("R%d=%X t", (int)reg, (unsigned int)exRegs[reg]);
 			}
 			
 			
-			iprintf("\n \n [Timer %d] dma Source B %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>14)&1),GBAEMU4DS_IPC->DM2SAD_H,GBAEMU4DS_IPC->DM2SAD_L);
-			iprintf("\n \n dma Dest B %x %x \n ",GBAEMU4DS_IPC->DM2DAD_H,GBAEMU4DS_IPC->DM2DAD_L);
-			iprintf("dma B : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasB[3],GBAEMU4DS_IPC->fifodmasB[2],GBAEMU4DS_IPC->fifodmasB[1],GBAEMU4DS_IPC->fifodmasB[0]);
-			iprintf("DMA2CNT_H: %x \n ",GBAEMU4DS_IPC->DM2CNT_H);
+			printf("\n \n [Timer %d] dma Source B %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>14)&1),GBAEMU4DS_IPC->DM2SAD_H,GBAEMU4DS_IPC->DM2SAD_L);
+			printf("\n \n dma Dest B %x %x \n ",GBAEMU4DS_IPC->DM2DAD_H,GBAEMU4DS_IPC->DM2DAD_L);
+			printf("dma B : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasB[3],GBAEMU4DS_IPC->fifodmasB[2],GBAEMU4DS_IPC->fifodmasB[1],GBAEMU4DS_IPC->fifodmasB[0]);
+			printf("DMA2CNT_H: %x \n ",GBAEMU4DS_IPC->DM2CNT_H);
 			
-			iprintf("TM0CNT_L %x / TM0CNT_H %x \n",GBAEMU4DS_IPC->TM0CNT_L,GBAEMU4DS_IPC->TM0CNT_H);
-			iprintf("TM1CNT_L %x / TM1CNT_H %x \n",GBAEMU4DS_IPC->TM1CNT_L,GBAEMU4DS_IPC->TM1CNT_H);
+			printf("TM0CNT_L %x / TM0CNT_H %x \n",GBAEMU4DS_IPC->TM0CNT_L,GBAEMU4DS_IPC->TM0CNT_H);
+			printf("TM1CNT_L %x / TM1CNT_H %x \n",GBAEMU4DS_IPC->TM1CNT_L,GBAEMU4DS_IPC->TM1CNT_H);
 			
 			asm("nop");
 			asm("nop");
@@ -203,14 +203,14 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 			}
 			else
 			{
-				iprintf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
+				printf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
 				while(1); //stop to prevent dammage
 			}
 			
 			
 			*/
 			
-			//iprintf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
+			//printf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
 			//while(1); //stop to prevent dammage
 			
 		}

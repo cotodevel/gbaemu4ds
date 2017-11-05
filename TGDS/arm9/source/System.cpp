@@ -97,7 +97,7 @@ void systemMessage(int _iId, const char * _csFormat, ...)
 	len=vsnprintf(__outstr,__DOUTBUFSIZE,_csFormat,args);
 	va_end(args);
 
-  iprintf(__outstr);//GUI()->vPopupErrorV(_(_csFormat), args);
+  printf(__outstr);//GUI()->vPopupErrorV(_(_csFormat), args);
 
   va_end(args);
   

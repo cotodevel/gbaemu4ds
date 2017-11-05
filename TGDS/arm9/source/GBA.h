@@ -136,7 +136,7 @@ typedef union {
 #define _stricmp strcasecmp
 #endif
 
-#define log(...) iprintf(__VA_ARGS__)
+#define log(...) printf(__VA_ARGS__)
 
 #endif //VBA_GBA_H
 

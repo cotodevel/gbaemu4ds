@@ -657,7 +657,7 @@ void patchit(int romSize2)
 				getandpatchmap(offsetgba,offsetthisfile);
 			}
 #ifdef debugpatch
-			iprintf("patch gbaedit from %08X to %08X (%08X)\n\r",offsetthisfile,offsetgba,ftell(patchf));
+			printf("patch gbaedit from %08X to %08X (%08X)\n\r",offsetthisfile,offsetgba,ftell(patchf));
 #endif
 			}
 			break;
@@ -674,7 +674,7 @@ void patchit(int romSize2)
 			fseek(patchf,coo5,SEEK_SET);
 			__irqSet(IRQ_FIFO_NOT_EMPTY,arm7dmareqandcheat,irqTable);
 #ifdef debugpatch
-			iprintf("patch cheats %08X from %08X (%08X)\n\r",cheatsNumber,cheatsList,ftell(patchf));
+			printf("patch cheats %08X from %08X (%08X)\n\r",cheatsNumber,cheatsList,ftell(patchf));
 #endif
 			#endif
 			
@@ -695,7 +695,7 @@ void patchit(int romSize2)
 			leavesu();
 			fseek(patchf,coo,SEEK_SET);
 #ifdef debugpatch
-			iprintf("patch direct write to %08X from %08X size %08X (%08X)\n\r",gbaoffset,offset,payloadsize,ftell(patchf));
+			printf("patch direct write to %08X from %08X size %08X (%08X)\n\r",gbaoffset,offset,payloadsize,ftell(patchf));
 #endif
 			break;
 			}
@@ -733,7 +733,7 @@ void patchit(int romSize2)
 			}
 			leavesu();
 #ifdef debugpatch
-			iprintf("link to sa type %08X where %08X dest %08X Condition %08X (%08X)\n\r",type,offset,address,Condition,ftell(patchf));
+			printf("link to sa type %08X where %08X dest %08X Condition %08X (%08X)\n\r",type,offset,address,Condition,ftell(patchf));
 #endif
 			}
 			break;
@@ -840,7 +840,7 @@ void patchit(int romSize2)
 			}
 			leavesu();
 #ifdef debugpatch
-			iprintf("link to sf type %08X where %08X function %08X Condition %08X (%08X)\n\r",type,offset,function,Condition,ftell(patchf));
+			printf("link to sf type %08X where %08X function %08X Condition %08X (%08X)\n\r",type,offset,function,Condition,ftell(patchf));
 #endif
 			}
 			break;
@@ -867,10 +867,10 @@ void patchit(int romSize2)
 	char patchmsg[0x100];
 	if(fread(patchmsg,1,0x100,patchf) > 0)
 	{
-		iprintf(patchmsg);
+		printf(patchmsg);
 	}
 #ifdef debugpatch
-		iprintf("end (%X)",patchnum);
+		printf("end (%X)",patchnum);
 #endif
 		fclose(patchf);
 }
@@ -1025,9 +1025,9 @@ int savetype=0;
 char gamecode[6]; 
 memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
 
-//iprintf("GameCode is: %s \n",gamecode);
-//iprintf("GameCode is: %s \n",strtoupper(gamecode));
-//iprintf("GameCode is: %s \n",strtolower(gamecode));
+//printf("GameCode is: %s \n",gamecode);
+//printf("GameCode is: %s \n",strtoupper(gamecode));
+//printf("GameCode is: %s \n",strtolower(gamecode));
 //while(1);
 
     if( strncmp( 
@@ -1038,7 +1038,7 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
         )
     {
         
-        //iprintf("firered detected!!!! \n");
+        //printf("firered detected!!!! \n");
         //while(1);
         savetype = 3; 
     }
@@ -1051,7 +1051,7 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
         )
     {
         
-        //iprintf("greenleaf detected!!!! \n");
+        //printf("greenleaf detected!!!! \n");
         //while(1);
         savetype = 3; 
     }
@@ -1064,7 +1064,7 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
         )
     {
         
-        //iprintf("smb1 detected!!!! \n");
+        //printf("smb1 detected!!!! \n");
         //while(1);
         savetype = 1; 
     }
@@ -1077,7 +1077,7 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
         )
     {
         
-        //iprintf("smb3 detected!!!! \n");
+        //printf("smb3 detected!!!! \n");
         //while(1);
         savetype = 3; 
     }
@@ -1101,7 +1101,7 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
     //Flash format
     if(cpuSaveType == 3){
         flashSetSize(myflashsize);
-        iprintf("[FLASH %d bytes]\n",myflashsize);
+        printf("[FLASH %d bytes]\n",myflashsize);
     }
 
 return savetype;

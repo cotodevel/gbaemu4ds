@@ -221,10 +221,10 @@ void initspeedupfelder()
 	/*bool modusVcount = true;
 	while(1) 
 	{
-		iprintf("\x1b[2J");
-		iprintf("gbaemu DS for r4i gold (3DS) (r4ids.cn) by ichfly\n");
-		if(modusVcount)iprintf("speedimpr. Vcount mode\n");
-		else iprintf("dispimpr. Vcount mode\n");
+		printf("\x1b[2J");
+		printf("gbaemu DS for r4i gold (3DS) (r4ids.cn) by ichfly\n");
+		if(modusVcount)printf("speedimpr. Vcount mode\n");
+		else printf("dispimpr. Vcount mode\n");
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 		scanKeys();
@@ -343,8 +343,8 @@ void VblankHandler(void) {
 
 
 #ifdef showdebug
-	iprintf("\x1b[2J");
-	iprintf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
+	printf("\x1b[2J");
+	printf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
 /*
 #ifdef anyarmcom
 	extern void showcomdebug();
@@ -495,7 +495,7 @@ lastdebugcurrent++;
 if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 #endif
 #ifdef showdebug
-	//iprintf("ex %d\n",REG_VCOUNT);
+	//printf("ex %d\n",REG_VCOUNT);
 #endif
 }
 
@@ -580,15 +580,15 @@ void pausemenue()
 	int ausgewauhlt = 2;
 	while(1)
 	{
-		iprintf("\x1b[2J");
-		iprintf("Pause\n");
-		iprintf ("--------------------------------");
+		printf("\x1b[2J");
+		printf("Pause\n");
+		printf ("--------------------------------");
 		for(int i = 0; i < 5; i++)
 		{
-			if(i == ausgewauhlt) iprintf("->");
-			else iprintf("  ");
-			iprintf(seloptions[i]);
-			iprintf("\n");
+			if(i == ausgewauhlt) printf("->");
+			else printf("  ");
+			printf(seloptions[i]);
+			printf("\n");
 		}
 		do {
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -596,7 +596,7 @@ void pausemenue()
 			scanKeys();
 			pressed = (keysDownRepeat()& ~0xFC00);
 		} while (!pressed); //no communication here with arm7 so no more update
-		//iprintf("%x",ausgewauhlt);
+		//printf("%x",ausgewauhlt);
 		if (pressed&KEY_A)
 		{
 			switch(ausgewauhlt)
@@ -612,7 +612,7 @@ void pausemenue()
 				break;
 				//exit
 				case 2:
-					iprintf("\x1b[2J");
+					printf("\x1b[2J");
 #ifdef capture_and_pars
 					videoBgDisableSub(0);
 					vramSetBankH(VRAM_H_LCD); //only sub
@@ -672,9 +672,9 @@ void pausemenue()
 {
 	//ndsMode();
 	u8 msg[255]; //max 255
-	iprintf("enter");
+	printf("enter");
 	fifoGetDatamsg(FIFO_USER_02, bytes, msg);
-	iprintf((char*)msg);
-	iprintf("exit");
+	printf((char*)msg);
+	printf("exit");
 	//if(gbamode)gbaMode2();
 }*/

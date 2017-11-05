@@ -212,7 +212,7 @@ DC_FlushAll();
 
 extern "C" void failcpphandler()
 {
-	iprintf("something failed\r\n");
+	printf("something failed\r\n");
 	REG_IME = IME_DISABLE;
 	debugDump();
 	Log("SSP %08x SLR %08x\n",savedsp,savedlr);
@@ -302,7 +302,7 @@ void gbaInit(bool slow)
 
 
 
-	WRAM_CR = 0; //swap wram in
+	//WRAM_CR = 0; //swap wram in	//already handled in TGDS init
 
 	if(slow)
 	{
@@ -525,7 +525,7 @@ void BIOScall(int op,  s32 *R)
 	  default:
 		if((comment & 0x30) == 0x30)
 		{
-			iprintf("r%x %08x",(comment & 0xF),R[(comment & 0x30)]);
+			printf("r%x %08x",(comment & 0xF),R[(comment & 0x30)]);
 		}
 		else
 		{
@@ -653,7 +653,7 @@ void gbaExceptionHdl()
 		if(exRegs[15] > 0x08000000)//don't know why this land herer but it dose
 		{
 			//exRegs[15] = (exRegs[15] & 0x01FFFFFF) + (s32)rom;
-			iprintf("MPU GBAMode PC trapped @ %x! \n",(unsigned int)exRegs[15]);
+			printf("MPU GBAMode PC trapped @ %x! \n",(unsigned int)exRegs[15]);
 			while(1==1){
 				scanKeys();
 				if (keysDown()&KEY_A){
