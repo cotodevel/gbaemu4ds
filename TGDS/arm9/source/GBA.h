@@ -20,7 +20,9 @@
 #ifndef VBA_GBA_H
 #define VBA_GBA_H
 
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
 
 #include "System.h"
 #include "ichflysettings.h"
@@ -266,7 +268,6 @@ extern int framewtf;
 
 
 extern void emulateedbiosstart();
-extern volatile u16 DISPCNT;
 extern void HblankHandler(void);
 extern void downgreadcpu();
 extern void initspeedupfelder();

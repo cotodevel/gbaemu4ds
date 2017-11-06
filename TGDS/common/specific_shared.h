@@ -53,6 +53,9 @@ typedef struct
 //aligned struct, shared code works just fine from here
 struct sAlignedIPCProy	//sAlignedIPC as in common_shared.h but project specific implementation
 {
+	//GBA Header
+    gbaHeader_t gbaheader;
+	
 	uint16 GBA_IE;	//a.k.a GBAEMU4DS_IPC->IE
     uint16 GBA_IF;	//a.k.a GBAEMU4DS_IPC->IF
     uint16 GBA_IME;	//a.k.a GBAEMU4DS_IPC->IME

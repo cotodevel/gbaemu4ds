@@ -14,7 +14,6 @@
 #include <sys/dir.h>
 #include <fcntl.h>
 
-#include "fs.h"
 #include "gui.h"
 #include "nds_cp15_misc.h"
 
@@ -32,6 +31,9 @@
 #include "posix_hook_shared.h"
 #include "about.h"
 #include "xenofunzip.h"
+#include "ichflysettings.h"
+
+#define MAXPATHLEN (sint32)(256)
 
 #endif
 
@@ -48,14 +50,14 @@ extern void * lastopenlocked;
 PARTITION* partitionlocked;
 FN_MEDIUM_READSECTORS	readSectorslocked;
 */
-extern u32 current_pointer = 0;
+extern u32 current_pointer;
 extern u32 allocedfild[buffslots];
 extern u8* greatownfilebuffer;
 
 extern void generatefilemap(int size);
 extern void getandpatchmap(int offsetgba,int offsetthisfile);
 
-//part of fatfileextract.cpp
+//part of gbaemu4ds_fat_ext.cpp
 
 extern u8 ichfly_readu8(unsigned int pos);
 extern u16 ichfly_readu16(unsigned int pos);

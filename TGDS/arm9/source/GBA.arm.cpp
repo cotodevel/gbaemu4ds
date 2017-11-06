@@ -18,21 +18,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdarg.h>
 #include <string.h>
 
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
+
+#include "common_shared.h"
+#include "specific_shared.h"
 
 #include "GBA.h"
 #include "Sound.h"
@@ -40,6 +49,7 @@
 #include "getopt.h"
 #include "System.h"
 #include "ichflysettings.h"
+#include "dma.h"
 
 #ifndef loadindirect
 #include "puzzleorginal_bin.h"
@@ -386,110 +396,110 @@ u32 myROM[] = {
 };
 /*
 variable_desc saveGameStruct[] = {
-  { &DISPCNT  , sizeof(u16) },
-  { &DISPSTAT , sizeof(u16) },
-  { &VCOUNT   , sizeof(u16) },
-  { &BG0CNT   , sizeof(u16) },
-  { &BG1CNT   , sizeof(u16) },
-  { &BG2CNT   , sizeof(u16) },
-  { &BG3CNT   , sizeof(u16) },
-  { &BG0HOFS  , sizeof(u16) },
-  { &BG0VOFS  , sizeof(u16) },
-  { &BG1HOFS  , sizeof(u16) },
-  { &BG1VOFS  , sizeof(u16) },
-  { &BG2HOFS  , sizeof(u16) },
-  { &BG2VOFS  , sizeof(u16) },
-  { &BG3HOFS  , sizeof(u16) },
-  { &BG3VOFS  , sizeof(u16) },
-  { &BG2PA    , sizeof(u16) },
-  { &BG2PB    , sizeof(u16) },
-  { &BG2PC    , sizeof(u16) },
-  { &BG2PD    , sizeof(u16) },
-  { &BG2X_L   , sizeof(u16) },
-  { &BG2X_H   , sizeof(u16) },
-  { &BG2Y_L   , sizeof(u16) },
-  { &BG2Y_H   , sizeof(u16) },
-  { &BG3PA    , sizeof(u16) },
-  { &BG3PB    , sizeof(u16) },
-  { &BG3PC    , sizeof(u16) },
-  { &BG3PD    , sizeof(u16) },
-  { &BG3X_L   , sizeof(u16) },
-  { &BG3X_H   , sizeof(u16) },
-  { &BG3Y_L   , sizeof(u16) },
-  { &BG3Y_H   , sizeof(u16) },
-  { &WIN0H    , sizeof(u16) },
-  { &WIN1H    , sizeof(u16) },
-  { &WIN0V    , sizeof(u16) },
-  { &WIN1V    , sizeof(u16) },
-  { &WININ    , sizeof(u16) },
-  { &WINOUT   , sizeof(u16) },
-  { &MOSAIC   , sizeof(u16) },
-  { &BLDMOD   , sizeof(u16) },
-  { &COLEV    , sizeof(u16) },
-  { &COLY     , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0SAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0SAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0DAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0DAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0CNT_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM0CNT_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1SAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1SAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1DAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1DAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1CNT_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM1CNT_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2SAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2SAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2DAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2DAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2CNT_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM2CNT_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3SAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3SAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3DAD_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3DAD_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3CNT_L , sizeof(u16) },
-  { &GBAEMU4DS_IPC->DM3CNT_H , sizeof(u16) },
-  { &GBAEMU4DS_IPC->TM0D     , sizeof(u16) },
+  { &GBA_DISPCNT  , sizeof(u16) },
+  { &GBA_DISPSTAT , sizeof(u16) },
+  { &GBA_VCOUNT   , sizeof(u16) },
+  { &GBA_BG0CNT   , sizeof(u16) },
+  { &GBA_BG1CNT   , sizeof(u16) },
+  { &GBA_BG2CNT   , sizeof(u16) },
+  { &GBA_BG3CNT   , sizeof(u16) },
+  { &GBA_BG0HOFS  , sizeof(u16) },
+  { &GBA_BG0VOFS  , sizeof(u16) },
+  { &GBA_BG1HOFS  , sizeof(u16) },
+  { &GBA_BG1VOFS  , sizeof(u16) },
+  { &GBA_BG2HOFS  , sizeof(u16) },
+  { &GBA_BG2VOFS  , sizeof(u16) },
+  { &GBA_BG3HOFS  , sizeof(u16) },
+  { &GBA_BG3VOFS  , sizeof(u16) },
+  { &GBA_BG2PA    , sizeof(u16) },
+  { &GBA_BG2PB    , sizeof(u16) },
+  { &GBA_BG2PC    , sizeof(u16) },
+  { &GBA_BG2PD    , sizeof(u16) },
+  { &GBA_BG2X_L   , sizeof(u16) },
+  { &GBA_BG2X_H   , sizeof(u16) },
+  { &GBA_BG2Y_L   , sizeof(u16) },
+  { &GBA_BG2Y_H   , sizeof(u16) },
+  { &GBA_BG3PA    , sizeof(u16) },
+  { &GBA_BG3PB    , sizeof(u16) },
+  { &GBA_BG3PC    , sizeof(u16) },
+  { &GBA_BG3PD    , sizeof(u16) },
+  { &GBA_BG3X_L   , sizeof(u16) },
+  { &GBA_BG3X_H   , sizeof(u16) },
+  { &GBA_BG3Y_L   , sizeof(u16) },
+  { &GBA_BG3Y_H   , sizeof(u16) },
+  { &GBA_WIN0H    , sizeof(u16) },
+  { &GBA_WIN1H    , sizeof(u16) },
+  { &GBA_WIN0V    , sizeof(u16) },
+  { &GBA_WIN1V    , sizeof(u16) },
+  { &GBA_WININ    , sizeof(u16) },
+  { &GBA_WINOUT   , sizeof(u16) },
+  { &GBA_MOSAIC   , sizeof(u16) },
+  { &GBA_BLDMOD   , sizeof(u16) },
+  { &GBA_COLEV    , sizeof(u16) },
+  { &GBA_COLY     , sizeof(u16) },
+  { &SpecificIPCAlign->DM0SAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM0SAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM0DAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM0DAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM0CNT_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM0CNT_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM1SAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM1SAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM1DAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM1DAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM1CNT_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM1CNT_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM2SAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM2SAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM2DAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM2DAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM2CNT_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM2CNT_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM3SAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM3SAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM3DAD_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM3DAD_H , sizeof(u16) },
+  { &SpecificIPCAlign->DM3CNT_L , sizeof(u16) },
+  { &SpecificIPCAlign->DM3CNT_H , sizeof(u16) },
+  { &SpecificIPCAlign->TM0D     , sizeof(u16) },
   { &TM0CNT   , sizeof(u16) },
-  { &GBAEMU4DS_IPC->TM1D     , sizeof(u16) },
+  { &SpecificIPCAlign->TM1D     , sizeof(u16) },
   { &TM1CNT   , sizeof(u16) },
-  { &GBAEMU4DS_IPC->TM2D     , sizeof(u16) },
+  { &SpecificIPCAlign->TM2D     , sizeof(u16) },
   { &TM2CNT   , sizeof(u16) },
-  { &GBAEMU4DS_IPC->TM3D     , sizeof(u16) },
+  { &SpecificIPCAlign->TM3D     , sizeof(u16) },
   { &TM3CNT   , sizeof(u16) },
   { &P1       , sizeof(u16) },
-  { &GBAEMU4DS_IPC->IE       , sizeof(u16) },
-  { &GBAEMU4DS_IPC->IF       , sizeof(u16) },
-  { &GBAEMU4DS_IPC->IME      , sizeof(u16) },
+  { &SpecificIPCAlign->GBA_IE       , sizeof(u16) },
+  { &SpecificIPCAlign->GBA_IF       , sizeof(u16) },
+  { &SpecificIPCAlign->GBA_IME      , sizeof(u16) },
   { &holdState, sizeof(bool) },
   { &holdType, sizeof(int) },
   { &lcdTicks, sizeof(int) },
-  { &GBAEMU4DS_IPC->timer0On , sizeof(bool) },
-  { &GBAEMU4DS_IPC->timer0Ticks , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer0Reload , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer0ClockReload  , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer1On , sizeof(bool) },
-  { &GBAEMU4DS_IPC->timer1Ticks , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer1Reload , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer1ClockReload  , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer2On , sizeof(bool) },
-  { &GBAEMU4DS_IPC->timer2Ticks , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer2Reload , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer2ClockReload  , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer3On , sizeof(bool) },
-  { &GBAEMU4DS_IPC->timer3Ticks , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer3Reload , sizeof(int) },
-  { &GBAEMU4DS_IPC->timer3ClockReload  , sizeof(int) },
-  { &GBAEMU4DS_IPC->dma0Source , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma0Dest , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma1Source , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma1Dest , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma2Source , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma2Dest , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma3Source , sizeof(u32) },
-  { &GBAEMU4DS_IPC->dma3Dest , sizeof(u32) },
+  { &SpecificIPCAlign->timer0On , sizeof(bool) },
+  { &SpecificIPCAlign->timer0Ticks , sizeof(int) },
+  { &SpecificIPCAlign->timer0Reload , sizeof(int) },
+  { &SpecificIPCAlign->timer0ClockReload  , sizeof(int) },
+  { &SpecificIPCAlign->timer1On , sizeof(bool) },
+  { &SpecificIPCAlign->timer1Ticks , sizeof(int) },
+  { &SpecificIPCAlign->timer1Reload , sizeof(int) },
+  { &SpecificIPCAlign->timer1ClockReload  , sizeof(int) },
+  { &SpecificIPCAlign->timer2On , sizeof(bool) },
+  { &SpecificIPCAlign->timer2Ticks , sizeof(int) },
+  { &SpecificIPCAlign->timer2Reload , sizeof(int) },
+  { &SpecificIPCAlign->timer2ClockReload  , sizeof(int) },
+  { &SpecificIPCAlign->timer3On , sizeof(bool) },
+  { &SpecificIPCAlign->timer3Ticks , sizeof(int) },
+  { &SpecificIPCAlign->timer3Reload , sizeof(int) },
+  { &SpecificIPCAlign->timer3ClockReload  , sizeof(int) },
+  { &SpecificIPCAlign->dma0Source , sizeof(u32) },
+  { &SpecificIPCAlign->dma0Dest , sizeof(u32) },
+  { &SpecificIPCAlign->dma1Source , sizeof(u32) },
+  { &SpecificIPCAlign->dma1Dest , sizeof(u32) },
+  { &SpecificIPCAlign->dma2Source , sizeof(u32) },
+  { &SpecificIPCAlign->dma2Dest , sizeof(u32) },
+  { &SpecificIPCAlign->dma3Source , sizeof(u32) },
+  { &SpecificIPCAlign->dma3Dest , sizeof(u32) },
   { &fxOn, sizeof(bool) },
   { &windowOn, sizeof(bool) },
   { &N_FLAG , sizeof(bool) },
@@ -814,14 +824,14 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 #endif
 		}
 		//while(dmaBusy(3)); // ichfly wait for dma 3 not needed
-		DMA3_SRC = s;
-		DMA3_DEST = d;
+		DMAXSAD(3) = s;	//DMA3_SRC = s;
+		DMAXDAD(3) = d;	//DMA3_DEST = d;
 
-		int tmpzahl = DMA_ENABLE | c;
-		if(transfer32)tmpzahl |= DMA_32_BIT;
-		if(di == -4) tmpzahl |= DMA_DST_DEC;
-		if(si == -4) tmpzahl |= DMA_SRC_DEC;
-		DMA3_CR = tmpzahl;
+		int tmpzahl = DMAENABLED | c;	//DMA_ENABLE | c;
+		if(transfer32)tmpzahl |= DMA32BIT;	//DMA_32_BIT;
+		if(di == -4) tmpzahl |= DMADECR_DEST;	//DMA_DST_DEC;
+		if(si == -4) tmpzahl |= DMADECR_SRC;	//DMA_SRC_DEC;
+		DMAXCNT(3) = tmpzahl;
 		//printf("%x,%x,%x",s,d,tmpzahl);
 	}
 
@@ -844,54 +854,54 @@ void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){
                 //FIFO DMA A
                 case 0xa0:{
 					
-					int tmpzahl = DMA_ENABLE | INTERNAL_FIFO_SIZE;
+					int tmpzahl = DMAENABLED | INTERNAL_FIFO_SIZE;
 					
                     if(transfer32) {
                         s &= 0xFFFFFFFC;
-						tmpzahl |= DMA_32_BIT;
+						tmpzahl |= DMA32BIT;
                     }
                     else{
                         s &= 0xFFFFFFFE;
-						tmpzahl |= DMA_16_BIT;
+						tmpzahl |= DMA16BIT;
                     }
 					
-					DMA1_SRC = s;
-					DMA1_DEST = (u32)&GBAEMU4DS_IPC->fifodmasA[0];
+					DMAXSAD(1) = s;
+					DMAXDAD(1) = (u32)&SpecificIPCAlign->fifodmasA[0];
 					
 					//if(di == -4) tmpzahl |= DMA_DST_DEC;
-					if(si == -4) tmpzahl |= DMA_SRC_DEC;
+					if(si == -4) tmpzahl |= DMADECR_SRC;
 					
-					DMA1_CR = tmpzahl;
+					DMAXCNT(1) = tmpzahl;
 					
-					GBAEMU4DS_IPC->dma1_donearm9 = true;
-					//SendArm7Command(0xc1710004,0x0,0x0,0x0); //works
+					SpecificIPCAlign->dma1_donearm9 = true;
+					//SendMultipleWordACK(0xc1710004,0x0,0x0,0x0); //works
 				}
                 break;
                 
 				//FIFO DMA B
                 case(0xa4):{
-                    int tmpzahl = DMA_ENABLE | INTERNAL_FIFO_SIZE;
+                    int tmpzahl = DMAENABLED | INTERNAL_FIFO_SIZE;
 					
                     if(transfer32) {
                         s &= 0xFFFFFFFC;
-						tmpzahl |= DMA_32_BIT;
+						tmpzahl |= DMA32BIT;
                     }
                     else{
                         s &= 0xFFFFFFFE;
-						tmpzahl |= DMA_16_BIT;
+						tmpzahl |= DMA16BIT;
                     }
 					
-					DMA2_SRC = s;
-					DMA2_DEST = (u32)&GBAEMU4DS_IPC->fifodmasB[0];
+					DMAXSAD(2) = s;
+					DMAXDAD(2) = (u32)&SpecificIPCAlign->fifodmasB[0];
 					
 					//if(di == -4) tmpzahl |= DMA_DST_DEC;
-					if(si == -4) tmpzahl |= DMA_SRC_DEC;
-					else tmpzahl |= DMA_SRC_INC;
+					if(si == -4) tmpzahl |= DMADECR_SRC;
+					else tmpzahl |= DMAINCR_SRC;
 					
-					DMA2_CR = tmpzahl;
+					DMAXCNT(2) = tmpzahl;
 					
-					GBAEMU4DS_IPC->dma2_donearm9 = true;
-					//SendArm7Command(0xc1710005,0x0,0x0,0x0); //works
+					SpecificIPCAlign->dma2_donearm9 = true;
+					//SendMultipleWordACK(0xc1710005,0x0,0x0,0x0); //works
 				}
                 break;
                 
@@ -915,10 +925,10 @@ void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){
 							else 			offset = (s+(dmacnt*len));
 							
 							u32 fifo_fetch = CPUReadMemory(offset);
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+0] = (fifo_fetch)&0xff;
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+2] = (fifo_fetch>>16)&0xff;
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+3] = (fifo_fetch>>24)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+0] = (fifo_fetch)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+2] = (fifo_fetch>>16)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+3] = (fifo_fetch>>24)&0xff;
 						}
 					}
                     else{
@@ -932,11 +942,11 @@ void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){
 							else 			offset = (s+(dmacnt*len));
 							
 							u16 fifo_fetch = CPUReadHalfWord(offset);
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+0] = (fifo_fetch)&0xff;
-							GBAEMU4DS_IPC->fifodmasA[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+0] = (fifo_fetch)&0xff;
+							SpecificIPCAlign->fifodmasA[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
 						}
 					}   
-					SendArm7Command(0xc1710004,0x0,0x0,0x0);
+					SendMultipleWordACK(0xc1710004,0x0,0x0,0x0);
 				}
                 break;
                 //FIFO DMA B
@@ -952,10 +962,10 @@ void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){
 							else 			offset = (s+(dmacnt*len));
 							u32 fifo_fetch = CPUReadMemory(offset);
 							
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+0] = (fifo_fetch)&0xff;
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+2] = (fifo_fetch>>16)&0xff;
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+3] = (fifo_fetch>>24)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+0] = (fifo_fetch)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+2] = (fifo_fetch>>16)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+3] = (fifo_fetch>>24)&0xff;
 						}
                     }
                     else{
@@ -969,11 +979,11 @@ void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){
 							else 			offset = (s+(dmacnt*len));
 							u16 fifo_fetch = CPUReadHalfWord(offset);
 							
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+0] = (fifo_fetch)&0xff;
-							GBAEMU4DS_IPC->fifodmasB[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+0] = (fifo_fetch)&0xff;
+							SpecificIPCAlign->fifodmasB[(dmacnt*len)+1] = (fifo_fetch>>8)&0xff;
 						}
                     }
-					SendArm7Command(0xc1710005,0x0,0x0,0x0);
+					SendMultipleWordACK(0xc1710005,0x0,0x0,0x0);
                 }
                 break;
                 
@@ -989,11 +999,11 @@ __attribute__((section(".itcm")))
 void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 {
   // DMA 0
-  if((GBAEMU4DS_IPC->DM0CNT_H & 0x8000) && (dmamask & 1)) {
-    if(((GBAEMU4DS_IPC->DM0CNT_H >> 12) & 3) == reason) {
+  if((SpecificIPCAlign->DM0CNT_H & 0x8000) && (dmamask & 1)) {
+    if(((SpecificIPCAlign->DM0CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((GBAEMU4DS_IPC->DM0CNT_H >> 7) & 3) {
+      switch((SpecificIPCAlign->DM0CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -1003,7 +1013,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((GBAEMU4DS_IPC->DM0CNT_H >> 5) & 3) {
+      switch((SpecificIPCAlign->DM0CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -1015,47 +1025,47 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       }      
 #ifdef DEV_VERSION
       if(systemVerbose & VERBOSE_DMA0) {
-        int count = (GBAEMU4DS_IPC->DM0CNT_L ? GBAEMU4DS_IPC->DM0CNT_L : 0x4000) << 1;
-        if(GBAEMU4DS_IPC->DM0CNT_H & 0x0400)
+        int count = (SpecificIPCAlign->DM0CNT_L ? SpecificIPCAlign->DM0CNT_L : 0x4000) << 1;
+        if(SpecificIPCAlign->DM0CNT_H & 0x0400)
           count <<= 1;
-        printf("DMA0: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma0Source, GBAEMU4DS_IPC->dma0Dest, 
-            GBAEMU4DS_IPC->DM0CNT_H,
+        printf("DMA0: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma0Source, SpecificIPCAlign->dma0Dest, 
+            SpecificIPCAlign->DM0CNT_H,
             count);
       }
 #endif
-      doDMA(GBAEMU4DS_IPC->dma0Source, GBAEMU4DS_IPC->dma0Dest, sourceIncrement, destIncrement,
-            GBAEMU4DS_IPC->DM0CNT_L ? GBAEMU4DS_IPC->DM0CNT_L : 0x4000,
-            GBAEMU4DS_IPC->DM0CNT_H & 0x0400);
+      doDMA(SpecificIPCAlign->dma0Source, SpecificIPCAlign->dma0Dest, sourceIncrement, destIncrement,
+            SpecificIPCAlign->DM0CNT_L ? SpecificIPCAlign->DM0CNT_L : 0x4000,
+            SpecificIPCAlign->DM0CNT_H & 0x0400);
       cpuDmaHack = true;
 		
 	//new
 	//do DMA IRQ here
-      GBAEMU4DS_IPC->DM0CNT_H |= (1<<14);
+      SpecificIPCAlign->DM0CNT_H |= (1<<14);
 	  
-      if(GBAEMU4DS_IPC->DM0CNT_H & 0x4000) {
-        GBAEMU4DS_IPC->IF |= 0x0100;
-        UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+      if(SpecificIPCAlign->DM0CNT_H & 0x4000) {
+        SpecificIPCAlign->GBA_IF |= 0x0100;
+        UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
         //cpuNextEvent = cpuTotalTicks;
       }
 	//new end
       
-      if(((GBAEMU4DS_IPC->DM0CNT_H >> 5) & 3) == 3) {
-        GBAEMU4DS_IPC->dma0Dest = GBAEMU4DS_IPC->DM0DAD_L | (GBAEMU4DS_IPC->DM0DAD_H << 16);
+      if(((SpecificIPCAlign->DM0CNT_H >> 5) & 3) == 3) {
+        SpecificIPCAlign->dma0Dest = SpecificIPCAlign->DM0DAD_L | (SpecificIPCAlign->DM0DAD_H << 16);
       }
       
-      if(!(GBAEMU4DS_IPC->DM0CNT_H & 0x0200) || (reason == 0)) {
-        GBAEMU4DS_IPC->DM0CNT_H &= 0x7FFF;
-        UPDATE_REG(0xBA, GBAEMU4DS_IPC->DM0CNT_H);
+      if(!(SpecificIPCAlign->DM0CNT_H & 0x0200) || (reason == 0)) {
+        SpecificIPCAlign->DM0CNT_H &= 0x7FFF;
+        UPDATE_REG(0xBA, SpecificIPCAlign->DM0CNT_H);
       }
     }
   }
   
   // DMA 1
-  if((GBAEMU4DS_IPC->DM1CNT_H & 0x8000) && (dmamask & 2)) {
-    if(((GBAEMU4DS_IPC->DM1CNT_H >> 12) & 3) == reason) {
+  if((SpecificIPCAlign->DM1CNT_H & 0x8000) && (dmamask & 2)) {
+    if(((SpecificIPCAlign->DM1CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((GBAEMU4DS_IPC->DM1CNT_H >> 7) & 3) {
+      switch((SpecificIPCAlign->DM1CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -1065,7 +1075,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((GBAEMU4DS_IPC->DM1CNT_H >> 5) & 3) {
+      switch((SpecificIPCAlign->DM1CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -1080,57 +1090,57 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 		if(reason == 3) {
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA1) {
-				Log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma1Source, GBAEMU4DS_IPC->dma1Dest,GBAEMU4DS_IPC->DM1CNT_H,16);
+				Log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,16);
 			}
 #endif  
 		
 			//ori: doDMA(dma1Source, dma1Dest, sourceIncrement, 0, 4,0x0400);
 			  
 			//map redirect to FIFO
-			doDMAFIFO(GBAEMU4DS_IPC->dma1Source, GBAEMU4DS_IPC->dma1Dest, sourceIncrement, 0, 4,0x0400);
+			doDMAFIFO(SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest, sourceIncrement, 0, 4,0x0400);
 			
 		} 
 		
 		else {
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA1) {
-				int count = (GBAEMU4DS_IPC->DM1CNT_L ? GBAEMU4DS_IPC->DM1CNT_L : 0x4000) << 1;
-				if(GBAEMU4DS_IPC->DM1CNT_H & 0x0400)
+				int count = (SpecificIPCAlign->DM1CNT_L ? SpecificIPCAlign->DM1CNT_L : 0x4000) << 1;
+				if(SpecificIPCAlign->DM1CNT_H & 0x0400)
 					count <<= 1;
-				printf("DMA1: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma1Source, GBAEMU4DS_IPC->dma1Dest,GBAEMU4DS_IPC->DM1CNT_H,count);
+				printf("DMA1: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,count);
 			}
 #endif
-			doDMA(GBAEMU4DS_IPC->dma1Source, GBAEMU4DS_IPC->dma1Dest, sourceIncrement, destIncrement,GBAEMU4DS_IPC->DM1CNT_L ? GBAEMU4DS_IPC->DM1CNT_L : 0x4000,GBAEMU4DS_IPC->DM1CNT_H & 0x0400);
+			doDMA(SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest, sourceIncrement, destIncrement,SpecificIPCAlign->DM1CNT_L ? SpecificIPCAlign->DM1CNT_L : 0x4000,SpecificIPCAlign->DM1CNT_H & 0x0400);
 		}
       cpuDmaHack = true;
 
 	//new 
       //do DMA IRQ here
-      if(GBAEMU4DS_IPC->DM1CNT_H & 0x4000) {
-        GBAEMU4DS_IPC->IF |= 0x200;
-        UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+      if(SpecificIPCAlign->DM1CNT_H & 0x4000) {
+        SpecificIPCAlign->GBA_IF |= 0x200;
+        UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
         //cpuNextEvent = cpuTotalTicks;
       }
 	  
 	  //new end
       
-      if(((GBAEMU4DS_IPC->DM1CNT_H >> 5) & 3) == 3) {
-        GBAEMU4DS_IPC->dma1Dest = GBAEMU4DS_IPC->DM1DAD_L | (GBAEMU4DS_IPC->DM1DAD_H << 16);
+      if(((SpecificIPCAlign->DM1CNT_H >> 5) & 3) == 3) {
+        SpecificIPCAlign->dma1Dest = SpecificIPCAlign->DM1DAD_L | (SpecificIPCAlign->DM1DAD_H << 16);
       }
       
-      if(!(GBAEMU4DS_IPC->DM1CNT_H & 0x0200) || (reason == 0)) {
-        GBAEMU4DS_IPC->DM1CNT_H &= 0x7FFF;
-        UPDATE_REG(0xC6, GBAEMU4DS_IPC->DM1CNT_H);
+      if(!(SpecificIPCAlign->DM1CNT_H & 0x0200) || (reason == 0)) {
+        SpecificIPCAlign->DM1CNT_H &= 0x7FFF;
+        UPDATE_REG(0xC6, SpecificIPCAlign->DM1CNT_H);
       }
     }
   }
   
   // DMA 2
-  if((GBAEMU4DS_IPC->DM2CNT_H & 0x8000) && (dmamask & 4)) {
-    if(((GBAEMU4DS_IPC->DM2CNT_H >> 12) & 3) == reason) {
+  if((SpecificIPCAlign->DM2CNT_H & 0x8000) && (dmamask & 4)) {
+    if(((SpecificIPCAlign->DM2CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((GBAEMU4DS_IPC->DM2CNT_H >> 7) & 3) {
+      switch((SpecificIPCAlign->DM2CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -1140,7 +1150,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((GBAEMU4DS_IPC->DM2CNT_H >> 5) & 3) {
+      switch((SpecificIPCAlign->DM2CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -1156,52 +1166,52 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA2) {
 				int count = (4) << 2;
-				Log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma2Source, GBAEMU4DS_IPC->dma2Dest,GBAEMU4DS_IPC->DM2CNT_H,count);
+				Log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
 			}
 #endif             
 			//ori: doDMA(dma2Source, dma2Dest, sourceIncrement, 0, 4,0x0400);
 			  
 			//map redirect to FIFO
-			doDMAFIFO(GBAEMU4DS_IPC->dma2Source, GBAEMU4DS_IPC->dma2Dest, sourceIncrement, 0, 4,0x0400);
+			doDMAFIFO(SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest, sourceIncrement, 0, 4,0x0400);
 		}
 		else {
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA2) {
-				int count = (GBAEMU4DS_IPC->DM2CNT_L ? GBAEMU4DS_IPC->DM2CNT_L : 0x4000) << 1;
-				if(GBAEMU4DS_IPC->DM2CNT_H & 0x0400)
+				int count = (SpecificIPCAlign->DM2CNT_L ? SpecificIPCAlign->DM2CNT_L : 0x4000) << 1;
+				if(SpecificIPCAlign->DM2CNT_H & 0x0400)
 					count <<= 1;
-				printf("DMA2: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma2Source, GBAEMU4DS_IPC->dma2Dest,GBAEMU4DS_IPC->DM2CNT_H,count);
+				printf("DMA2: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
 			}
 #endif                  
-			doDMA(GBAEMU4DS_IPC->dma2Source, GBAEMU4DS_IPC->dma2Dest, sourceIncrement, destIncrement,GBAEMU4DS_IPC->DM2CNT_L ? GBAEMU4DS_IPC->DM2CNT_L : 0x4000,GBAEMU4DS_IPC->DM2CNT_H & 0x0400);
+			doDMA(SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest, sourceIncrement, destIncrement,SpecificIPCAlign->DM2CNT_L ? SpecificIPCAlign->DM2CNT_L : 0x4000,SpecificIPCAlign->DM2CNT_H & 0x0400);
 		}
       cpuDmaHack = true;
 		
 		//new
 		//do DMA IRQ here
-		if(GBAEMU4DS_IPC->DM2CNT_H & 0x4000) {
-			GBAEMU4DS_IPC->IF |= 0x400;
-			UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		if(SpecificIPCAlign->DM2CNT_H & 0x4000) {
+			SpecificIPCAlign->GBA_IF |= 0x400;
+			UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 			//cpuNextEvent = cpuTotalTicks;
 		}
 	
-      if(((GBAEMU4DS_IPC->DM2CNT_H >> 5) & 3) == 3) {
-        GBAEMU4DS_IPC->dma2Dest = GBAEMU4DS_IPC->DM2DAD_L | (GBAEMU4DS_IPC->DM2DAD_H << 16);
+      if(((SpecificIPCAlign->DM2CNT_H >> 5) & 3) == 3) {
+        SpecificIPCAlign->dma2Dest = SpecificIPCAlign->DM2DAD_L | (SpecificIPCAlign->DM2DAD_H << 16);
       }
       
-      if(!(GBAEMU4DS_IPC->DM2CNT_H & 0x0200) || (reason == 0)) {
-        GBAEMU4DS_IPC->DM2CNT_H &= 0x7FFF;
-        UPDATE_REG(0xD2, GBAEMU4DS_IPC->DM2CNT_H);
+      if(!(SpecificIPCAlign->DM2CNT_H & 0x0200) || (reason == 0)) {
+        SpecificIPCAlign->DM2CNT_H &= 0x7FFF;
+        UPDATE_REG(0xD2, SpecificIPCAlign->DM2CNT_H);
       }
     }
   }
 
 	// DMA 3
-	if((GBAEMU4DS_IPC->DM3CNT_H & 0x8000) && (dmamask & 8)) {
-		if(((GBAEMU4DS_IPC->DM3CNT_H >> 12) & 3) == reason) {
+	if((SpecificIPCAlign->DM3CNT_H & 0x8000) && (dmamask & 8)) {
+		if(((SpecificIPCAlign->DM3CNT_H >> 12) & 3) == reason) {
 			u32 sourceIncrement = 4;
 			u32 destIncrement = 4;
-			switch((GBAEMU4DS_IPC->DM3CNT_H >> 7) & 3) {
+			switch((SpecificIPCAlign->DM3CNT_H >> 7) & 3) {
 				case 0:
 				break;
 				case 1:
@@ -1212,7 +1222,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 				break;
 			}
       
-			switch((GBAEMU4DS_IPC->DM3CNT_H >> 5) & 3) {
+			switch((SpecificIPCAlign->DM3CNT_H >> 5) & 3) {
 				case 0:
 				break;
 				case 1:
@@ -1224,35 +1234,35 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 			}      
 #ifdef DEV_VERSION
       if(systemVerbose & VERBOSE_DMA3) {
-        int count = (GBAEMU4DS_IPC->DM3CNT_L ? GBAEMU4DS_IPC->DM3CNT_L : 0x10000) << 1;
-        if(GBAEMU4DS_IPC->DM3CNT_H & 0x0400)
+        int count = (SpecificIPCAlign->DM3CNT_L ? SpecificIPCAlign->DM3CNT_L : 0x10000) << 1;
+        if(SpecificIPCAlign->DM3CNT_H & 0x0400)
           count <<= 1;
-        printf("DMA3: s=%08x d=%08x c=%04x count=%08x\n", GBAEMU4DS_IPC->dma3Source, GBAEMU4DS_IPC->dma3Dest,
-            GBAEMU4DS_IPC->DM3CNT_H,
+        printf("DMA3: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma3Source, SpecificIPCAlign->dma3Dest,
+            SpecificIPCAlign->DM3CNT_H,
             count);
       }
 #endif                
-		doDMA(GBAEMU4DS_IPC->dma3Source, GBAEMU4DS_IPC->dma3Dest, sourceIncrement, destIncrement,GBAEMU4DS_IPC->DM3CNT_L ? GBAEMU4DS_IPC->DM3CNT_L : 0x10000,GBAEMU4DS_IPC->DM3CNT_H & 0x0400);
+		doDMA(SpecificIPCAlign->dma3Source, SpecificIPCAlign->dma3Dest, sourceIncrement, destIncrement,SpecificIPCAlign->DM3CNT_L ? SpecificIPCAlign->DM3CNT_L : 0x10000,SpecificIPCAlign->DM3CNT_H & 0x0400);
       
 		//new
 		//do DMA IRQ here
-		GBAEMU4DS_IPC->DM3CNT_H |= (1<<14);
+		SpecificIPCAlign->DM3CNT_H |= (1<<14);
       
-		if(GBAEMU4DS_IPC->DM3CNT_H & 0x4000) {
-			GBAEMU4DS_IPC->IF |= 0x0800;
-			UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		if(SpecificIPCAlign->DM3CNT_H & 0x4000) {
+			SpecificIPCAlign->GBA_IF |= 0x0800;
+			UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 			//cpuNextEvent = cpuTotalTicks;
 		}
 		
 		//new end
 		
-      if(((GBAEMU4DS_IPC->DM3CNT_H >> 5) & 3) == 3) {
-        GBAEMU4DS_IPC->dma3Dest = GBAEMU4DS_IPC->DM3DAD_L | (GBAEMU4DS_IPC->DM3DAD_H << 16);
+      if(((SpecificIPCAlign->DM3CNT_H >> 5) & 3) == 3) {
+        SpecificIPCAlign->dma3Dest = SpecificIPCAlign->DM3DAD_L | (SpecificIPCAlign->DM3DAD_H << 16);
       }
       
-      if(!(GBAEMU4DS_IPC->DM3CNT_H & 0x0200) || (reason == 0)) {
-        GBAEMU4DS_IPC->DM3CNT_H &= 0x7FFF;
-        UPDATE_REG(0xDE, GBAEMU4DS_IPC->DM3CNT_H);
+      if(!(SpecificIPCAlign->DM3CNT_H & 0x0200) || (reason == 0)) {
+        SpecificIPCAlign->DM3CNT_H &= 0x7FFF;
+        UPDATE_REG(0xDE, SpecificIPCAlign->DM3CNT_H);
       }
     }
   }
@@ -1274,7 +1284,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   switch(address) {
   case 0x00:
     {	
-		if(value != DISPCNT)
+		if(value != GBA_DISPCNT)
 		{
 			
 			switch(value & 0x7){
@@ -1282,30 +1292,30 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 				//In this mode, four text background layers can be shown. In this mode backgrounds 0 - 3 all count as "text" backgrounds, and cannot be scaled or rotated. 
 				//Check out the section on text backgrounds for details on this. 
 				case(0):case(2):{
-					//reset BG3HOFS and BG3VOFS
-					REG_BG3HOFS = BG3HOFS;
-					REG_BG3VOFS = BG3VOFS;
+					//reset GBA_BG3HOFS and GBA_BG3VOFS
+					REG_BG3HOFS = GBA_BG3HOFS;
+					REG_BG3VOFS = GBA_BG3VOFS;
 
 					//reset
-					REG_BG3CNT = BG3CNT;
-					REG_BG2CNT = BG2CNT;
-					REG_BLDCNT = BLDMOD;
-					WIN_IN = WININ;
-					WIN_OUT = WINOUT;
+					REG_BG3CNT = GBA_BG3CNT;
+					REG_BG2CNT = GBA_BG2CNT;
+					REG_BLDCNT = GBA_BLDMOD;
+					WIN_IN = GBA_WININ;
+					WIN_OUT = GBA_WINOUT;
 
-					REG_BG2PA = BG2PA;
-					REG_BG2PB = BG2PB;
-					REG_BG2PC = BG2PC;
-					REG_BG2PD = BG2PD;
-					REG_BG2X = (BG2X_L | (BG2X_H << 16));
-					REG_BG2Y = (BG2Y_L | (BG2Y_H << 16));
+					REG_BG2PA = GBA_BG2PA;
+					REG_BG2PB = GBA_BG2PB;
+					REG_BG2PC = GBA_BG2PC;
+					REG_BG2PD = GBA_BG2PD;
+					REG_BG2X = (GBA_BG2X_L | (GBA_BG2X_H << 16));
+					REG_BG2Y = (GBA_BG2Y_L | (GBA_BG2Y_H << 16));
 
-					REG_BG3PA = BG3PA;
-					REG_BG3PB = BG3PB;
-					REG_BG3PC = BG3PC;
-					REG_BG3PD = BG3PD;
-					REG_BG3X = (BG3X_L | (BG3X_H << 16));
-					REG_BG3Y = (BG3Y_L | (BG3Y_H << 16));
+					REG_BG3PA = GBA_BG3PA;
+					REG_BG3PB = GBA_BG3PB;
+					REG_BG3PC = GBA_BG3PC;
+					REG_BG3PD = GBA_BG3PD;
+					REG_BG3X = (GBA_BG3X_L | (GBA_BG3X_H << 16));
+					REG_BG3Y = (GBA_BG3Y_L | (GBA_BG3Y_H << 16));
 					
 					u32 dsValue;
 					dsValue  = value & 0xFF87;
@@ -1326,13 +1336,13 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 					
 					//rotscale/affine
 					/*
-					REG_BG2PA = BG2PA;
-					REG_BG2PB = BG2PB;
-					REG_BG2PC = BG2PC;
-					REG_BG2PD = BG2PD;
+					REG_BG2PA = GBA_BG2PA;
+					REG_BG2PB = GBA_BG2PB;
+					REG_BG2PC = GBA_BG2PC;
+					REG_BG2PD = GBA_BG2PD;
 					
-					REG_BG2X = (BG2X_L | (BG2X_H << 16));
-					REG_BG2Y = (BG2Y_L | (BG2Y_H << 16));
+					REG_BG2X = (GBA_BG2X_L | (GBA_BG2X_H << 16));
+					REG_BG2Y = (GBA_BG2Y_L | (GBA_BG2Y_H << 16));
 					*/
 					//NDS PPU mode
 							//bg0   //bg1     //bg2    //bg3
@@ -1350,16 +1360,16 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 					//dsValue |= DISPLAY_CHAR_BASE(1);                    //set purposely engine's tilebase to 0x06020000 , unused memory so it doesnt override the actual tiles copied over dma
 					REG_DISPCNT = dsValue; 
 					
-					int charbase = (BG2CNT>>2)&0x3;
-					int mapbase = (BG2CNT>>8)&0x1f;
+					int charbase = (GBA_BG2CNT>>2)&0x3;
+					int mapbase = (GBA_BG2CNT>>8)&0x1f;
 					
-					REG_BG3CNT = (BG2CNT&0x3) | (charbase<<2) | (mapbase<<8) | (((BG2CNT>>14)&0x3)<<14);
+					REG_BG3CNT = (GBA_BG2CNT&0x3) | (charbase<<2) | (mapbase<<8) | (((GBA_BG2CNT>>14)&0x3)<<14);
 					*/
 					
-					int charbase = (BG2CNT>>2)&0x3;
-					int mapbase = (BG2CNT>>8)&0x1f;
+					int charbase = (GBA_BG2CNT>>2)&0x3;
+					int mapbase = (GBA_BG2CNT>>8)&0x1f;
 					
-					REG_BG3CNT = (BG2CNT&0x3) | (charbase<<2) | (mapbase<<8) | (((BG2CNT>>14)&0x3)<<14);
+					REG_BG3CNT = (GBA_BG2CNT&0x3) | (charbase<<2) | (mapbase<<8) | (((GBA_BG2CNT>>14)&0x3)<<14);
 					
 					u32 dsValue = (value & 0xFF80) | (1<<11) | MODE_1_2D;           // //Set BG(x) enabled + NDS PPU like GBA PPU + enable BG3
 					dsValue |= (value & (1 << 5)) ? (1 << 23) : 0;	// oam hblank access 
@@ -1372,7 +1382,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 				
 				case(3):case(4):case(5):{
 					//mode 3,4,5
-					if((value & 0xFFEF) != (DISPCNT & 0xFFEF))
+					if((value & 0xFFEF) != (GBA_DISPCNT & 0xFFEF))
 					{
 
 						u32 dsValue;
@@ -1382,8 +1392,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 		#ifndef capture_and_pars
 						dsValue |= (value & (1 << 7)) ? 0 : (1 << 16);	/* forced blank => no display mode (both)*/
 		#endif
-						REG_DISPCNT = (dsValue | BIT(11)); //enable BG3
-						if((DISPCNT & 7) != (value & 7))
+						REG_DISPCNT = (dsValue | (1<<11)); //enable BG3
+						if((GBA_DISPCNT & 7) != (value & 7))
 						{
 							if((value & 7) == 4)
 							{
@@ -1395,36 +1405,36 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 								//bgInit_call(3, BgType_Bmp16, BgSize_B16_256x256,8,8);
 								REG_BG3CNT = BG_MAP_BASE(/*mapBase*/8) | BG_TILE_BASE(/*tileBase*/8) | BgSize_B16_256x256;
 							}
-							if((DISPCNT & 7) < 3)
+							if((GBA_DISPCNT & 7) < 3)
 							{
-								//reset BG3HOFS and BG3VOFS
+								//reset GBA_BG3HOFS and GBA_BG3VOFS
 								REG_BG3HOFS = 0;
 								REG_BG3VOFS = 0;
 
 								//BLDCNT(2 enabeled bits)
-								int tempBLDMOD = BLDMOD & ~0x404;
-								tempBLDMOD = tempBLDMOD | ((BLDMOD & 0x404) << 1);
+								int tempBLDMOD = GBA_BLDMOD & ~0x404;
+								tempBLDMOD = tempBLDMOD | ((GBA_BLDMOD & 0x404) << 1);
 								REG_BLDCNT = tempBLDMOD;
 
-								//WINOUT(2 enabeled bits)
-								int tempWINOUT = WINOUT & ~0x404;
-								tempWINOUT = tempWINOUT | ((WINOUT & 0x404) << 1);
+								//GBA_WINOUT(2 enabeled bits)
+								int tempWINOUT = GBA_WINOUT & ~0x404;
+								tempWINOUT = tempWINOUT | ((GBA_WINOUT & 0x404) << 1);
 								WIN_OUT = tempWINOUT;
 
-								//WININ(2 enabeled bits)
-								int tempWININ = WININ & ~0x404;
-								tempWININ = tempWININ | ((WININ & 0x404) << 1);
+								//GBA_WININ(2 enabeled bits)
+								int tempWININ = GBA_WININ & ~0x404;
+								tempWININ = tempWININ | ((GBA_WININ & 0x404) << 1);
 								WIN_IN = tempWININ;
 
 								//swap LCD I/O BG Rotation/Scaling
 
-								REG_BG3PA = BG2PA;
-								REG_BG3PB = BG2PB;
-								REG_BG3PC = BG2PC;
-								REG_BG3PD = BG2PD;
-								REG_BG3X = (BG2X_L | (BG2X_H << 16));
-								REG_BG3Y = (BG2Y_L | (BG2Y_H << 16));
-								REG_BG3CNT = REG_BG3CNT | (BG2CNT & 0x43); //swap BG2CNT (BG Priority and Mosaic) 
+								REG_BG3PA = GBA_BG2PA;
+								REG_BG3PB = GBA_BG2PB;
+								REG_BG3PC = GBA_BG2PC;
+								REG_BG3PD = GBA_BG2PD;
+								REG_BG3X = (GBA_BG2X_L | (GBA_BG2X_H << 16));
+								REG_BG3Y = (GBA_BG2Y_L | (GBA_BG2Y_H << 16));
+								REG_BG3CNT = REG_BG3CNT | (GBA_BG2CNT & 0x43); //swap GBA_BG2CNT (BG Priority and Mosaic) 
 							}
 						}
 					}
@@ -1433,27 +1443,27 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 			}
 		}
 		
-		DISPCNT = value & 0xFFF7;
-		UPDATE_REG(0x00, DISPCNT);
+		GBA_DISPCNT = value & 0xFFF7;
+		UPDATE_REG(0x00, GBA_DISPCNT);
     }
     break;
 	
   case 0x04:
-    DISPSTAT = (value & 0xFF38) | (DISPSTAT & 7) | (VCOUNT_LINE_INTERRUPT << 15);
-    UPDATE_REG(0x04, DISPSTAT);
+    GBA_DISPSTAT = (value & 0xFF38) | (GBA_DISPSTAT & 7) | (VCOUNT_LINE_INTERRUPT << 15);
+    UPDATE_REG(0x04, GBA_DISPSTAT);
 
 #ifdef usebuffedVcout
 	{
-	u16 tempDISPSTAT = (u16)((DISPSTAT&0xFF) | ((VCountgbatods[DISPSTAT>>8]) << 8));
+	u16 tempDISPSTAT = (u16)((GBA_DISPSTAT&0xFF) | ((VCountgbatods[GBA_DISPSTAT>>8]) << 8));
 #else
 	//8-15  V-Count Setting (LYC)      (0..227)
 	{
-	u16 tempDISPSTAT = DISPSTAT >> 8;
+	u16 tempDISPSTAT = GBA_DISPSTAT >> 8;
 		//float help = tempDISPSTAT;
 		if(tempDISPSTAT < 160)
 		{
 			tempDISPSTAT = (tempDISPSTAT * 306);//tempDISPSTAT = (help * 1.2);
-			tempDISPSTAT = tempDISPSTAT | (DISPSTAT & 0xFF); //1.15350877; //already seeked
+			tempDISPSTAT = tempDISPSTAT | (GBA_DISPSTAT & 0xFF); //1.15350877; //already seeked
 			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 		}
 		else
@@ -1461,18 +1471,18 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 			if(tempDISPSTAT < 220)
 			{
 				tempDISPSTAT = ((tempDISPSTAT - 160) * 266);//tempDISPSTAT = ((help - 160) * 1.04411764);//tempDISPSTAT = ((help - 160) * 1.04411764);
-				tempDISPSTAT = (tempDISPSTAT + 192 * 0x100) | (DISPSTAT & 0xFF); //1.15350877;
+				tempDISPSTAT = (tempDISPSTAT + 192 * 0x100) | (GBA_DISPSTAT & 0xFF); //1.15350877;
 			}
 			else if(tempDISPSTAT < 228)
 			{
-				tempDISPSTAT = (DISPSTAT & 0x3F) | 0xFF00;
+				tempDISPSTAT = (GBA_DISPSTAT & 0x3F) | 0xFF00;
 			}
-			else tempDISPSTAT = (DISPSTAT & 0x1F);		
+			else tempDISPSTAT = (GBA_DISPSTAT & 0x1F);		
 		}
 		
 #endif
 #ifdef forceHBlankirqs
-	*(u16 *)(0x4000004) = tempDISPSTAT | BIT(4);
+	*(u16 *)(0x4000004) = tempDISPSTAT | (1<<4);
 #else
 	*(u16 *)(0x4000004) = tempDISPSTAT;
 #endif
@@ -1484,61 +1494,61 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     // not writable in NDS mode bzw not possible todo
     break;
   case 0x08:
-    BG0CNT = (value & 0xDFCF);
-    UPDATE_REG(0x08, BG0CNT);
-	*(u16 *)(0x4000008) = BG0CNT;
+    GBA_BG0CNT = (value & 0xDFCF);
+    UPDATE_REG(0x08, GBA_BG0CNT);
+	*(u16 *)(0x4000008) = GBA_BG0CNT;
     break;
   case 0x0A:
-    BG1CNT = (value & 0xDFCF);
-    UPDATE_REG(0x0A, BG1CNT);
-    *(u16 *)(0x400000A) = BG1CNT;
+    GBA_BG1CNT = (value & 0xDFCF);
+    UPDATE_REG(0x0A, GBA_BG1CNT);
+    *(u16 *)(0x400000A) = GBA_BG1CNT;
 	break;
   case 0x0C:
-    BG2CNT = (value & 0xFFCF);
-    UPDATE_REG(0x0C, BG2CNT);
+    GBA_BG2CNT = (value & 0xFFCF);
+    UPDATE_REG(0x0C, GBA_BG2CNT);
 	
 	//ichfly
     /*
-    if((DISPCNT & 7) < 3){
+    if((GBA_DISPCNT & 7) < 3){
         
-        *(u16 *)(0x400000C) = BG2CNT;
+        *(u16 *)(0x400000C) = GBA_BG2CNT;
     }
     else //ichfly some extra handling 
 	{
-		REG_BG3CNT = REG_BG3CNT | (BG2CNT & 0x43);
+		REG_BG3CNT = REG_BG3CNT | (GBA_BG2CNT & 0x43);
 	}
     */
     
     //coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
-            *(u16 *)(0x400000C) = BG2CNT;
+            *(u16 *)(0x400000C) = GBA_BG2CNT;
         }
         break;
         
         case(1):{
             *(u16 *)(0x400000C) = 3;        //NDS BG2 is hidden since
-            *(u16 *)(0x400000E) = BG2CNT;   //we treat BG3 as BG2
+            *(u16 *)(0x400000E) = GBA_BG2CNT;   //we treat BG3 as BG2
         }
         break;
         
         case(3):case(4):case(5):{
-            REG_BG3CNT = REG_BG3CNT | (BG2CNT & 0x43);
+            REG_BG3CNT = REG_BG3CNT | (GBA_BG2CNT & 0x43);
         }
         break;
         
     }
     break;
   case 0x0E:
-    BG3CNT = (value & 0xFFCF);
-    UPDATE_REG(0x0E, BG3CNT);
+    GBA_BG3CNT = (value & 0xFFCF);
+    UPDATE_REG(0x0E, GBA_BG3CNT);
 	
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400000E) = BG3CNT;
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400000E) = GBA_BG3CNT;
     
     //coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
-            *(u16 *)(0x400000E) = BG3CNT;
+            *(u16 *)(0x400000E) = GBA_BG3CNT;
         }
         break;
         
@@ -1550,28 +1560,28 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	break;
   case 0x10:
-    BG0HOFS = value & 511;
-    UPDATE_REG(0x10, BG0HOFS);
+    GBA_BG0HOFS = value & 511;
+    UPDATE_REG(0x10, GBA_BG0HOFS);
     *(u16 *)(0x4000010) = value;
 	break;
   case 0x12:
-    BG0VOFS = value & 511;
-    UPDATE_REG(0x12, BG0VOFS);
+    GBA_BG0VOFS = value & 511;
+    UPDATE_REG(0x12, GBA_BG0VOFS);
     *(u16 *)(0x4000012) = value;
 	break;
   case 0x14:
-    BG1HOFS = value & 511;
-    UPDATE_REG(0x14, BG1HOFS);
+    GBA_BG1HOFS = value & 511;
+    UPDATE_REG(0x14, GBA_BG1HOFS);
 	*(u16 *)(0x4000014) = value;
     break;
   case 0x16:
-    BG1VOFS = value & 511;
-    UPDATE_REG(0x16, BG1VOFS);
+    GBA_BG1VOFS = value & 511;
+    UPDATE_REG(0x16, GBA_BG1VOFS);
     *(u16 *)(0x4000016) = value;
 	break;      
   case 0x18:
-    BG2HOFS = value & 511;
-    UPDATE_REG(0x18, BG2HOFS);
+    GBA_BG2HOFS = value & 511;
+    UPDATE_REG(0x18, GBA_BG2HOFS);
 	
 	//*(u16 *)(0x4000018) = value;
     
@@ -1591,9 +1601,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	break;
   case 0x1A:
-    BG2VOFS = value & 511;
-    UPDATE_REG(0x1A, BG2VOFS);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400001A) = value; //ichfly only update if it is save
+    GBA_BG2VOFS = value & 511;
+    UPDATE_REG(0x1A, GBA_BG2VOFS);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400001A) = value; //ichfly only update if it is save
 	
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1611,9 +1621,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	break;
   case 0x1C:
-    BG3HOFS = value & 511;
-    UPDATE_REG(0x1C, BG3HOFS);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400001C) = value; //ichfly only update if it is save
+    GBA_BG3HOFS = value & 511;
+    UPDATE_REG(0x1C, GBA_BG3HOFS);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400001C) = value; //ichfly only update if it is save
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1629,8 +1639,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	break;
   case 0x1E:
-    BG3VOFS = value & 511;
-    UPDATE_REG(0x1E, BG3VOFS);
+    GBA_BG3VOFS = value & 511;
+    UPDATE_REG(0x1E, GBA_BG3VOFS);
     //*(u16 *)(0x400001E) = value;
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1646,9 +1656,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;      
   case 0x20:
-    BG2PA = value;
-    UPDATE_REG(0x20, BG2PA);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000020) = value;
+    GBA_BG2PA = value;
+    UPDATE_REG(0x20, GBA_BG2PA);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000020) = value;
 	//else *(u16 *)(0x4000030) = value;
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1669,9 +1679,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x22:
-    BG2PB = value;
-    UPDATE_REG(0x22, BG2PB);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000022) = value;
+    GBA_BG2PB = value;
+    UPDATE_REG(0x22, GBA_BG2PB);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000022) = value;
 	//else *(u16 *)(0x4000032) = value;
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1692,9 +1702,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x24:
-    BG2PC = value;
-    UPDATE_REG(0x24, BG2PC);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000024) = value;
+    GBA_BG2PC = value;
+    UPDATE_REG(0x24, GBA_BG2PC);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000024) = value;
 	//else *(u16 *)(0x4000034) = value;
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1715,9 +1725,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x26:
-    BG2PD = value;
-    UPDATE_REG(0x26, BG2PD);
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000026) = value;
+    GBA_BG2PD = value;
+    UPDATE_REG(0x26, GBA_BG2PD);
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000026) = value;
 	//else *(u16 *)(0x4000036) = value;
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1738,21 +1748,21 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x28:
-    BG2X_L = value;
-    UPDATE_REG(0x28, BG2X_L);
+    GBA_BG2X_L = value;
+    UPDATE_REG(0x28, GBA_BG2X_L);
     //gfxBG2Changed |= 1;
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000028) = value;
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000028) = value;
 	//else *(u16 *)(0x4000038) = value;
     
-	//4000020h - BG2PA - BG2 Rotation/Scaling Parameter A (alias dx) (W)
-    //4000022h - BG2PB - BG2 Rotation/Scaling Parameter B (alias dmx) (W)
-    //4000024h - BG2PC - BG2 Rotation/Scaling Parameter C (alias dy) (W)
-    //4000026h - BG2PD - BG2 Rotation/Scaling Parameter D (alias dmy) (W)
+	//4000020h - GBA_BG2PA - BG2 Rotation/Scaling Parameter A (alias dx) (W)
+    //4000022h - GBA_BG2PB - BG2 Rotation/Scaling Parameter B (alias dmx) (W)
+    //4000024h - GBA_BG2PC - BG2 Rotation/Scaling Parameter C (alias dy) (W)
+    //4000026h - GBA_BG2PD - BG2 Rotation/Scaling Parameter D (alias dmy) (W)
 
-    //4000028h - BG2X_L - BG2 Reference Point X-Coordinate, lower 16 bit (W)
-    //400002Ah - BG2X_H - BG2 Reference Point X-Coordinate, upper 12 bit (W)
-    //400002Ch - BG2Y_L - BG2 Reference Point Y-Coordinate, lower 16 bit (W)
-    //400002Eh - BG2Y_H - BG2 Reference Point Y-Coordinate, upper 12 bit (W)
+    //4000028h - GBA_BG2X_L - BG2 Reference Point X-Coordinate, lower 16 bit (W)
+    //400002Ah - GBA_BG2X_H - BG2 Reference Point X-Coordinate, upper 12 bit (W)
+    //400002Ch - GBA_BG2Y_L - BG2 Reference Point Y-Coordinate, lower 16 bit (W)
+    //400002Eh - GBA_BG2Y_H - BG2 Reference Point Y-Coordinate, upper 12 bit (W)
     
     //coto
     switch(REG_DISPCNT & 7){
@@ -1773,10 +1783,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x2A:
-    BG2X_H = (value & 0xFFF);
-    UPDATE_REG(0x2A, BG2X_H);
+    GBA_BG2X_H = (value & 0xFFF);
+    UPDATE_REG(0x2A, GBA_BG2X_H);
     //gfxBG2Changed |= 1;
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002A) = value;
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400002A) = value;
 	//else *(u16 *)(0x400003A) = value;
     
 	//coto
@@ -1799,10 +1809,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x2C:
-    BG2Y_L = value;
-    UPDATE_REG(0x2C, BG2Y_L);
+    GBA_BG2Y_L = value;
+    UPDATE_REG(0x2C, GBA_BG2Y_L);
     //gfxBG2Changed |= 2;
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002C) = value;
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400002C) = value;
 	//else *(u16 *)(0x400003C) = value;
     
 	//coto
@@ -1824,10 +1834,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x2E:
-    BG2Y_H = value & 0xFFF;
-    UPDATE_REG(0x2E, BG2Y_H);
+    GBA_BG2Y_H = value & 0xFFF;
+    UPDATE_REG(0x2E, GBA_BG2Y_H);
     //gfxBG2Changed |= 2;
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002E) = value;
+	//if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400002E) = value;
 	//else *(u16 *)(0x400003E) = value;
     
 	//coto
@@ -1849,9 +1859,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x30:
-    BG3PA = value;
-    UPDATE_REG(0x30, BG3PA);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000030) = value;
+    GBA_BG3PA = value;
+    UPDATE_REG(0x30, GBA_BG3PA);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000030) = value;
 	
 	//coto
     switch(REG_DISPCNT & 7){
@@ -1867,9 +1877,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	break;
   case 0x32:
-    BG3PB = value;
-    UPDATE_REG(0x32, BG3PB);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000032) = value;
+    GBA_BG3PB = value;
+    UPDATE_REG(0x32, GBA_BG3PB);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000032) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1883,9 +1893,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x34:
-    BG3PC = value;
-    UPDATE_REG(0x34, BG3PC);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000034) = value;
+    GBA_BG3PC = value;
+    UPDATE_REG(0x34, GBA_BG3PC);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000034) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1899,9 +1909,9 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x36:
-    BG3PD = value;
-    UPDATE_REG(0x36, BG3PD);
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000036) = value;
+    GBA_BG3PD = value;
+    UPDATE_REG(0x36, GBA_BG3PD);
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000036) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1915,10 +1925,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x38:
-    BG3X_L = value;
-    UPDATE_REG(0x38, BG3X_L);
+    GBA_BG3X_L = value;
+    UPDATE_REG(0x38, GBA_BG3X_L);
     //gfxBG3Changed |= 1;
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000038) = value;
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000038) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1932,10 +1942,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x3A:
-    BG3X_H = value & 0xFFF;
-    UPDATE_REG(0x3A, BG3X_H);
+    GBA_BG3X_H = value & 0xFFF;
+    UPDATE_REG(0x3A, GBA_BG3X_H);
     //gfxBG3Changed |= 1;    
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400003A) = value;
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400003A) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1949,10 +1959,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x3C:
-    BG3Y_L = value;
-    UPDATE_REG(0x3C, BG3Y_L);
+    GBA_BG3Y_L = value;
+    UPDATE_REG(0x3C, GBA_BG3Y_L);
     //gfxBG3Changed |= 2;    
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400003C) = value;
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400003C) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1966,10 +1976,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x3E:
-    BG3Y_H = value & 0xFFF;
-    UPDATE_REG(0x3E, BG3Y_H);
+    GBA_BG3Y_H = value & 0xFFF;
+    UPDATE_REG(0x3E, GBA_BG3Y_H);
     //gfxBG3Changed |= 2;    
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400003E) = value;
+    //if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400003E) = value;
 	//coto
     switch(REG_DISPCNT & 7){
         case(0):case(2):{
@@ -1983,75 +1993,75 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
 	break;
   case 0x40:
-    WIN0H = value;
-    UPDATE_REG(0x40, WIN0H);
+    GBA_WIN0H = value;
+    UPDATE_REG(0x40, GBA_WIN0H);
     //CPUUpdateWindow0();
     *(u16 *)(0x4000040) = value;
 	break;
   case 0x42:
-    WIN1H = value;
-    UPDATE_REG(0x42, WIN1H);
+    GBA_WIN1H = value;
+    UPDATE_REG(0x42, GBA_WIN1H);
 	*(u16 *)(0x4000042) = value;
     //CPUUpdateWindow1();    
     break;      
   case 0x44:
-    WIN0V = value;
-    UPDATE_REG(0x44, WIN0V);
+    GBA_WIN0V = value;
+    UPDATE_REG(0x44, GBA_WIN0V);
     *(u16 *)(0x4000044) = value;
 	break;
   case 0x46:
-    WIN1V = value;
-    UPDATE_REG(0x46, WIN1V);
+    GBA_WIN1V = value;
+    UPDATE_REG(0x46, GBA_WIN1V);
     *(u16 *)(0x4000046) = value;
 	break;
   case 0x48:
-    WININ = value & 0x3F3F;
-    UPDATE_REG(0x48, WININ);
-    if((DISPCNT & 7) < 3)*(u16 *)(0x4000048) = value;
+    GBA_WININ = value & 0x3F3F;
+    UPDATE_REG(0x48, GBA_WININ);
+    if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000048) = value;
 	else
 	{
-		int tempWININ = WININ & ~0x404;
-		tempWININ = tempWININ | ((WININ & 0x404) << 1);
+		int tempWININ = GBA_WININ & ~0x404;
+		tempWININ = tempWININ | ((GBA_WININ & 0x404) << 1);
 		WIN_IN = tempWININ;
 	}
 	break;
   case 0x4A:
-    WINOUT = value & 0x3F3F;
-    UPDATE_REG(0x4A, WINOUT);
-    if((DISPCNT & 7) < 3)*(u16 *)(0x400004A) = value;
+    GBA_WINOUT = value & 0x3F3F;
+    UPDATE_REG(0x4A, GBA_WINOUT);
+    if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x400004A) = value;
 	else
 	{
-		int tempWINOUT = WINOUT & ~0x404;
-		tempWINOUT = tempWINOUT | ((WINOUT & 0x404) << 1);
+		int tempWINOUT = GBA_WINOUT & ~0x404;
+		tempWINOUT = tempWINOUT | ((GBA_WINOUT & 0x404) << 1);
 		WIN_OUT = tempWINOUT;
 	}
 	break;
   case 0x4C:
-    MOSAIC = value;
-    UPDATE_REG(0x4C, MOSAIC);
+    GBA_MOSAIC = value;
+    UPDATE_REG(0x4C, GBA_MOSAIC);
     *(u16 *)(0x400004C) = value;
 	break;
   case 0x50:
-    BLDMOD = value & 0x3FFF;
-    UPDATE_REG(0x50, BLDMOD);
-    //fxOn = ((BLDMOD>>6)&3) != 0;
+    GBA_BLDMOD = value & 0x3FFF;
+    UPDATE_REG(0x50, GBA_BLDMOD);
+    //fxOn = ((GBA_BLDMOD>>6)&3) != 0;
     //CPUUpdateRender();
-	if((DISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
+	if((GBA_DISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
 	else
 	{
-		int tempBLDMOD = BLDMOD & ~0x404;
-		tempBLDMOD = tempBLDMOD | ((BLDMOD & 0x404) << 1);
+		int tempBLDMOD = GBA_BLDMOD & ~0x404;
+		tempBLDMOD = tempBLDMOD | ((GBA_BLDMOD & 0x404) << 1);
 		REG_BLDCNT = tempBLDMOD;
 	}
     break;
   case 0x52:
-    COLEV = value & 0x1F1F;
-    UPDATE_REG(0x52, COLEV);
+    GBA_COLEV = value & 0x1F1F;
+    UPDATE_REG(0x52, GBA_COLEV);
     *(u16 *)(0x4000052) = value;
 	break;
   case 0x54:
-    COLY = value & 0x1F;
-    UPDATE_REG(0x54, COLY);
+    GBA_COLY = value & 0x1F;
+    UPDATE_REG(0x54, GBA_COLY);
 	*(u16 *)(0x4000054) = value;
     break;
   case 0x60:
@@ -2091,7 +2101,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	  printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	  SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	  SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 	  UPDATE_REG(address,value);
     break;
@@ -2099,36 +2109,36 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 //DMA
   case 0xB0:
-    GBAEMU4DS_IPC->DM0SAD_L = value;
-    UPDATE_REG(0xB0, GBAEMU4DS_IPC->DM0SAD_L);
+    SpecificIPCAlign->DM0SAD_L = value;
+    UPDATE_REG(0xB0, SpecificIPCAlign->DM0SAD_L);
     break;
   case 0xB2:
-    GBAEMU4DS_IPC->DM0SAD_H = value & 0x07FF;
-    UPDATE_REG(0xB2, GBAEMU4DS_IPC->DM0SAD_H);
+    SpecificIPCAlign->DM0SAD_H = value & 0x07FF;
+    UPDATE_REG(0xB2, SpecificIPCAlign->DM0SAD_H);
     break;
   case 0xB4:
-    GBAEMU4DS_IPC->DM0DAD_L = value;
-    UPDATE_REG(0xB4, GBAEMU4DS_IPC->DM0DAD_L);
+    SpecificIPCAlign->DM0DAD_L = value;
+    UPDATE_REG(0xB4, SpecificIPCAlign->DM0DAD_L);
     break;
   case 0xB6:
-    GBAEMU4DS_IPC->DM0DAD_H = value & 0x07FF;
-    UPDATE_REG(0xB6, GBAEMU4DS_IPC->DM0DAD_H);
+    SpecificIPCAlign->DM0DAD_H = value & 0x07FF;
+    UPDATE_REG(0xB6, SpecificIPCAlign->DM0DAD_H);
     break;
   case 0xB8:
-    GBAEMU4DS_IPC->DM0CNT_L = value & 0x3FFF;
+    SpecificIPCAlign->DM0CNT_L = value & 0x3FFF;
     UPDATE_REG(0xB8, 0);
     break;
   case 0xBA:
     {
-      bool start = ((GBAEMU4DS_IPC->DM0CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((SpecificIPCAlign->DM0CNT_H ^ value) & 0x8000) ? true : false;
       value &= 0xF7E0;
 
-      GBAEMU4DS_IPC->DM0CNT_H = value;
-      UPDATE_REG(0xBA, GBAEMU4DS_IPC->DM0CNT_H);    
+      SpecificIPCAlign->DM0CNT_H = value;
+      UPDATE_REG(0xBA, SpecificIPCAlign->DM0CNT_H);    
     
       if(start && (value & 0x8000)) {
-        GBAEMU4DS_IPC->dma0Source = GBAEMU4DS_IPC->DM0SAD_L | (GBAEMU4DS_IPC->DM0SAD_H << 16);
-        GBAEMU4DS_IPC->dma0Dest = GBAEMU4DS_IPC->DM0DAD_L | (GBAEMU4DS_IPC->DM0DAD_H << 16);
+        SpecificIPCAlign->dma0Source = SpecificIPCAlign->DM0SAD_L | (SpecificIPCAlign->DM0SAD_H << 16);
+        SpecificIPCAlign->dma0Dest = SpecificIPCAlign->DM0DAD_L | (SpecificIPCAlign->DM0DAD_H << 16);
         CPUCheckDMA(0, 1);
       }
     }
@@ -2139,12 +2149,12 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 	
 #endif
     
-	GBAEMU4DS_IPC->DM1SAD_L = value;
-    UPDATE_REG(0xBC, GBAEMU4DS_IPC->DM1SAD_L);
+	SpecificIPCAlign->DM1SAD_L = value;
+    UPDATE_REG(0xBC, SpecificIPCAlign->DM1SAD_L);
     break;
 
   case 0xBE:
@@ -2152,11 +2162,11 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-    GBAEMU4DS_IPC->DM1SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xBE, GBAEMU4DS_IPC->DM1SAD_H);
+    SpecificIPCAlign->DM1SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xBE, SpecificIPCAlign->DM1SAD_H);
     break;
 
   case 0xC0:
@@ -2164,11 +2174,11 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM1DAD_L = value;
-    UPDATE_REG(0xC0, GBAEMU4DS_IPC->DM1DAD_L);
+	SpecificIPCAlign->DM1DAD_L = value;
+    UPDATE_REG(0xC0, SpecificIPCAlign->DM1DAD_L);
     break;
 
   case 0xC2:
@@ -2176,11 +2186,11 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-    GBAEMU4DS_IPC->DM1DAD_H = value & 0x07FF;
-    UPDATE_REG(0xC2, GBAEMU4DS_IPC->DM1DAD_H);
+    SpecificIPCAlign->DM1DAD_H = value & 0x07FF;
+    UPDATE_REG(0xC2, SpecificIPCAlign->DM1DAD_H);
     break;
 
   case 0xC4:
@@ -2188,10 +2198,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM1CNT_L = value & 0x3FFF;
+	SpecificIPCAlign->DM1CNT_L = value & 0x3FFF;
     UPDATE_REG(0xC4, 0);
     break;
 
@@ -2200,18 +2210,18 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound	
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 	  {
-      bool start = ((GBAEMU4DS_IPC->DM1CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((SpecificIPCAlign->DM1CNT_H ^ value) & 0x8000) ? true : false;
       value &= 0xF7E0;
       
-      GBAEMU4DS_IPC->DM1CNT_H = value;
-      UPDATE_REG(0xC6, GBAEMU4DS_IPC->DM1CNT_H);
+      SpecificIPCAlign->DM1CNT_H = value;
+      UPDATE_REG(0xC6, SpecificIPCAlign->DM1CNT_H);
       
       if(start && (value & 0x8000)) {
-        GBAEMU4DS_IPC->dma1Source = GBAEMU4DS_IPC->DM1SAD_L | (GBAEMU4DS_IPC->DM1SAD_H << 16);
-        GBAEMU4DS_IPC->dma1Dest = GBAEMU4DS_IPC->DM1DAD_L | (GBAEMU4DS_IPC->DM1DAD_H << 16);
+        SpecificIPCAlign->dma1Source = SpecificIPCAlign->DM1SAD_L | (SpecificIPCAlign->DM1SAD_H << 16);
+        SpecificIPCAlign->dma1Dest = SpecificIPCAlign->DM1DAD_L | (SpecificIPCAlign->DM1DAD_H << 16);
         CPUCheckDMA(0, 2);
       }
     }
@@ -2221,44 +2231,44 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM2SAD_L = value;
-    UPDATE_REG(0xC8, GBAEMU4DS_IPC->DM2SAD_L);
+	SpecificIPCAlign->DM2SAD_L = value;
+    UPDATE_REG(0xC8, SpecificIPCAlign->DM2SAD_L);
     break;
   case 0xCA:
 #ifdef dmawriteprint
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM2SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xCA, GBAEMU4DS_IPC->DM2SAD_H);
+	SpecificIPCAlign->DM2SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xCA, SpecificIPCAlign->DM2SAD_H);
     break;
   case 0xCC:
 #ifdef dmawriteprint
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM2DAD_L = value;
-    UPDATE_REG(0xCC, GBAEMU4DS_IPC->DM2DAD_L);
+	SpecificIPCAlign->DM2DAD_L = value;
+    UPDATE_REG(0xCC, SpecificIPCAlign->DM2DAD_L);
     break;
   case 0xCE:
 #ifdef dmawriteprint
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM2DAD_H = value & 0x07FF;
-    UPDATE_REG(0xCE, GBAEMU4DS_IPC->DM2DAD_H);
+	SpecificIPCAlign->DM2DAD_H = value & 0x07FF;
+    UPDATE_REG(0xCE, SpecificIPCAlign->DM2DAD_H);
     break;
 
   case 0xD0:
@@ -2267,10 +2277,10 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
-	GBAEMU4DS_IPC->DM2CNT_L = value & 0x3FFF;
+	SpecificIPCAlign->DM2CNT_L = value & 0x3FFF;
     UPDATE_REG(0xD0, 0);
     break;
 
@@ -2280,20 +2290,20 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
 	  {
-      bool start = ((GBAEMU4DS_IPC->DM2CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((SpecificIPCAlign->DM2CNT_H ^ value) & 0x8000) ? true : false;
       
       value &= 0xF7E0;
       
-      GBAEMU4DS_IPC->DM2CNT_H = value;
-      UPDATE_REG(0xD2, GBAEMU4DS_IPC->DM2CNT_H);
+      SpecificIPCAlign->DM2CNT_H = value;
+      UPDATE_REG(0xD2, SpecificIPCAlign->DM2CNT_H);
       
       if(start && (value & 0x8000)) {
-        GBAEMU4DS_IPC->dma2Source = GBAEMU4DS_IPC->DM2SAD_L | (GBAEMU4DS_IPC->DM2SAD_H << 16);
-        GBAEMU4DS_IPC->dma2Dest = GBAEMU4DS_IPC->DM2DAD_L | (GBAEMU4DS_IPC->DM2DAD_H << 16);
+        SpecificIPCAlign->dma2Source = SpecificIPCAlign->DM2SAD_L | (SpecificIPCAlign->DM2SAD_H << 16);
+        SpecificIPCAlign->dma2Dest = SpecificIPCAlign->DM2DAD_L | (SpecificIPCAlign->DM2DAD_H << 16);
 
         CPUCheckDMA(0, 4);
       }            
@@ -2301,40 +2311,40 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     break;
 
   case 0xD4:
-    GBAEMU4DS_IPC->DM3SAD_L = value;
-    UPDATE_REG(0xD4, GBAEMU4DS_IPC->DM3SAD_L);
+    SpecificIPCAlign->DM3SAD_L = value;
+    UPDATE_REG(0xD4, SpecificIPCAlign->DM3SAD_L);
     break;
 
   case 0xD6:
-    GBAEMU4DS_IPC->DM3SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xD6, GBAEMU4DS_IPC->DM3SAD_H);
+    SpecificIPCAlign->DM3SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xD6, SpecificIPCAlign->DM3SAD_H);
     break;
   case 0xD8:
-    GBAEMU4DS_IPC->DM3DAD_L = value;
-    UPDATE_REG(0xD8, GBAEMU4DS_IPC->DM3DAD_L);
+    SpecificIPCAlign->DM3DAD_L = value;
+    UPDATE_REG(0xD8, SpecificIPCAlign->DM3DAD_L);
     break;
   case 0xDA:
-    GBAEMU4DS_IPC->DM3DAD_H = value & 0x0FFF;
-    UPDATE_REG(0xDA, GBAEMU4DS_IPC->DM3DAD_H);
+    SpecificIPCAlign->DM3DAD_H = value & 0x0FFF;
+    UPDATE_REG(0xDA, SpecificIPCAlign->DM3DAD_H);
     break;
 
   case 0xDC:
-    GBAEMU4DS_IPC->DM3CNT_L = value;
+    SpecificIPCAlign->DM3CNT_L = value;
     UPDATE_REG(0xDC, 0);
     break;
 
   case 0xDE:
     {
-      bool start = ((GBAEMU4DS_IPC->DM3CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((SpecificIPCAlign->DM3CNT_H ^ value) & 0x8000) ? true : false;
 
       value &= 0xFFE0;
 
-      GBAEMU4DS_IPC->DM3CNT_H = value;
-      UPDATE_REG(0xDE, GBAEMU4DS_IPC->DM3CNT_H);
+      SpecificIPCAlign->DM3CNT_H = value;
+      UPDATE_REG(0xDE, SpecificIPCAlign->DM3CNT_H);
     
       if(start && (value & 0x8000)) {
-        GBAEMU4DS_IPC->dma3Source = GBAEMU4DS_IPC->DM3SAD_L | (GBAEMU4DS_IPC->DM3SAD_H << 16);
-        GBAEMU4DS_IPC->dma3Dest = GBAEMU4DS_IPC->DM3DAD_L | (GBAEMU4DS_IPC->DM3DAD_H << 16);
+        SpecificIPCAlign->dma3Source = SpecificIPCAlign->DM3SAD_L | (SpecificIPCAlign->DM3SAD_H << 16);
+        SpecificIPCAlign->dma3Dest = SpecificIPCAlign->DM3DAD_L | (SpecificIPCAlign->DM3DAD_H << 16);
         CPUCheckDMA(0,8);
       }
     }
@@ -2346,12 +2356,12 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	//TM0CNT_L
  case 0x100:
-    //GBAEMU4DS_IPC->timer0Reload = value;
+    //SpecificIPCAlign->timer0Reload = value;
 #ifdef printsoundtimer
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 	
 	*(u16 *)(0x4000100) = value;
@@ -2362,7 +2372,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	//TM0CNT_H
   case 0x102:
-    //GBAEMU4DS_IPC->timer0Value = value;
+    //SpecificIPCAlign->timer0Value = value;
     //timerOnOffDelay|=1;
     //cpuNextEvent = cpuTotalTicks;
 	
@@ -2370,7 +2380,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 	
 	*(u16 *)(0x4000102) = value;
@@ -2380,12 +2390,12 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	//TM1CNT_L
   case 0x104:
-    //GBAEMU4DS_IPC->timer1Reload = value;
+    //SpecificIPCAlign->timer1Reload = value;
 #ifdef printsoundtimer
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 	*(u16 *)(0x4000104) = value;
     
@@ -2394,12 +2404,12 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	
 	//TM1CNT_H
   case 0x106:
-	//GBAEMU4DS_IPC->timer1Value = value;
+	//SpecificIPCAlign->timer1Value = value;
 #ifdef printsoundtimer
 	printf("ur %04x to %08x\r\n",value,address);
 #endif
 #ifdef arm9advsound
-	SendArm7Command(0xc3730000,(u32)address,(u32)value,0x0);
+	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
 #endif
 
     //timerOnOffDelay|=2;
@@ -2417,14 +2427,14 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   
   
   case 0x108:
-    GBAEMU4DS_IPC->TM2CNT_L = value;
+    SpecificIPCAlign->TM2CNT_L = value;
 	UPDATE_REG(0x108, value);
 	*(u16 *)(0x4000108) = value;
     break;
 	
 	//TM2CNT_H
   case 0x10A:
-	GBAEMU4DS_IPC->TM2CNT_H = value;
+	SpecificIPCAlign->TM2CNT_H = value;
     //timerOnOffDelay|=4;
     //cpuNextEvent = cpuTotalTicks;
 	*(u16 *)(0x400010a) = value;
@@ -2434,7 +2444,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	  
   //TM3CNT_L
   case 0x10C:
-    GBAEMU4DS_IPC->TM3CNT_L = value;
+    SpecificIPCAlign->TM3CNT_L = value;
 	UPDATE_REG(0x10C, value);
 	*(u16 *)(0x400010c) = value;
     
@@ -2442,7 +2452,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   
   //TM3CNT_H
   case 0x10E:
-    GBAEMU4DS_IPC->TM3CNT_H = value;
+    SpecificIPCAlign->TM3CNT_H = value;
     //timerOnOffDelay|=8;
     //cpuNextEvent = cpuTotalTicks;
 	UPDATE_REG(0x10E, value);
@@ -2457,8 +2467,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
       value &= 0xff7f;
       if(value & 1 && (value & 0x4000)) {
         UPDATE_REG(0x12a, 0xFF);
-        GBAEMU4DS_IPC->IF |= 0x80;
-        UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+        SpecificIPCAlign->GBA_IF |= 0x80;
+        UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
         value &= 0x7f7f;
       }
     }
@@ -2473,27 +2483,27 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	*(u16 *)(0x4000132) = value;
     break;
   case 0x200:
-    GBAEMU4DS_IPC->IE = value & 0x3FFF;
-    UPDATE_REG(0x200, GBAEMU4DS_IPC->IE);
-    /*if ((GBAEMU4DS_IPC->IME & 1) && (GBAEMU4DS_IPC->IF & GBAEMU4DS_IPC->IE) && armIrqEnable)
+    SpecificIPCAlign->GBA_IE = value & 0x3FFF;
+    UPDATE_REG(0x200, SpecificIPCAlign->GBA_IE);
+    /*if ((SpecificIPCAlign->GBA_IME & 1) && (SpecificIPCAlign->GBA_IF & SpecificIPCAlign->GBA_IE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
 #ifdef forceHBlankirqs
-	REG_IE = GBAEMU4DS_IPC->IE | (REG_IE & 0xFFFF0000) | IRQ_HBLANK;
+	REG_IE = SpecificIPCAlign->GBA_IE | (REG_IE & 0xFFFF0000) | IRQ_HBLANK;
 #else
-	REG_IE = GBAEMU4DS_IPC->IE | (REG_IE & 0xFFFF0000);
+	REG_IE = SpecificIPCAlign->GBA_IE | (REG_IE & 0xFFFF0000);
 #endif
 	
-	anytimejmpfilter = GBAEMU4DS_IPC->IE;
+	anytimejmpfilter = SpecificIPCAlign->GBA_IE;
 	
     break;
   case 0x202:
 	//REG_IF = value; //ichfly update at read outdated
-	//GBAEMU4DS_IPC->IF = REG_IF;
+	//SpecificIPCAlign->GBA_IF = REG_IF;
 #ifdef gba_handel_IRQ_correct
 	REG_IF = value;
 #else
-    GBAEMU4DS_IPC->IF ^= (value & GBAEMU4DS_IPC->IF);
-    UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+    SpecificIPCAlign->GBA_IF ^= (value & SpecificIPCAlign->GBA_IF);
+    UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 #endif
     break;
   case 0x204:
@@ -2542,12 +2552,12 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     }
     break;
   case 0x208:
-    GBAEMU4DS_IPC->IME = value & 1;
-    UPDATE_REG(0x208, GBAEMU4DS_IPC->IME);
+    SpecificIPCAlign->GBA_IME = value & 1;
+    UPDATE_REG(0x208, SpecificIPCAlign->GBA_IME);
 #ifdef gba_handel_IRQ_correct
-	REG_IME = GBAEMU4DS_IPC->IME;
+	REG_IME = SpecificIPCAlign->GBA_IME;
 #endif
-    /*if ((GBAEMU4DS_IPC->IME & 1) && (GBAEMU4DS_IPC->IF & GBAEMU4DS_IPC->IE) && armIrqEnable)
+    /*if ((SpecificIPCAlign->GBA_IME & 1) && (SpecificIPCAlign->GBA_IF & SpecificIPCAlign->GBA_IE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
     break;
   case 0x300:
@@ -2696,84 +2706,84 @@ void CPUReset()
 
 
 
-  //DISPCNT  = 0x0000;
-  DISPSTAT = 0x0000;
-  VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
-  BG0CNT   = 0x0000;
-  BG1CNT   = 0x0000;
-  BG2CNT   = 0x0000;
-  BG3CNT   = 0x0000;
-  BG0HOFS  = 0x0000;
-  BG0VOFS  = 0x0000;
-  BG1HOFS  = 0x0000;
-  BG1VOFS  = 0x0000;
-  BG2HOFS  = 0x0000;
-  BG2VOFS  = 0x0000;
-  BG3HOFS  = 0x0000;
-  BG3VOFS  = 0x0000;
-  BG2PA    = 0x0100;
-  BG2PB    = 0x0000;
-  BG2PC    = 0x0000;
-  BG2PD    = 0x0100;
-  BG2X_L   = 0x0000;
-  BG2X_H   = 0x0000;
-  BG2Y_L   = 0x0000;
-  BG2Y_H   = 0x0000;
-  BG3PA    = 0x0100;
-  BG3PB    = 0x0000;
-  BG3PC    = 0x0000;
-  BG3PD    = 0x0100;
-  BG3X_L   = 0x0000;
-  BG3X_H   = 0x0000;
-  BG3Y_L   = 0x0000;
-  BG3Y_H   = 0x0000;
-  WIN0H    = 0x0000;
-  WIN1H    = 0x0000;
-  WIN0V    = 0x0000;
-  WIN1V    = 0x0000;
-  WININ    = 0x0000;
-  WINOUT   = 0x0000;
-  MOSAIC   = 0x0000;
-  BLDMOD   = 0x0000;
-  COLEV    = 0x0000;
-  COLY     = 0x0000;
-  GBAEMU4DS_IPC->DM0SAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM0SAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM0DAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM0DAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM0CNT_L = 0x0000;
-  GBAEMU4DS_IPC->DM0CNT_H = 0x0000;
-  GBAEMU4DS_IPC->DM1SAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM1SAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM1DAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM1DAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM1CNT_L = 0x0000;
-  GBAEMU4DS_IPC->DM1CNT_H = 0x0000;
-  GBAEMU4DS_IPC->DM2SAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM2SAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM2DAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM2DAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM2CNT_L = 0x0000;
-  GBAEMU4DS_IPC->DM2CNT_H = 0x0000;
-  GBAEMU4DS_IPC->DM3SAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM3SAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM3DAD_L = 0x0000;
-  GBAEMU4DS_IPC->DM3DAD_H = 0x0000;
-  GBAEMU4DS_IPC->DM3CNT_L = 0x0000;
-  GBAEMU4DS_IPC->DM3CNT_H = 0x0000;
-  GBAEMU4DS_IPC->TM0CNT_L   = 0x0000;
-  GBAEMU4DS_IPC->TM1CNT_L   = 0x0000;
-  GBAEMU4DS_IPC->TM2CNT_L   = 0x0000;
-  GBAEMU4DS_IPC->TM3CNT_L   = 0x0000;
-  GBAEMU4DS_IPC->TM0CNT_H   = 0x0000;
-  GBAEMU4DS_IPC->TM1CNT_H   = 0x0000;
-  GBAEMU4DS_IPC->TM2CNT_H   = 0x0000;
-  GBAEMU4DS_IPC->TM3CNT_H   = 0x0000;
+  //GBA_DISPCNT  = 0x0000;
+  GBA_DISPSTAT = 0x0000;
+  GBA_VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
+  GBA_BG0CNT   = 0x0000;
+  GBA_BG1CNT   = 0x0000;
+  GBA_BG2CNT   = 0x0000;
+  GBA_BG3CNT   = 0x0000;
+  GBA_BG0HOFS  = 0x0000;
+  GBA_BG0VOFS  = 0x0000;
+  GBA_BG1HOFS  = 0x0000;
+  GBA_BG1VOFS  = 0x0000;
+  GBA_BG2HOFS  = 0x0000;
+  GBA_BG2VOFS  = 0x0000;
+  GBA_BG3HOFS  = 0x0000;
+  GBA_BG3VOFS  = 0x0000;
+  GBA_BG2PA    = 0x0100;
+  GBA_BG2PB    = 0x0000;
+  GBA_BG2PC    = 0x0000;
+  GBA_BG2PD    = 0x0100;
+  GBA_BG2X_L   = 0x0000;
+  GBA_BG2X_H   = 0x0000;
+  GBA_BG2Y_L   = 0x0000;
+  GBA_BG2Y_H   = 0x0000;
+  GBA_BG3PA    = 0x0100;
+  GBA_BG3PB    = 0x0000;
+  GBA_BG3PC    = 0x0000;
+  GBA_BG3PD    = 0x0100;
+  GBA_BG3X_L   = 0x0000;
+  GBA_BG3X_H   = 0x0000;
+  GBA_BG3Y_L   = 0x0000;
+  GBA_BG3Y_H   = 0x0000;
+  GBA_WIN0H    = 0x0000;
+  GBA_WIN1H    = 0x0000;
+  GBA_WIN0V    = 0x0000;
+  GBA_WIN1V    = 0x0000;
+  GBA_WININ    = 0x0000;
+  GBA_WINOUT   = 0x0000;
+  GBA_MOSAIC   = 0x0000;
+  GBA_BLDMOD   = 0x0000;
+  GBA_COLEV    = 0x0000;
+  GBA_COLY     = 0x0000;
+  SpecificIPCAlign->DM0SAD_L = 0x0000;
+  SpecificIPCAlign->DM0SAD_H = 0x0000;
+  SpecificIPCAlign->DM0DAD_L = 0x0000;
+  SpecificIPCAlign->DM0DAD_H = 0x0000;
+  SpecificIPCAlign->DM0CNT_L = 0x0000;
+  SpecificIPCAlign->DM0CNT_H = 0x0000;
+  SpecificIPCAlign->DM1SAD_L = 0x0000;
+  SpecificIPCAlign->DM1SAD_H = 0x0000;
+  SpecificIPCAlign->DM1DAD_L = 0x0000;
+  SpecificIPCAlign->DM1DAD_H = 0x0000;
+  SpecificIPCAlign->DM1CNT_L = 0x0000;
+  SpecificIPCAlign->DM1CNT_H = 0x0000;
+  SpecificIPCAlign->DM2SAD_L = 0x0000;
+  SpecificIPCAlign->DM2SAD_H = 0x0000;
+  SpecificIPCAlign->DM2DAD_L = 0x0000;
+  SpecificIPCAlign->DM2DAD_H = 0x0000;
+  SpecificIPCAlign->DM2CNT_L = 0x0000;
+  SpecificIPCAlign->DM2CNT_H = 0x0000;
+  SpecificIPCAlign->DM3SAD_L = 0x0000;
+  SpecificIPCAlign->DM3SAD_H = 0x0000;
+  SpecificIPCAlign->DM3DAD_L = 0x0000;
+  SpecificIPCAlign->DM3DAD_H = 0x0000;
+  SpecificIPCAlign->DM3CNT_L = 0x0000;
+  SpecificIPCAlign->DM3CNT_H = 0x0000;
+  SpecificIPCAlign->TM0CNT_L   = 0x0000;
+  SpecificIPCAlign->TM1CNT_L   = 0x0000;
+  SpecificIPCAlign->TM2CNT_L   = 0x0000;
+  SpecificIPCAlign->TM3CNT_L   = 0x0000;
+  SpecificIPCAlign->TM0CNT_H   = 0x0000;
+  SpecificIPCAlign->TM1CNT_H   = 0x0000;
+  SpecificIPCAlign->TM2CNT_H   = 0x0000;
+  SpecificIPCAlign->TM3CNT_H   = 0x0000;
   
   P1       = 0x03FF;
-  GBAEMU4DS_IPC->IE       = 0x0000;
-  GBAEMU4DS_IPC->IF       = 0x0000;
-  GBAEMU4DS_IPC->IME      = 0x0000;
+  SpecificIPCAlign->GBA_IE       = 0x0000;
+  SpecificIPCAlign->GBA_IF       = 0x0000;
+  SpecificIPCAlign->GBA_IME      = 0x0000;
 
   armMode = 0x1F;
   
@@ -2801,12 +2811,12 @@ void CPUReset()
   armState = true;
   C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;*/
   armState = true;
-  UPDATE_REG(0x00, DISPCNT);
-  UPDATE_REG(0x06, VCOUNT);
-  UPDATE_REG(0x20, BG2PA);
-  UPDATE_REG(0x26, BG2PD);
-  UPDATE_REG(0x30, BG3PA);
-  UPDATE_REG(0x36, BG3PD);
+  UPDATE_REG(0x00, GBA_DISPCNT);
+  UPDATE_REG(0x06, GBA_VCOUNT);
+  UPDATE_REG(0x20, GBA_BG2PA);
+  UPDATE_REG(0x26, GBA_BG2PD);
+  UPDATE_REG(0x30, GBA_BG3PA);
+  UPDATE_REG(0x36, GBA_BG3PD);
   UPDATE_REG(0x130, P1);
   UPDATE_REG(0x88, 0x200);
 
@@ -2828,43 +2838,43 @@ void CPUReset()
   biosProtected[3] = 0xe1;
   
   lcdTicks = (useBios && !skipBios) ? 1008 : 208;
-  GBAEMU4DS_IPC->timer0On = false;
-  GBAEMU4DS_IPC->timer0Ticks = 0;
+  SpecificIPCAlign->timer0On = false;
+  SpecificIPCAlign->timer0Ticks = 0;
   
-  //GBAEMU4DS_IPC->timer0Reload = 0;
-  GBAEMU4DS_IPC->TM0CNT_L = 0;
+  //SpecificIPCAlign->timer0Reload = 0;
+  SpecificIPCAlign->TM0CNT_L = 0;
   
-  GBAEMU4DS_IPC->timer0ClockReload  = 0;
-  GBAEMU4DS_IPC->timer1On = false;
-  GBAEMU4DS_IPC->timer1Ticks = 0;
+  SpecificIPCAlign->timer0ClockReload  = 0;
+  SpecificIPCAlign->timer1On = false;
+  SpecificIPCAlign->timer1Ticks = 0;
   
-  //GBAEMU4DS_IPC->timer1Reload = 0;
-  GBAEMU4DS_IPC->TM1CNT_L = 0;
+  //SpecificIPCAlign->timer1Reload = 0;
+  SpecificIPCAlign->TM1CNT_L = 0;
   
-  GBAEMU4DS_IPC->timer1ClockReload  = 0;
-  GBAEMU4DS_IPC->timer2On = false;
-  GBAEMU4DS_IPC->timer2Ticks = 0;
+  SpecificIPCAlign->timer1ClockReload  = 0;
+  SpecificIPCAlign->timer2On = false;
+  SpecificIPCAlign->timer2Ticks = 0;
   
-  //GBAEMU4DS_IPC->timer2Reload = 0;
-  GBAEMU4DS_IPC->TM2CNT_L = 0;
+  //SpecificIPCAlign->timer2Reload = 0;
+  SpecificIPCAlign->TM2CNT_L = 0;
   
-  GBAEMU4DS_IPC->timer2ClockReload  = 0;
-  GBAEMU4DS_IPC->timer3On = false;
-  GBAEMU4DS_IPC->timer3Ticks = 0;
+  SpecificIPCAlign->timer2ClockReload  = 0;
+  SpecificIPCAlign->timer3On = false;
+  SpecificIPCAlign->timer3Ticks = 0;
   
-  //GBAEMU4DS_IPC->timer3Reload = 0;
-  GBAEMU4DS_IPC->TM3CNT_L = 0;
+  //SpecificIPCAlign->timer3Reload = 0;
+  SpecificIPCAlign->TM3CNT_L = 0;
   
-  GBAEMU4DS_IPC->timer3ClockReload  = 0;
+  SpecificIPCAlign->timer3ClockReload  = 0;
   
-  GBAEMU4DS_IPC->dma0Source = 0;
-  GBAEMU4DS_IPC->dma0Dest = 0;
-  GBAEMU4DS_IPC->dma1Source = 0;
-  GBAEMU4DS_IPC->dma1Dest = 0;
-  GBAEMU4DS_IPC->dma2Source = 0;
-  GBAEMU4DS_IPC->dma2Dest = 0;
-  GBAEMU4DS_IPC->dma3Source = 0;
-  GBAEMU4DS_IPC->dma3Dest = 0;
+  SpecificIPCAlign->dma0Source = 0;
+  SpecificIPCAlign->dma0Dest = 0;
+  SpecificIPCAlign->dma1Source = 0;
+  SpecificIPCAlign->dma1Dest = 0;
+  SpecificIPCAlign->dma2Source = 0;
+  SpecificIPCAlign->dma2Dest = 0;
+  SpecificIPCAlign->dma3Source = 0;
+  SpecificIPCAlign->dma3Dest = 0;
   
   cpuSaveGameFunc = flashSaveDecide;
   //renderLine = mode0RenderLine;
@@ -2872,7 +2882,7 @@ void CPUReset()
   windowOn = false;
   frameCount = 0;
   saveType = 0;
-  //layerEnable = DISPCNT & layerSettings;
+  //layerEnable = GBA_DISPCNT & layerSettings;
 
   //CPUUpdateRenderBuffers(true);
   
@@ -3138,7 +3148,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -3272,7 +3282,7 @@ printf("w16 %04x to %08x\r\n",value,address);
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -3419,7 +3429,7 @@ void CPUWriteByte(u32 address, u8 b)
 		  printf("b %02x to %08x\r\n",b,address);
 #endif
 		#ifdef arm9advsound
-			SendArm7Command(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
+			SendMultipleWordACK(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
 		#endif
 	break;
       default:
@@ -3455,14 +3465,14 @@ void CPUWriteByte(u32 address, u8 b)
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
 
     // no need to switch 
     // byte writes to OBJ VRAM are ignored
-    if ((address) < objTilesAddress[((DISPCNT&7)+1)>>2])
+    if ((address) < objTilesAddress[((GBA_DISPCNT&7)+1)>>2])
     {
 #ifdef BKPT_SUPPORT
       if(freezeVRAM[address])
@@ -3523,37 +3533,37 @@ void updateVC()
 		//printf("Vcountreal: %08x\n",temp);
 		u16 help3;
 #ifdef usebuffedVcout
-		VCOUNT = VCountdstogba[temp];
+		GBA_VCOUNT = VCountdstogba[temp];
 #else
 		if(temp < 192)
 		{
-			VCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+			GBA_VCOUNT = ((temp * 214) >> 8);//GBA_VCOUNT = help * (1./1.2); //1.15350877;
 			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 		}
 		else
 		{
-			VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+			GBA_VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//GBA_VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
 			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
 		}
 #endif
-		DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
-		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
+		GBA_DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
+		//if(help3 == GBA_VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
 		//{
-			DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
+			GBA_DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
 		//}
-		//if(VCOUNT > 160 && VCOUNT != 227)DISPSTAT |= 1;//V-Blanc
-		UPDATE_REG(0x06, VCOUNT);
-		if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
+		//if(GBA_VCOUNT > 160 && GBA_VCOUNT != 227)GBA_DISPSTAT |= 1;//V-Blanc
+		UPDATE_REG(0x06, GBA_VCOUNT);
+		if(GBA_VCOUNT == (GBA_DISPSTAT >> 8)) //update by V-Count Setting
 		{
-			DISPSTAT |= 0x4;
-			/*if(DISPSTAT & 0x20) {
-			  GBAEMU4DS_IPC->IF |= 4;
-			  UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+			GBA_DISPSTAT |= 0x4;
+			/*if(GBA_DISPSTAT & 0x20) {
+			  SpecificIPCAlign->GBA_IF |= 4;
+			  UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 			}*/
 		}
-		UPDATE_REG(0x04, DISPSTAT);
+		UPDATE_REG(0x04, GBA_DISPSTAT);
 		//printf("Vcountreal: %08x\n",temp);
-		//printf("DISPSTAT: %08x\n",temp2);
+		//printf("GBA_DISPSTAT: %08x\n",temp2);
 }
 
 __attribute__((section(".itcm")))
@@ -3613,8 +3623,8 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif	
 
@@ -3626,7 +3636,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	
 	
 	if(address==0x04000006){
-		value = VCOUNT;
+		value = GBA_VCOUNT;
 		break;
 	}
 	
@@ -3648,7 +3658,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
     {
         value = 0;
         break;
@@ -3820,15 +3830,15 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	}
 	
 	if(address==0x04000006){
-		value = VCOUNT;
+		value = GBA_VCOUNT;
 		break;
 	}
 	
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214;
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214;
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif
 	
@@ -3849,7 +3859,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
     {
         value = 0;
         break;
@@ -3999,15 +4009,15 @@ printf("r8 %02x\n",address);
 	}
 	
 	if(address==0x04000006){
-		return (u8)VCOUNT;
+		return (u8)GBA_VCOUNT;
 		break;
 	}
 	
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
@@ -4023,7 +4033,7 @@ printf("r8 %02x\n",address);
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1ffff);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return 0;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -4125,37 +4135,37 @@ void updateVCsub()
 		//printf("Vcountreal: %08x\n",temp);
 		u16 help3;
 #ifdef usebuffedVcout
-		VCOUNT = VCountdstogba[temp];
+		GBA_VCOUNT = VCountdstogba[temp];
 #else
 		if(temp < 192)
 		{
-			VCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+			GBA_VCOUNT = ((temp * 214) >> 8);//GBA_VCOUNT = help * (1./1.2); //1.15350877;
 			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 		}
 		else
 		{
-			VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+			GBA_VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//GBA_VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
 			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
 		}
 #endif
-		DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
-		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
+		GBA_DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
+		//if(help3 == GBA_VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
 		//{
-			DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
+			GBA_DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
 		//}
-		//if(VCOUNT > 160 && VCOUNT != 227)DISPSTAT |= 1;//V-Blanc
-		UPDATE_REG(0x06, VCOUNT);
-		if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
+		//if(GBA_VCOUNT > 160 && GBA_VCOUNT != 227)GBA_DISPSTAT |= 1;//V-Blanc
+		UPDATE_REG(0x06, GBA_VCOUNT);
+		if(GBA_VCOUNT == (GBA_DISPSTAT >> 8)) //update by V-Count Setting
 		{
-			DISPSTAT |= 0x4;
-			/*if(DISPSTAT & 0x20) {
-			  GBAEMU4DS_IPC->IF |= 4;
-			  UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+			GBA_DISPSTAT |= 0x4;
+			/*if(GBA_DISPSTAT & 0x20) {
+			  SpecificIPCAlign->GBA_IF |= 4;
+			  UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 			}*/
 		}
-		UPDATE_REG(0x04, DISPSTAT);
+		UPDATE_REG(0x04, GBA_DISPSTAT);
 		//printf("Vcountreal: %08x\n",temp);
-		//printf("DISPSTAT: %08x\n",temp2);
+		//printf("GBA_DISPSTAT: %08x\n",temp2);
 }
 
 
@@ -4190,8 +4200,8 @@ u32 CPUReadMemoryrealpu(u32 address)
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif	
 
@@ -4202,7 +4212,7 @@ u32 CPUReadMemoryrealpu(u32 address)
 	}
     
 	if(address==0x04000006){
-		value = VCOUNT;
+		value = GBA_VCOUNT;
 		break;
 	}
 	
@@ -4362,15 +4372,15 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	}
 	
 	if(address==0x04000006){
-		value = VCOUNT;
+		value = GBA_VCOUNT;
 		break;
 	}
 	
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214;
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214;
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif
 	
@@ -4481,15 +4491,15 @@ printf("r8 %02x\n",address);
 	}
 	
 	if(address==0x04000006){
-		return (u8)VCOUNT;
+		return (u8)GBA_VCOUNT;
 		break;
 	}
 	
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
-		GBAEMU4DS_IPC->IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, GBAEMU4DS_IPC->IF);
+		SpecificIPCAlign->GBA_IF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, SpecificIPCAlign->GBA_IF);
 	}
 #endif
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
@@ -4602,7 +4612,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -4714,7 +4724,7 @@ printf("w16 %04x to %08x\r\n",value,address);
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -4797,14 +4807,14 @@ void CPUWriteBytepu(u32 address, u8 b)
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBA_DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
 
     // no need to switch 
     // byte writes to OBJ VRAM are ignored
-    if ((address) < objTilesAddress[((DISPCNT&7)+1)>>2])
+    if ((address) < objTilesAddress[((GBA_DISPCNT&7)+1)>>2])
     {
 #ifdef BKPT_SUPPORT
       if(freezeVRAM[address])
@@ -4872,7 +4882,7 @@ void CPUWriteBytepu(u32 address, u8 b)
 		  printf("b %02x to %08x\r\n",b,address);
 #endif
 	#ifdef arm9advsound
-		SendArm7Command(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
+		SendMultipleWordACK(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
 	#endif
 	break;
       default:

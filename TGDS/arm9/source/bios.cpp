@@ -17,17 +17,26 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <math.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdlib.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
 
 #include "GBA.h"
 #include "bios.h"

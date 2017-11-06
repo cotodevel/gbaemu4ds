@@ -16,9 +16,30 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
-#include "interrupts/fifo_handler.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
 
 #include "System.h"
 #include "GBA.h"
@@ -26,18 +47,10 @@
 #include "Port.h"
 #include "Util.h"
 #include "NLS.h"
-
 #include <time.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
+
+//Coto: add gbaemu4ds RTC support
+#include "clock.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
@@ -156,15 +169,14 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.state = DATA;
                 */
                 
-                //coto: own IPC.
                 rtcClockData.dataLen = 7;
-                rtcClockData.data[0] = toBCD(gba_get_yearbytertc());
-                rtcClockData.data[1] = toBCD(gba_get_monthrtc());
-                rtcClockData.data[2] = toBCD(gba_get_dayrtc());
-                rtcClockData.data[3] = toBCD(gba_get_dayofweekrtc());
-                rtcClockData.data[4] = toBCD(gba_get_hourrtc());
-                rtcClockData.data[5] = toBCD(gba_get_minrtc());
-                rtcClockData.data[6] = toBCD(gba_get_secrtc());
+                rtcClockData.data[0] = toBCD(getTime()->tm_year);
+                rtcClockData.data[1] = toBCD(getTime()->tm_mon);
+                rtcClockData.data[2] = toBCD(getTime()->tm_mday);
+                rtcClockData.data[3] = toBCD(getDayOfWeek());
+                rtcClockData.data[4] = toBCD(getTime()->tm_hour);
+                rtcClockData.data[5] = toBCD(getTime()->tm_min);
+                rtcClockData.data[6] = toBCD(getTime()->tm_sec);
                 rtcClockData.state = DATA;
                 
               }
@@ -185,12 +197,11 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.state = DATA;
                 */
                 
-                //coto: own IPC.
-                rtcClockData.dataLen = 3;
-                rtcClockData.data[0] = toBCD(gba_get_hourrtc());
-                rtcClockData.data[1] = toBCD(gba_get_minrtc());
-                rtcClockData.data[2] = toBCD(gba_get_secrtc());
-                rtcClockData.state = DATA;
+				rtcClockData.dataLen = 3;
+                rtcClockData.data[4] = toBCD(getTime()->tm_hour);
+                rtcClockData.data[5] = toBCD(getTime()->tm_min);
+                rtcClockData.data[6] = toBCD(getTime()->tm_sec);
+				rtcClockData.state = DATA;
                 
               }
               break;

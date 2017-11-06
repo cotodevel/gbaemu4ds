@@ -1,17 +1,19 @@
-#include <nds.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "common_shared.h"
+#include "specific_shared.h"
+
 #include <stdio.h>
 
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
-#include "interrupts/fifo_handler.h"
-
-#include <filesystem.h>
+#include "dma.h"
 #include "GBA.h"
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
 #include "System.h"
-#include <fat.h>
 #include <dirent.h>
 
 #include "cpumg.h"
@@ -22,40 +24,46 @@
 #include "screenshot.h"
 #include "ichflysettings.h"
 
-#include <nds.h>
-
 #include "arm7sound.h"
 
 #include "main.h"
 
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ipc.h>
 
 
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
+#include "timer.h"
+#include "dma.h"
+
+#include "InterruptsARMCores_h.h"
+#include "ipc.h"
 
 //#define loaddirect
 
 
-volatile u16 DISPCNT;
+volatile u16 GBA_DISPCNT;
 int framenummer;
 
 
 #define GBA_EWRAM ((void*)(0x02000000))
 
-#include <nds/disc_io.h>
 #include <dirent.h>
 
    #define DEFAULT_CACHE_PAGES 16
@@ -91,7 +99,7 @@ BG Mode 0,1,2 (Tile/Map based Modes)
   06000000-0600FFFF  64 KBytes shared for BG Map and Tiles
   06010000-06017FFF  32 KBytes OBJ Tiles
 
-The shared 64K area can be split into BG Map area(s), and BG Tiles area(s), the respective addresses for Map and Tile areas are set up by BG0CNT-BG3CNT registers. The Map address may be specified in units of 2K (steps of 800h), the Tile address in units of 16K (steps of 4000h).
+The shared 64K area can be split into BG Map area(s), and BG Tiles area(s), the respective addresses for Map and Tile areas are set up by GBA_BG0CNT-GBA_BG3CNT registers. The Map address may be specified in units of 2K (steps of 800h), the Tile address in units of 16K (steps of 4000h).
 
 BG Mode 0,1 (Tile/Map based Text mode)
 The tiles may have 4bit or 8bit color depth, minimum map size is 32x32 tiles, maximum is 64x64 tiles, up to 1024 tiles can be used per map.
@@ -134,7 +142,7 @@ Additionally to the above VRAM, the GBA also contains 1 KByte Palette RAM (at 05
 
  LCD VRAM Character Data
 
-Each character (tile) consists of 8x8 dots (64 dots in total). The color depth may be either 4bit or 8bit (see BG0CNT-BG3CNT).
+Each character (tile) consists of 8x8 dots (64 dots in total). The color depth may be either 4bit or 8bit (see GBA_BG0CNT-GBA_BG3CNT).
 
 4bit depth (16 colors, 16 palettes)
 Each tile occupies 32 bytes of memory, the first 4 bytes for the topmost row of the tile, and so on. Each byte representing two dots, the lower 4 bits define the color for the left (!) dot, the upper 4 bits the color for the right dot.
@@ -167,7 +175,7 @@ In this mode, only 256 tiles can be used. There are no x/y-flip attributes, the 
 
 The dimensions of Rotation/Scaling BG Maps depend on the BG size. For size 0-3 that are: 16x16 tiles (128x128 pixels), 32x32 tiles (256x256 pixels), 64x64 tiles (512x512 pixels), or 128x128 tiles (1024x1024 pixels).
 
-The size and VRAM base address of the separate BG maps for BG0-3 are set up by BG0CNT-BG3CNT registers.
+The size and VRAM base address of the separate BG maps for BG0-3 are set up by GBA_BG0CNT-GBA_BG3CNT registers.
 
 
  LCD VRAM Bitmap BG Modes
@@ -193,7 +201,7 @@ BG Mode 5 - 160x128 pixels, 32768 colors
 Colors are defined as for Mode 3 (see above), but horizontal and vertical size are cut down to 160x128 pixels only - smaller than the physical dimensions of the LCD screen.
 The background occupies exactly 40 KBytes, so that BG VRAM may be split into two frames (06000000-06009FFF for Frame 0, and 0600A000-06013FFF for Frame 1).
 
-In BG modes 4,5, one Frame may be displayed (selected by DISPCNT Bit 4), the other Frame is invisible and may be redrawn in background.
+In BG modes 4,5, one Frame may be displayed (selected by GBA_DISPCNT Bit 4), the other Frame is invisible and may be redrawn in background.
 */
 
 
@@ -245,12 +253,12 @@ void initspeedupfelder()
 		{
 			if(currentprocV < 192)
 			{
-				res1 = ((currentprocV * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				res1 = ((currentprocV * 214) >> 8);//GBA_VCOUNT = help * (1./1.2); //1.15350877;
 				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 			}
 			else
 			{
-				res1 = (((currentprocV - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				res1 = (((currentprocV - 192) * 246) >>  8)+ 160;//GBA_VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
 				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
 			}
 			VCountdstogba[currentprocV] = res1;
@@ -312,10 +320,10 @@ __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
 
-    DISPSTAT |= (REG_DISPSTAT & 0x3);
-    DISPSTAT |= 0x2;	//hblank
-    DISPSTAT &= 0xFFFe; //remove vblank
-    UPDATE_REG(0x04, DISPSTAT);
+    GBA_DISPSTAT |= (REG_DISPSTAT & 0x3);
+    GBA_DISPSTAT |= 0x2;	//hblank
+    GBA_DISPSTAT &= 0xFFFe; //remove vblank
+    UPDATE_REG(0x04, GBA_DISPSTAT);
 	
     CPUCheckDMA(2, 0x0f);
 REG_IF = IRQ_HBLANK;
@@ -334,10 +342,10 @@ __attribute__((section(".itcm")))
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
 
-	DISPSTAT |= (REG_DISPSTAT & 0x3);
-	DISPSTAT |= 0x1;	//vblank
-	DISPSTAT &= 0xFFFd; //remove hblank
-	UPDATE_REG(0x04, DISPSTAT);
+	GBA_DISPSTAT |= (REG_DISPSTAT & 0x3);
+	GBA_DISPSTAT |= 0x1;	//vblank
+	GBA_DISPSTAT &= 0xFFFd; //remove hblank
+	UPDATE_REG(0x04, GBA_DISPSTAT);
 
 	CPUCheckDMA(1, 0x0f); //V-Blank
 
@@ -418,42 +426,42 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 	if(framewtf == frameskip)
 	{
 		framewtf = 0;
-		if((DISPCNT & 7) < 3)
+		if((GBA_DISPCNT & 7) < 3)
 		{
-			dmaCopyWords(3,(void*)0x06010000,(void*)0x06400000,0x8000);
+			dmaTransferWord(3, (uint32)0x06010000, (uint32)0x06400000, (uint32) 0x8000); 	//dmaCopyWords(3,(void*)0x06010000,(void*)0x06400000,0x8000);
 		}
 		else
 		{
-			dmaCopyWords(3,(void*)0x06014000,(void*)0x06404000,0x4000);
+			dmaTransferWord(3, (uint32)0x06014000, (uint32)0x06404000, (uint32) 0x4000);	//dmaCopyWords(3,(void*)0x06014000,(void*)0x06404000,0x4000);
 		
-			if((DISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
+			if((GBA_DISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
 			{
 				u8 *pointertobild = (u8 *)(0x6000000);
 				for(int iy = 0; iy <160; iy++){
-					dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
+					dmaTransferWord(3, (uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);	//dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
 					pointertobild+=480;
 				}
 			}
 			else
 			{
-				if((DISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
+				if((GBA_DISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
 				{
 					u8 *pointertobild = (u8 *)(0x6000000);
-					if(BIT(4) & DISPCNT)pointertobild+=0xA000;
+					if((1<<4) & GBA_DISPCNT)pointertobild+=0xA000;
 					for(int iy = 0; iy <160; iy++){
-						dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);
+						dmaTransferWord(3, (uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);	//dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);
 						pointertobild+=240;
 						//pointertobild+=120;
 					}
 				}
 				else
 				{
-					//if((DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
+					//if((GBA_DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
 					{
 						u8 *pointertobild = (u8 *)(0x6000000);
-						if(BIT(4) & DISPCNT)pointertobild+=0xA000;
+						if((1<<4) & GBA_DISPCNT)pointertobild+=0xA000;
 						for(int iy = 0; iy <128; iy++){
-							dmaCopyWords(3,(void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);
+							dmaTransferWord(3,(uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);	//dmaCopyWords(3,(void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);
 							pointertobild+=320;
 						}
 					}
@@ -469,7 +477,7 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 
 	
   
-    P1 = REG_KEYINPUT&0x3ff;
+    P1 = KEYCNT_READ()&0x3ff;
 #ifdef ichflytestkeypossibillity  
   
   // disallow Left+Right or Up+Down of being pressed at the same time
@@ -508,41 +516,41 @@ __attribute__((section(".itcm")))
 void frameasyncsync(void) {
 //---------------------------------------------------------------------------------
 		framewtf = 0;
-		if((DISPCNT & 7) < 3)
+		if((GBA_DISPCNT & 7) < 3)
 		{
-			dmaCopyWordsAsynch(1,(void*)vram + 0x10000,(void*)0x06400000,0x8000);
+			dmaTransferWord(1,(uint32)vram + 0x10000,(uint32)0x06400000,0x8000);	//dmaCopyWordsAsynch(1,(void*)vram + 0x10000,(void*)0x06400000,0x8000);
 		}
 		else
 		{
-			dmaCopyWordsAsynch(1,(void*)0x06014000,(void*)0x06404000,0x4000);
-			if((DISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
+			dmaTransferWord(1,(uint32)0x06014000,(uint32)0x06404000,0x4000);		//dmaCopyWordsAsynch(1,(void*)0x06014000,(void*)0x06404000,0x4000);
+			if((GBA_DISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
 			{
 				u8 *pointertobild = (u8 *)(0x6000000);
 				for(int iy = 0; iy <160; iy++){
-					dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
+					dmaTransferWord(3,(uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);	//dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
 					pointertobild+=480;
 				}
 			}
 			else
 			{
-				if((DISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
+				if((GBA_DISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
 				{
 					u8 *pointertobild = (u8 *)(0x6000000);
-					if(BIT(4) & DISPCNT)pointertobild+=0xA000;
+					if((1<<4) & GBA_DISPCNT)pointertobild+=0xA000;
 					for(int iy = 0; iy <160; iy++){
-						dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);
+						dmaTransferWord(3,(uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);	//dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);
 						pointertobild+=240;
 						//pointertobild+=120;
 					}
 				}
 				else
 				{
-					//if((DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
+					//if((GBA_DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
 					{
 						u8 *pointertobild = (u8 *)(0x6000000);
-						if(BIT(4) & DISPCNT)pointertobild+=0xA000;
+						if((1<<4) & GBA_DISPCNT)pointertobild+=0xA000;
 						for(int iy = 0; iy <128; iy++){
-							dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);
+							dmaTransferWord(3,(uint32)pointertobild, (uint32)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);	//dmaCopy( (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);
 							pointertobild+=320;
 						}
 					}
@@ -562,18 +570,20 @@ char* seloptions [5] = {"save save","show mem","Continue","load GBA","DEBUG"};
 
 void pausemenue()
 {
+/*
 #ifdef capture_and_pars
 	videoBgDisableSub(3);
 	videoBgEnableSub(0);
-	vramSetBankH(VRAM_H_SUB_BG); //only sub /*for prints to lowern screan*/ 
+	vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screan
 	vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 #endif
+*/
 	REG_IE = 0; //no irq
 	u16 tempvcount = REG_VCOUNT;
-	TIMER0_CR = TIMER0_CR & ~TIMER_ENABLE; //timer off
-	TIMER1_CR = TIMER1_CR & ~TIMER_ENABLE;
-	TIMER2_CR = TIMER2_CR & ~TIMER_ENABLE;
-	TIMER3_CR = TIMER3_CR & ~TIMER_ENABLE;
+	TIMERXCNT(0) = TIMERXCNT(0) & ~TIMER_ENABLE;	//TIMER0_CR = TIMER0_CR & ~TIMER_ENABLE; //timer off
+	TIMERXCNT(1) = TIMERXCNT(1) & ~TIMER_ENABLE;	//TIMER1_CR = TIMER1_CR & ~TIMER_ENABLE;
+	TIMERXCNT(2) = TIMERXCNT(2) & ~TIMER_ENABLE;	//TIMER2_CR = TIMER2_CR & ~TIMER_ENABLE;
+	TIMERXCNT(3) = TIMERXCNT(3) & ~TIMER_ENABLE;	//TIMER3_CR = TIMER3_CR & ~TIMER_ENABLE;
 	//irqDisable(IRQ_VBLANK);
 	//cpupausemode(); //don't need that
 	int pressed;
@@ -593,8 +603,8 @@ void pausemenue()
 		do {
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 			while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-			scanKeys();
-			pressed = (keysDownRepeat()& ~0xFC00);
+			//scanKeys();
+			pressed = (KEYCNT_READ()& ~0xFC00);
 		} while (!pressed); //no communication here with arm7 so no more update
 		//printf("%x",ausgewauhlt);
 		if (pressed&KEY_A)
@@ -612,20 +622,22 @@ void pausemenue()
 				break;
 				//exit
 				case 2:
-					printf("\x1b[2J");
+					//printf("\x1b[2J");
+/*
 #ifdef capture_and_pars
 					videoBgDisableSub(0);
 					vramSetBankH(VRAM_H_LCD); //only sub
 					vramSetBankI(VRAM_I_LCD); //only sub
 					videoBgEnableSub(3);
 #endif
-					while(REG_VCOUNT != tempvcount); //wait for VCOUNT
-					TIMER0_CR = GBAEMU4DS_IPC->TM0CNT_H; //timer on
-					TIMER1_CR = GBAEMU4DS_IPC->TM1CNT_H;
-					TIMER2_CR = GBAEMU4DS_IPC->TM2CNT_H;
-					TIMER3_CR = GBAEMU4DS_IPC->TM3CNT_H;
-					REG_IE = GBAEMU4DS_IPC->IE | IRQ_FIFO_NOT_EMPTY; //irq on
-					while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX; //get sync irqs back
+*/
+					while(REG_VCOUNT != tempvcount); //wait for GBA_VCOUNT
+					TIMERXCNT(0) = SpecificIPCAlign->TM0CNT_H; //timer on
+					TIMERXCNT(1) = SpecificIPCAlign->TM1CNT_H;
+					TIMERXCNT(2) = SpecificIPCAlign->TM2CNT_H;
+					TIMERXCNT(3) = SpecificIPCAlign->TM3CNT_H;
+					REG_IE = SpecificIPCAlign->GBA_IE | IRQ_RECVFIFO_NOT_EMPTY; //irq on
+					while(!(REG_IPC_FIFO_CR & RECV_FIFO_IPC_EMPTY))u32 src = REG_IPC_FIFO_RX; //get sync irqs back
 					return; //and return
 				break;
 				//reset
@@ -637,22 +649,22 @@ void pausemenue()
 				
 				//debug
 				case 4:{
-					while(REG_VCOUNT != tempvcount); //wait for VCOUNT
-					TIMER0_CR = GBAEMU4DS_IPC->TM0CNT_H; //timer on
-					TIMER1_CR = GBAEMU4DS_IPC->TM1CNT_H;
-					TIMER2_CR = GBAEMU4DS_IPC->TM2CNT_H;
-					TIMER3_CR = GBAEMU4DS_IPC->TM3CNT_H;
-					REG_IE = GBAEMU4DS_IPC->IE | IRQ_FIFO_NOT_EMPTY; //irq on
+					while(REG_VCOUNT != tempvcount); //wait for GBA_VCOUNT
+					TIMERXCNT(0) = SpecificIPCAlign->TM0CNT_H; //timer on
+					TIMERXCNT(1) = SpecificIPCAlign->TM1CNT_H;
+					TIMERXCNT(2) = SpecificIPCAlign->TM2CNT_H;
+					TIMERXCNT(3) = SpecificIPCAlign->TM3CNT_H;
+					REG_IE = SpecificIPCAlign->GBA_IE | IRQ_RECVFIFO_NOT_EMPTY; //irq on
 					
 					//pu_Disable()
 					
 					//CreateBMPImage();
 					
-                    SendArm7Command(0xc0700100,0x0,0x0,0x0);
+                    SendMultipleWordACK(0xc0700100,0x0,0x0,0x0);
 					
 					//pu_Enable();
 				
-                    while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
+                    while(!(REG_IPC_FIFO_CR & RECV_FIFO_IPC_EMPTY))
 						//u32 src = REG_IPC_FIFO_RX; //get sync irqs back
 					return ; //and return
 					

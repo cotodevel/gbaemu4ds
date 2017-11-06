@@ -16,37 +16,39 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <zlib.h> //todo ichfly
-#include <stdio.h>
-#include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdarg.h>
-#include <string.h>
 #include <assert.h>
 
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
 
-#include <filesystem.h>
+#include "common_shared.h"
+#include "specific_shared.h"
+
 #include "GBA.h"
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
 #include "System.h"
-#include <fat.h>
 #include <dirent.h>
 
 #include "cpumg.h"
@@ -55,35 +57,19 @@
 
 #include "mydebuger.h"
 
-#include "file_browse.h"
-
-#define MAXPATHLEN 256 
-
-#include <nds.h>
-
 #include "arm7sound.h"
-
 #include "main.h"
+#include <unistd.h>
 
 
-#include <unistd.h>    // for sbrk()
-
-
+/*
 #define INT_TABLE_SECTION __attribute__((section(".dtcm")))
-
-
 extern struct IntTable irqTable[MAX_INTERRUPTS] INT_TABLE_SECTION;
-
 extern "C" void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
+*/
 
 
-
-#include <fat.h>
 #include "ichflysettings.h"
-
-#if 0
-#include "unrarlib.h"
-#endif
 
 #include "System.h"
 #include "NLS.h"
@@ -709,7 +695,7 @@ void patchit(int romSize2)
 			fread((void*)&address,1,0x4,patchf);
 			u32 Condition;
 			fread((void*)&Condition,1,0x4,patchf);
-			if(offset & BIT(31))offset = (offset & ~BIT(31)) + (u32)rom;
+			if(offset & (1<<31))offset = (offset & ~(1<<31)) + (u32)rom;
 			u32 topatchoffset = address - offset - 8;
 			entersu();
 			switch (type)
@@ -816,7 +802,7 @@ void patchit(int romSize2)
 			}
 			u32 Condition;
 			fread((void*)&Condition,1,0x4,patchf);
-			if(offset & BIT(31))offset = (offset & ~BIT(31)) + (u32)rom;
+			if(offset & (1<<31))offset = (offset & ~(1<<31)) + (u32)rom;
 			u32 topatchoffset = address - offset - 8;
 			entersu();
 			switch (type)
@@ -924,7 +910,7 @@ u8 *utilLoad(const char *file, //ichfly todo
 	r = fread(image, 1, read, f);
 	
 	//set up header
-    memcpy((u8*)&GBAEMU4DS_IPC->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
+    memcpy((u8*)&SpecificIPCAlign->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
     
 #ifndef uppern_read_emulation
   fclose(f);
@@ -1023,7 +1009,7 @@ int save_decider(){
 //void * memcpy ( void * destination, const void * source, size_t num );
 int savetype=0;
 char gamecode[6]; 
-memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
+memcpy((char*)gamecode,(u8*)&SpecificIPCAlign->gbaheader.gamecode,6);
 
 //printf("GameCode is: %s \n",gamecode);
 //printf("GameCode is: %s \n",strtoupper(gamecode));

@@ -1,6 +1,6 @@
 #include "GBA.h"
 #include "GBAinline.h"
-#include "fatfileextract.h"
+#include "gbaemu4ds_fat_ext.h"
 #include "Util.h"
 
 __attribute__((section(".itcm")))

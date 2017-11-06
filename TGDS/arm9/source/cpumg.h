@@ -1,7 +1,12 @@
 #ifndef __CPU_H__
 #define __CPU_H__
 
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+
+#include "interrupts.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -43,6 +48,9 @@ void ichflyswiHalt();
 void ichflyswiWaitForVBlank();
 void ichflyswiIntrWait(u32 i,u32 c);
 
+
+extern void DC_FlushAll();
+extern void IC_InvalidateAll();
 
 #ifdef __cplusplus
 }

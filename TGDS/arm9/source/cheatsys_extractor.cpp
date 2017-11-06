@@ -57,7 +57,9 @@
 #define s8  signed   char
 */
 
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
 
 #include "Cheats.h"
 #include "NLS.h"

@@ -3,6 +3,7 @@
 #include "typedefs.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
+#include "GBA.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +14,6 @@
 #include <sys/dir.h>
 #include <fcntl.h>
 
-#include "fs.h"
 #include "gui.h"
 #include "nds_cp15_misc.h"
 
@@ -124,11 +124,7 @@ void getandpatchmap(int offsetgba,int offsetthisfile)
 }
 
 
-//part of fatfileextract.cpp
-
-#include <nds.h>
-#include "fatfileextract.h"
-#include "../GBA.h"
+//part of gbaemu4ds_fat_ext.cpp
 
 __attribute__((section(".itcm")))
 u8 ichfly_readu8(unsigned int pos) //need lockup

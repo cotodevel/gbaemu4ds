@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include "GBAinline.h"
 #include "armdis.h"
+#include "interrupts.h"
 #include "GBA.h"
-#include "fatfile.h"
-#include "fatfileextract.h"
+#include "gbaemu4ds_fat_ext.h"
 #include "Util.h"
 #include "cpumg.h"
 

@@ -29,6 +29,9 @@ USA
 #include "keypad.h"
 #include "interrupts.h"
 
+#define IME_DISABLE	(uint32)(0)
+#define IME_ENABLE	(uint32)(1)
+  
 #endif
 
 

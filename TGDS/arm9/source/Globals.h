@@ -92,47 +92,50 @@ extern u8 ioMem[0x400];
 
 extern u8 currentVRAMcapblock;
 
-extern volatile u16 DISPCNT;
-extern u16 DISPSTAT;
-extern u16 VCOUNT;
-extern u16 BG0CNT;
-extern u16 BG1CNT;
-extern u16 BG2CNT;
-extern u16 BG3CNT;
-extern u16 BG0HOFS;
-extern u16 BG0VOFS;
-extern u16 BG1HOFS;
-extern u16 BG1VOFS;
-extern u16 BG2HOFS;
-extern u16 BG2VOFS;
-extern u16 BG3HOFS;
-extern u16 BG3VOFS;
-extern u16 BG2PA;
-extern u16 BG2PB;
-extern u16 BG2PC;
-extern u16 BG2PD;
-extern u16 BG2X_L;
-extern u16 BG2X_H;
-extern u16 BG2Y_L;
-extern u16 BG2Y_H;
-extern u16 BG3PA;
-extern u16 BG3PB;
-extern u16 BG3PC;
-extern u16 BG3PD;
-extern u16 BG3X_L;
-extern u16 BG3X_H;
-extern u16 BG3Y_L;
-extern u16 BG3Y_H;
-extern u16 WIN0H;
-extern u16 WIN1H;
-extern u16 WIN0V;
-extern u16 WIN1V;
-extern u16 WININ;
-extern u16 WINOUT;
-extern u16 MOSAIC;
-extern u16 BLDMOD;
-extern u16 COLEV;
-extern u16 COLY;
+extern volatile u16 GBA_DISPCNT;
+extern u16 GBA_DISPSTAT;	
+extern u16 GBA_VCOUNT;	
+extern u16 GBA_BG0CNT;	
+extern u16 GBA_BG1CNT;	
+extern u16 GBA_BG2CNT;	
+extern u16 GBA_BG3CNT;	
+extern u16 GBA_BG0HOFS;
+extern u16 GBA_BG0VOFS;		
+extern u16 GBA_BG1HOFS;	
+extern u16 GBA_BG1VOFS;	
+extern u16 GBA_BG2HOFS;
+extern u16 GBA_BG2VOFS;	
+extern u16 GBA_BG3HOFS;
+extern u16 GBA_BG3VOFS;	
+extern u16 GBA_BG2PA;	
+extern u16 GBA_BG2PB;	
+extern u16 GBA_BG2PC;
+extern u16 GBA_BG2PD;	
+extern u16 GBA_BG2X_L;	
+extern u16 GBA_BG2X_H;	
+extern u16 GBA_BG2Y_L;
+extern u16 GBA_BG2Y_H;
+extern u16 GBA_BG3PA;
+extern u16 GBA_BG3PB;	
+extern u16 GBA_BG3PC;
+extern u16 GBA_BG3PD;
+extern u16 GBA_BG3X_L;
+extern u16 GBA_BG3X_H;
+extern u16 GBA_BG3Y_L;
+extern u16 GBA_BG3Y_H;
+extern u16 GBA_WIN0H;
+extern u16 GBA_WIN1H;
+extern u16 GBA_WIN0V;
+extern u16 GBA_WIN1V;
+extern u16 GBA_WININ;
+extern u16 GBA_WINOUT;
+extern u16 GBA_MOSAIC;	
+extern u16 GBA_BLDMOD;
+extern u16 GBA_COLEV;
+extern u16 GBA_COLY;	//SO FAR HERE
+
+//IPC
+/*
 extern u16 DM0SAD_L;
 extern u16 DM0SAD_H;
 extern u16 DM0DAD_L;
@@ -165,10 +168,12 @@ extern u16 TM2D;
 extern u16 TM2CNT;
 extern u16 TM3D;
 extern u16 TM3CNT;
-extern u16 P1;
 extern u16 IE;
 extern u16 IF;
 extern u16 IME;
+*/
+
+extern u16 P1;
 
 //ichfly
 extern u16 timer0Value;

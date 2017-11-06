@@ -1,6 +1,4 @@
 #include "dmaIO.h"
-#include "dma_ext.cpp"
-
 #include "socket.h"
 #include "in.h"
 #include <netdb.h>
@@ -35,6 +33,8 @@
 #include "gui.h"
 #include "dswnifi_lib.h"
 
+#include "dma.h"
+
 
 //DMA Interface from ARM9 -> ARM7 here
 
@@ -42,7 +42,7 @@
 
 void triggerdmairq(u8 num) //tigger an dma irq if dma is free
 {
-	DMA_SRC(num) = 0x1100000; //don't care about that it is open by pu and not writeabel by the dma
-	DMA_DEST(num) = 0x1200000; //don't care about that it is open by pu and not writeabel by the dma
-	DMA_CR(num) = DMA_ENABLE | DMA_IRQ_REQ | DMA_START_NOW | DMA_16_BIT | DMA_SRC_INC | DMA_DST_INC | 1;
+	DMAXSAD(num) = 0x1100000; //don't care about that it is open by pu and not writeabel by the dma
+	DMAXDAD(num) = 0x1200000; //don't care about that it is open by pu and not writeabel by the dma
+	DMAXCNT(num) = DMAENABLED | DMARAISEIRQ | DMASTART_INMEDIATE | DMA16BIT | DMAINCR_SRC | DMAINCR_DEST | 1; //DMA_ENABLE | DMA_IRQ_REQ | DMA_START_NOW | DMA_16_BIT | DMA_SRC_INC | DMA_DST_INC | 1;
 }

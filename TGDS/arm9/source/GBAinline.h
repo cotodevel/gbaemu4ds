@@ -22,7 +22,7 @@
 #ifndef VBA_GBAinline_H
 #define VBA_GBAinline_H
 
-#include "fatfileextract.h"
+#include "gbaemu4ds_fat_ext.h"
 #include "agbprint.h"
 #include "System.h"
 #include "Port.h"
@@ -33,7 +33,29 @@
 #include "cpumg.h"
 #include "main.h"
 
-#include <nds/interrupts.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
 
 /*
 extern u32  objTilesAddress [3];

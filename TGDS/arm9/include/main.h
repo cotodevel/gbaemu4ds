@@ -21,9 +21,18 @@ USA
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
+#include "gbaemu4ds_fat_ext.h"
+
 #define GBA_EWRAM ((void*)(0x02000000))
 
 #define public
+
+//#define MAXPATHLEN 256 
+#include <stdio.h>
+#define Log(...) printf(__VA_ARGS__)
+
+//extern volatile u8 arm7exchangefild[0x100];
+
 
 #endif
 

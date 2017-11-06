@@ -1,4 +1,7 @@
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
 #include "screenshot.h"
 #include "GBA.h"
 

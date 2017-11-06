@@ -1,43 +1,32 @@
-#include <nds.h>
-#include <stdio.h> 
 
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
-#include "interrupts/fifo_handler.h"
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
 
-#include <filesystem.h>
+#include "common_shared.h"
+#include "specific_shared.h"
+
 #include "getopt.h"
 #include "System.h"
-#include <fat.h>
 #include <dirent.h>
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdarg.h>
 
-#include <filesystem.h>
 #include "GBA.h"
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
 #include "System.h"
-#include <fat.h>
 #include <dirent.h>
 
 #include "cpumg.h"
 #include "GBAinline.h"
 #include "armdis.h"
 #include "main.h"
+
+#include "interrupts.h"
 
 #ifndef directcpu
 #include "anothercpu.h"
@@ -55,16 +44,6 @@ FILE * pFile;
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -376,7 +355,7 @@ void BIOScall(int op,  s32 *R)
 		break;
 	  case 0x02:
 #ifdef DEV_VERSION
-	    Log("Halt: IE %x\n",GBAEMU4DS_IPC->IE);
+	    Log("Halt: IE %x\n",SpecificIPCAlign->GBA_IE);
 #endif
 		//holdState = true;
 		//holdType = -1;
@@ -398,7 +377,7 @@ void BIOScall(int op,  s32 *R)
 			//holdType = -1;
 			//stopState = true;
 			//cpuNextEvent = cpuTotalTicks;
-			ichflyswiIntrWait(1,(GBAEMU4DS_IPC->IE & 0x6080));
+			ichflyswiIntrWait(1,(SpecificIPCAlign->GBA_IE & 0x6080));
 		  break;
 	  case 0x04:
 
@@ -428,8 +407,14 @@ void BIOScall(int op,  s32 *R)
 #endif
 		//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 		//send cmd
-		REG_IPC_FIFO_TX = 0x1FFFFFFB; //tell the arm7
-		REG_IPC_FIFO_TX = 0;
+		
+		//ori
+		//REG_IPC_FIFO_TX = 0x1FFFFFFB; //tell the arm7
+		//REG_IPC_FIFO_TX = 0;
+		
+		//new
+		SendMultipleWordACK(0x1FFFFFFB, 0, 0, 0);
+		
 		ichflyswiWaitForVBlank();
 
 		break;
@@ -551,13 +536,13 @@ void switch_to_unprivileged_mode()
 
 void emulateedbiosstart()
 {
-	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~BIT(13));
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~(1<<13));
 }
 
 
 void downgreadcpu()
 {
-	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | BIT(15));
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | (1<<15));
 }
 
 __attribute__((section(".itcm")))

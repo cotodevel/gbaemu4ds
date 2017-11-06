@@ -16,11 +16,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 #ifndef VBA_GBAinline_H
 #define VBA_GBAinline_H
 
-
-#include "fatfileextract.h"
+#include "gbaemu4ds_fat_ext.h"
 #include "agbprint.h"
 #include "System.h"
 #include "Port.h"
@@ -30,7 +30,29 @@
 #include "ichflysettings.h"
 #include "main.h"
 
-#include <nds/interrupts.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
 
 
 extern bool cpuSramEnabled;

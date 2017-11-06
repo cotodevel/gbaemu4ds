@@ -32,6 +32,9 @@ USA
 #include <fcntl.h>
 #include <dirent.h>
 
+
+#include "gbaemu4ds_fat_ext.h"
+
 #include "main.h"
 #include "InterruptsARMCores_h.h"
 #include "specific_shared.h"
@@ -51,6 +54,15 @@ USA
 #include "keypad.h"
 #include "gui.h"
 #include "dswnifi_lib.h"
+
+#include "Globals.h"
+#include "interrupts.h"
+#include "GBA.h"
+#include "Util.h"
+#include "bios.h"
+#include "ipc.h"
+#include "dma.h"
+#include "cpumg.h"
 
 int argc;
 sint8 **argv;
@@ -151,7 +163,7 @@ int main(int _argc, sint8 **_argv) {
 	//switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
 	
 	//set up GBA part
-	DISPCNT  = 0x0080;
+	GBA_DISPCNT  = 0x0080;
 	
 	//coto:
 	/*
@@ -172,6 +184,12 @@ int main(int _argc, sint8 **_argv) {
 	}*/
 	
 	//main menü ende aber bleibe im while
+	bool extraram =false; 
+	bool failed = false;
+	bool slow = false;
+	
+	u32 manual_save_type = 0 ;
+	
 	//set up paths.. todo
 	strcpy(szFile,"");
 	strcpy(savePath,"");
@@ -272,16 +290,22 @@ int main(int _argc, sint8 **_argv) {
 	BIOS_RegisterRamReset(0xFF);
 	pu_Enable();
 	
-	dmaTransfer(0, (void*)rom, 0x2000000, 0x40000);	//file copy: 256K minimal payload
+	dmaTransfer(0, (uint32)rom, 0x2000000, 0x40000);	//file copy: 256K minimal payload
 	printf("dmaCopy Success:%x",(uint32)*(uint32*)0x2000000);
 	
 	printf("arm7init ");
 	anytimejmpfilter = 0;
 	
 	VblankHandler();
-	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
-	REG_IPC_FIFO_TX = syncline;
-	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX;
+	
+	u32 syncline = 159;
+	//ori
+	//REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
+	//REG_IPC_FIFO_TX = syncline;
+	
+	SendMultipleWordACK(0x1FFFFFFF,syncline,0,0);
+	
+	while(!(REG_IPC_FIFO_CR & RECV_FIFO_IPC_EMPTY))u32 src = REG_IPC_FIFO_RX;
 	printf("irqinit\n");
 	
 	printf("emulateedbiosstart\n");
@@ -316,7 +340,7 @@ int main(int _argc, sint8 **_argv) {
 		REG_IME = IME_ENABLE;
 		gbaMode2();
 	#ifndef capture_and_pars
-		printf("jump to (%08X) : RTC: %d:%d:%d \n\r",(unsigned int)rom,(unsigned int)gba_get_hourrtc(),(unsigned int)gba_get_minrtc(),(unsigned int)gba_get_secrtc());
+		printf("jump to (%08X)  ",(unsigned int)rom);
 	#endif
 
 	//printf("\x1b[2J"); //reset (not working huh)

@@ -1,14 +1,15 @@
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "common_shared.h"
+#include "specific_shared.h"
+
 #include <stdio.h>
 #include "ichflysettings.h"
 #include "main.h"
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
 
-#include <nds.h>
 #include <stdio.h>
-#include <filesystem.h>
-#include <fat.h>
 #include <dirent.h>
 #include <stdarg.h>
 #include <string.h>
@@ -27,16 +28,31 @@
 #include "main.h"
 
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
-#include <nds/ndstypes.h>
-#include <nds/memory.h>
-#include <nds/bios.h>
-#include <nds/system.h>
-#include <nds/arm9/math.h>
-#include <nds/arm9/video.h>
-#include <nds/arm9/videoGL.h>
-#include <nds/arm9/trig_lut.h>
-#include <nds/arm9/sassert.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
+
+#include "fsfat_layer.h"
+#include "file.h"
+#include "InterruptsARMCores_h.h"
+#include "specific_shared.h"
+#include "ff.h"
+#include "mem_handler_shared.h"
+#include "reent.h"
+#include "sys/types.h"
+#include "console.h"
+#include "toolchain_utils.h"
+#include "devoptab_devices.h"
+#include "posix_hook_shared.h"
+#include "about.h"
+#include "xenofunzip.h"
+
 
 /*
 #ifdef anyarmcom

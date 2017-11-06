@@ -20,7 +20,9 @@
 #define gzFile void* //ichfly
 #define voidp void*
 
-#include <nds.h>
+#include "typedefs.h"
+#include "dsregs.h"
+#include "dsregs_asm.h"
 #include <stdio.h>
 
 #ifndef VBA_UTIL_H
