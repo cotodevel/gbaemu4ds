@@ -535,7 +535,7 @@ bool CPUWriteBatteryFile(const char *fileName)
   }
   
   if((gbaSaveType) && (gbaSaveType!=5)) {
-    FILE *file = fopen(fileName, "wb");
+    FILE *file = fopen_fs(fileName, "wb");
     
     if(!file) {
       systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
@@ -546,61 +546,61 @@ bool CPUWriteBatteryFile(const char *fileName)
     // only save if Flash/Sram in use or EEprom in use
     if(gbaSaveType != 3) {
       if(gbaSaveType == 2) {
-        if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize) {
-          fclose(file);
+        if(fwrite_fs(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize) {
+          fclose_fs(file);
           return false;
         }
       } else {
-        if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-          fclose(file);
+        if(fwrite_fs(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
+          fclose_fs(file);
           return false;
         }
       }
     } else {
-      if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize) {
-        fclose(file);
+      if(fwrite_fs(eepromData, 1, eepromSize, file) != (size_t)eepromSize) {
+        fclose_fs(file);
         return false;
       }
     }
-    fclose(file);
+    fclose_fs(file);
   }
   return true;
 }
 bool CPUReadBatteryFile(const char *fileName)
 {
-  FILE *file = fopen(fileName, "rb");
+  FILE *file = fopen_fs(fileName, "rb");
     
   if(!file)
     return false;
   
   // check file size to know what we should read
-  fseek(file, 0, SEEK_END);
+  fseek_fs(file, 0, SEEK_END);
 
-  long size = ftell(file);
-  fseek(file, 0, SEEK_SET);
+  int size = ftell_fs(file);
+  fseek_fs(file, 0, SEEK_SET);
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   if(size == 512 || size == 0x2000) {
-    if(fread(eepromData, 1, size, file) != (size_t)size) {
-      fclose(file);
+    if(fread_fs(eepromData, 1, size, file) != (size_t)size) {
+      fclose_fs(file);
       return false;
     }
   } else {
     if(size == 0x20000) {
-      if(fread(flashSaveMemory, 1, 0x20000, file) != 0x20000) {
-        fclose(file);
+      if(fread_fs(flashSaveMemory, 1, 0x20000, file) != 0x20000) {
+        fclose_fs(file);
         return false;
       }
       flashSetSize(0x20000);
     } else {
-      if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-        fclose(file);
+      if(fread_fs(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
+        fclose_fs(file);
         return false;
       }
       flashSetSize(0x10000);
     }
   }
-  fclose(file);
+  fclose_fs(file);
   return true;
 }
 
@@ -789,9 +789,9 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 					//while(1);
 #else
 					//doDMAslow(s, d, si, di, c, transfer32);
-					fseek (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
+					fseek_fs (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
 					//printf("seek %08X\r\n",s&0x1FFFFFF);
-					int dkdkdkdk = fread ((void*)d,1,c * 4,ichflyfilestream); // fist is buggy
+					int dkdkdkdk = fread_fs ((void*)d,1,c * 4,ichflyfilestream); // fist is buggy
 					//printf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
 #endif
 				}
@@ -805,9 +805,9 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 #else
 					//printf("teeees");
 					//doDMAslow(s, d, si, di, c, transfer32);
-					fseek (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
+					fseek_fs (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
 					//printf("seek %08X\r\n",s&0x1FFFFFF);
-					int dkdkdkdk = fread ((void*)d,1,c * 2,ichflyfilestream);
+					int dkdkdkdk = fread_fs ((void*)d,1,c * 2,ichflyfilestream);
 					//printf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
 #endif
 				}
@@ -3011,10 +3011,10 @@ void Log(const char *defaultMsg, ...)
   vsprintf(buffer, defaultMsg, valist);
 
   if(out == NULL) {
-    out = fopen("trace.Log","w");
+    out = fopen_fs("trace.Log","w");
   }
 
-  fputs(buffer, out);
+  fputs_fs(buffer, out);
   
   va_end(valist);
 }
@@ -3686,8 +3686,8 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFC))
 		{
-			//fseek(ichflyfilestream , address&0x1FFFFFC , SEEK_SET);
-			//fread(&value,1,4,ichflyfilestream);
+			//fseek_fs(ichflyfilestream , address&0x1FFFFFC , SEEK_SET);
+			//fread_fs(&value,1,4,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFC),(char*)&value,4);
 			value = ichfly_readu32(address&0x1FFFFFC);
 		}
@@ -3891,8 +3891,8 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFE))
 		{
-			//fseek (ichflyfilestream , address&0x1FFFFFE , SEEK_SET);
-			//fread (&value,1,2,ichflyfilestream);
+			//fseek_fs (ichflyfilestream , address&0x1FFFFFE , SEEK_SET);
+			//fread_fs (&value,1,2,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFE),(char*)&value,2);
 			value = ichfly_readu16(address&0x1FFFFFE);
 		}
@@ -4058,8 +4058,8 @@ printf("r8 %02x\n",address);
 		if(ichflyfilestreamsize > (address&0x1FFFFFF))
 		{
 			//u8 temp = 0;
-			//fseek (ichflyfilestream , address&0x1FFFFFF , SEEK_SET);
-			//fread (&temp,1,1,ichflyfilestream);
+			//fseek_fs (ichflyfilestream , address&0x1FFFFFF , SEEK_SET);
+			//fread_fs (&temp,1,1,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFF),(char*)&temp,1);
 			return ichfly_readu8(address&0x1FFFFFF);
 		}
@@ -4236,8 +4236,8 @@ u32 CPUReadMemoryrealpu(u32 address)
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFC))
 		{
-			//fseek(ichflyfilestream , address&0x1FFFFFC , SEEK_SET);
-			//fread(&value,1,4,ichflyfilestream);
+			//fseek_fs(ichflyfilestream , address&0x1FFFFFC , SEEK_SET);
+			//fread_fs(&value,1,4,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFC),(char*)&value,4);
 			value = ichfly_readu32(address&0x1FFFFFC);
 		}
@@ -4407,8 +4407,8 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFE))
 		{
-			//fseek (ichflyfilestream , address&0x1FFFFFE , SEEK_SET);
-			//fread (&value,1,2,ichflyfilestream);
+			//fseek_fs (ichflyfilestream , address&0x1FFFFFE , SEEK_SET);
+			//fread_fs (&value,1,2,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFE),(char*)&value,2);
 			value = ichfly_readu16(address&0x1FFFFFE);
 		}
@@ -4520,8 +4520,8 @@ printf("r8 %02x\n",address);
 		if(ichflyfilestreamsize > (address&0x1FFFFFF))
 		{
 			//u8 temp = 0;
-			//fseek (ichflyfilestream , address&0x1FFFFFF , SEEK_SET);
-			//fread (&temp,1,1,ichflyfilestream);
+			//fseek_fs (ichflyfilestream , address&0x1FFFFFF , SEEK_SET);
+			//fread_fs (&temp,1,1,ichflyfilestream);
 			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFF),(char*)&temp,1);
 			return ichfly_readu8(address&0x1FFFFFF);
 		}

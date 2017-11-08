@@ -63,6 +63,7 @@ USA
 #include "ipc.h"
 #include "dma.h"
 #include "cpumg.h"
+#include "posix_hook_shared.h"
 
 int argc;
 sint8 **argv;
@@ -244,7 +245,7 @@ int main(int _argc, sint8 **_argv) {
 
 	//detect savefile (filename.sav)
 	sprintf(fn_noext,"%ssav",fn_noext);
-	FILE * frh = fopen(fn_noext,"r");
+	FILE * frh = fopen_fs(fn_noext,"r");
 
 	//if(frh)
 	//    printf("current save path: %s DO exists",fn_noext);
@@ -282,7 +283,7 @@ int main(int _argc, sint8 **_argv) {
 			printf("failed reading: %s\n",savePath);
 			while(1);
 		}
-		fclose(frh);
+		fclose_fs(frh);
 	}
 	
 	printf("BIOS_RegisterRamReset\n");

@@ -47,9 +47,6 @@ typedef struct {
 extern "C"{
 #endif
 
-
-void generatefilemap(int size);
-
 extern bool utilWritePNGFile(const char *, int, int, u8 *);
 extern bool utilWriteBMPFile(const char *, int, int, u8 *);
 extern void utilApplyIPS(const char *ips, u8 **rom, int *size);

@@ -100,7 +100,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 {
   u8 writeBuffer[512 * 3];
   
-  FILE *fp = fopen(fileName,"wb");
+  FILE *fp = fopen_fs(fileName,"wb");
 
   if(!fp) {
     systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"), fileName);
@@ -112,7 +112,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
                                                 NULL,
                                                 NULL);
   if(!png_ptr) {
-    fclose(fp);
+    fclose_fs(fp);
     return false;
   }
 
@@ -120,13 +120,13 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 
   if(!info_ptr) {
     png_destroy_write_struct(&png_ptr,NULL);
-    fclose(fp);
+    fclose_fs(fp);
     return false;
   }
 
   if(setjmp(png_ptr->jmpbuf)) {
     png_destroy_write_struct(&png_ptr,NULL);
-    fclose(fp);
+    fclose_fs(fp);
     return false;
   }
 
@@ -219,7 +219,7 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 
   png_destroy_write_struct(&png_ptr, &info_ptr);
 
-  fclose(fp);
+  fclose_fs(fp);
 
   return true;  
 }
@@ -489,16 +489,16 @@ static u8 *utilLoadGzipFile(const char *file,
                             u8 *data,
                             int &size)
 {
-  FILE *f = fopen(file, "rb");
+  FILE *f = fopen_fs(file, "rb");
 
   if(f == NULL) {
     systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), file);
     return NULL;
   }
 
-  fseek(f, -4, SEEK_END);
-  int fileSize = fgetc(f) | (fgetc(f) << 8) | (fgetc(f) << 16) | (fgetc(f) << 24);
-  fclose(f);
+  fseek_fs(f, -4, SEEK_END);
+  int fileSize = fgetc_fs(f) | (fgetc_fs(f) << 8) | (fgetc_fs(f) << 16) | (fgetc_fs(f) << 24);
+  fclose_fs(f);
   if(size == 0)
     size = fileSize;
 
@@ -517,7 +517,7 @@ static u8 *utilLoadGzipFile(const char *file,
     if(image == NULL) {
       systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
                     "data");
-      fclose(f);
+      fclose_fs(f);
       return NULL;
     }
     size = fileSize;
@@ -609,9 +609,9 @@ void leavesu()
 }
 void patchit(int romSize2)
 {
-	FILE *patchf = fopen(patchPath, "rb");
+	FILE *patchf = fopen_fs(patchPath, "rb");
 	u8 header[0x50];
-	fread(header,1,0x50,patchf);
+	fread_fs(header,1,0x50,patchf);
 	if(memcmp(header,"flygbapatch",0xC))
 	{
 		systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error in patchfile"));
@@ -621,7 +621,7 @@ void patchit(int romSize2)
 	for(int i = 0;i < patchnum;i++)
 	{
 		int type;
-		fread((void*)&type,1,0x4,patchf);
+		fread_fs((void*)&type,1,0x4,patchf);
 		switch (type)
 		{
 		
@@ -629,21 +629,21 @@ void patchit(int romSize2)
 			{
 			int offsetgba;
 			int offsetthisfile;
-			fread((void*)&offsetgba,1,0x4,patchf);
-			fread((void*)&offsetthisfile,1,0x4,patchf);
+			fread_fs((void*)&offsetgba,1,0x4,patchf);
+			fread_fs((void*)&offsetthisfile,1,0x4,patchf);
 			if(offsetgba + chucksize < romSize2)
 			{
-				int coo = ftell(patchf);
-				fseek(patchf,offsetthisfile,SEEK_SET);
-				fread(rom + offsetgba,1,chucksize,patchf);
-				fseek(patchf,coo,SEEK_SET);
+				int coo = ftell_fs(patchf);
+				fseek_fs(patchf,offsetthisfile,SEEK_SET);
+				fread_fs(rom + offsetgba,1,chucksize,patchf);
+				fseek_fs(patchf,coo,SEEK_SET);
 			}
 			else
 			{
 				getandpatchmap(offsetgba,offsetthisfile);
 			}
 #ifdef debugpatch
-			printf("patch gbaedit from %08X to %08X (%08X)\n\r",offsetthisfile,offsetgba,ftell(patchf));
+			printf("patch gbaedit from %08X to %08X (%08X)\n\r",offsetthisfile,offsetgba,ftell_fs(patchf));
 #endif
 			}
 			break;
@@ -651,16 +651,16 @@ void patchit(int romSize2)
 			{
 			#ifdef arm7dmapluscheats
 			
-			fread((void*)&cheatsNumber,1,0x4,patchf);
+			fread_fs((void*)&cheatsNumber,1,0x4,patchf);
 			int offset;
-			fread((void*)&offset,1,0x4,patchf);
-			int coo5 = ftell(patchf);
-			fseek(patchf,offset,SEEK_SET);
-			fread((void*)cheatsList,1,cheatsNumber*28,patchf);
-			fseek(patchf,coo5,SEEK_SET);
+			fread_fs((void*)&offset,1,0x4,patchf);
+			int coo5 = ftell_fs(patchf);
+			fseek_fs(patchf,offset,SEEK_SET);
+			fread_fs((void*)cheatsList,1,cheatsNumber*28,patchf);
+			fseek_fs(patchf,coo5,SEEK_SET);
 			__irqSet(IRQ_FIFO_NOT_EMPTY,arm7dmareqandcheat,irqTable);
 #ifdef debugpatch
-			printf("patch cheats %08X from %08X (%08X)\n\r",cheatsNumber,cheatsList,ftell(patchf));
+			printf("patch cheats %08X from %08X (%08X)\n\r",cheatsNumber,cheatsList,ftell_fs(patchf));
 #endif
 			#endif
 			
@@ -669,32 +669,32 @@ void patchit(int romSize2)
 		case 2:
 			{
 			u32 gbaoffset;
-			fread((void*)&gbaoffset,1,0x4,patchf);
+			fread_fs((void*)&gbaoffset,1,0x4,patchf);
 			u32 payloadsize;
-			fread((void*)&payloadsize,1,0x4,patchf);
+			fread_fs((void*)&payloadsize,1,0x4,patchf);
 			int offset;
-			fread((void*)&offset,1,0x4,patchf);
-			int coo = ftell(patchf);
-			fseek(patchf,offset,SEEK_SET);
+			fread_fs((void*)&offset,1,0x4,patchf);
+			int coo = ftell_fs(patchf);
+			fseek_fs(patchf,offset,SEEK_SET);
 			entersu();
-			fread((void*)gbaoffset,1,payloadsize,patchf);
+			fread_fs((void*)gbaoffset,1,payloadsize,patchf);
 			leavesu();
-			fseek(patchf,coo,SEEK_SET);
+			fseek_fs(patchf,coo,SEEK_SET);
 #ifdef debugpatch
-			printf("patch direct write to %08X from %08X size %08X (%08X)\n\r",gbaoffset,offset,payloadsize,ftell(patchf));
+			printf("patch direct write to %08X from %08X size %08X (%08X)\n\r",gbaoffset,offset,payloadsize,ftell_fs(patchf));
 #endif
 			break;
 			}
 		case 3:
 			{
 			u8 type;
-			fread((void*)&type,1,0x1,patchf);
+			fread_fs((void*)&type,1,0x1,patchf);
 			u32 offset;
-			fread((void*)&offset,1,0x4,patchf);
+			fread_fs((void*)&offset,1,0x4,patchf);
 			int address;
-			fread((void*)&address,1,0x4,patchf);
+			fread_fs((void*)&address,1,0x4,patchf);
 			u32 Condition;
-			fread((void*)&Condition,1,0x4,patchf);
+			fread_fs((void*)&Condition,1,0x4,patchf);
 			if(offset & (1<<31))offset = (offset & ~(1<<31)) + (u32)rom;
 			u32 topatchoffset = address - offset - 8;
 			entersu();
@@ -719,19 +719,19 @@ void patchit(int romSize2)
 			}
 			leavesu();
 #ifdef debugpatch
-			printf("link to sa type %08X where %08X dest %08X Condition %08X (%08X)\n\r",type,offset,address,Condition,ftell(patchf));
+			printf("link to sa type %08X where %08X dest %08X Condition %08X (%08X)\n\r",type,offset,address,Condition,ftell_fs(patchf));
 #endif
 			}
 			break;
 			case 4:
 			{
 			u8 type;
-			fread((void*)&type,1,0x1,patchf);
+			fread_fs((void*)&type,1,0x1,patchf);
 			u32 offset;
-			fread((void*)&offset,1,0x4,patchf);
+			fread_fs((void*)&offset,1,0x4,patchf);
 			int function;
 			int address;
-			fread((void*)&function,1,0x4,patchf);
+			fread_fs((void*)&function,1,0x4,patchf);
 			switch (function)
 			{
 				case 0:
@@ -801,7 +801,7 @@ void patchit(int romSize2)
 					break;
 			}
 			u32 Condition;
-			fread((void*)&Condition,1,0x4,patchf);
+			fread_fs((void*)&Condition,1,0x4,patchf);
 			if(offset & (1<<31))offset = (offset & ~(1<<31)) + (u32)rom;
 			u32 topatchoffset = address - offset - 8;
 			entersu();
@@ -826,7 +826,7 @@ void patchit(int romSize2)
 			}
 			leavesu();
 #ifdef debugpatch
-			printf("link to sf type %08X where %08X function %08X Condition %08X (%08X)\n\r",type,offset,function,Condition,ftell(patchf));
+			printf("link to sf type %08X where %08X function %08X Condition %08X (%08X)\n\r",type,offset,function,Condition,ftell_fs(patchf));
 #endif
 			}
 			break;
@@ -837,28 +837,28 @@ void patchit(int romSize2)
 				extern u8 VCountdstogba[263]; //(LY)      (0..262)
 				extern u8 VCountdoit[263]; //jump in or out
 				u32 offsetthisfile;
-				fread((void*)&offsetthisfile,1,0x4,patchf);
+				fread_fs((void*)&offsetthisfile,1,0x4,patchf);
 
-				int coo = ftell(patchf);
-				fseek(patchf,offsetthisfile,SEEK_SET);
-				fread(VCountgbatods,1,0x100,patchf);
-				fread(VCountdstogba,1,263,patchf);
-				fread(VCountdoit,1,263,patchf);
-				fseek(patchf,coo,SEEK_SET);
+				int coo = ftell_fs(patchf);
+				fseek_fs(patchf,offsetthisfile,SEEK_SET);
+				fread_fs(VCountgbatods,1,0x100,patchf);
+				fread_fs(VCountdstogba,1,263,patchf);
+				fread_fs(VCountdoit,1,263,patchf);
+				fseek_fs(patchf,coo,SEEK_SET);
 			#endif
 			}
 			break;
 		}
 	}
 	char patchmsg[0x100];
-	if(fread(patchmsg,1,0x100,patchf) > 0)
+	if(fread_fs(patchmsg,1,0x100,patchf) > 0)
 	{
 		printf(patchmsg);
 	}
 #ifdef debugpatch
 		printf("end (%X)",patchnum);
 #endif
-		fclose(patchf);
+		fclose_fs(patchf);
 }
 
 u8 *utilLoad(const char *file, //ichfly todo
@@ -868,16 +868,16 @@ u8 *utilLoad(const char *file, //ichfly todo
   u8 *image = data;
 
 
-  FILE *f = fopen(file, "rb");
+  FILE *f = fopen_fs(file, "rb");
 
   if(!f) {
     systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), file);
     return NULL;
   }
 
-  fseek(f,0,SEEK_END);
-  int fileSize = ftell(f);
-  fseek(f,0,SEEK_SET);
+  fseek_fs(f,0,SEEK_END);
+  int fileSize = ftell_fs(f);
+  fseek_fs(f,0,SEEK_SET);
 
   generatefilemap(fileSize);
 
@@ -897,23 +897,23 @@ u8 *utilLoad(const char *file, //ichfly todo
   /*int seek = 0;
   while(r == 0x80000)
   {
-	fseek(f,seek,SEEK_SET);
-	if(read > 0x80000)r = fread(image, 1, 0x80000, f); //512 KByte chucks
-	else r = fread(image, 1, read, f);
+	fseek_fs(f,seek,SEEK_SET);
+	if(read > 0x80000)r = fread_fs(image, 1, 0x80000, f); //512 KByte chucks
+	else r = fread_fs(image, 1, read, f);
 	read -= r;
 	image += r;
 	seek += r;
-	fclose(f);
-	f = fopen(file, "rb"); //close and open
+	fclose_fs(f);
+	f = fopen_fs(file, "rb"); //close and open
   }*/
 
-	r = fread(image, 1, read, f);
+	r = fread_fs(image, 1, read, f);
 	
 	//set up header
     memcpy((u8*)&SpecificIPCAlign->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
     
 #ifndef uppern_read_emulation
-  fclose(f);
+  fclose_fs(f);
 #else
   ichflyfilestream = f;
 #endif
