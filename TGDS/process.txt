@@ -6,6 +6,29 @@ then add changes from:
 
 
 
+//POSIX:
+filesystem to replace:
+
+for posix call reference to: 
+#include "posix_hook_shared.h"
+
+
+fopen	ok
+fread	ok
+fwrite	ok
+fclose	ok
+fseek	ok
+ftell	ok
+fputs	ok
+fputc	ok
+putc	ok
+fprintf	ok
+fgetc	ok
+fgets	ok
+feof	ok
+ferror	ok
+fdopen	ok
+
 //
 
 

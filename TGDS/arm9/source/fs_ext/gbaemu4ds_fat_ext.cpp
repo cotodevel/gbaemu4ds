@@ -3,7 +3,6 @@
 #include "typedefs.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
-#include "GBA.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -14,9 +13,10 @@
 #include <sys/dir.h>
 #include <fcntl.h>
 
+#include "GBA.h"
 #include "gui.h"
 #include "nds_cp15_misc.h"
-
+#include "dldi.h"
 #include "fsfat_layer.h"
 #include "file.h"
 #include "InterruptsARMCores_h.h"
@@ -31,8 +31,9 @@
 #include "posix_hook_shared.h"
 #include "about.h"
 #include "xenofunzip.h"
+#include "ichflysettings.h"
 
-u32 *sectortabel;
+u8 *sectortabel;	//u32 *sectortabel;
 void * lastopen;
 void * lastopenlocked;
 
@@ -40,33 +41,59 @@ void * lastopenlocked;
 PARTITION* partitionlocked;
 FN_MEDIUM_READSECTORS	readSectorslocked;
 */
+
+int PosixStructFDLastLoadFile;	//Coto: a StructFD non-posix file descriptor having the handle for the FILE * open at the time the sector table map was generated.
+								//TGDS uses this to access the FSFAT level file attributes
 u32 current_pointer = 0;
 u32 allocedfild[buffslots];
 u8* greatownfilebuffer;
 
+//DLDI Interface @ io_dldi_data->ioInterface.readSectors(sector, count, buff)
+
 //part of fatfile.c
-void generatefilemap(int size)
+void generatefilemap(FILE * f, int size)	//FILE * f is already open at this point.
 {
-	FILE_STRUCT* file = (FILE_STRUCT*)(lastopen);
-	lastopenlocked = lastopen; //copy
-	PARTITION* partition;
+	//FILE_STRUCT* file = (FILE_STRUCT*)(lastopen);
+	//lastopenlocked = lastopen; //copy
+	//PARTITION* partition;
+	
 	uint32_t cluster;
 	int clusCount;
-	partition = file->partition;
-	partitionlocked = partition;
+	//partition = file->partition;
+	//partitionlocked = partition;
 
-	readSectorslocked = file->partition->disc->readSectors;
+	//readSectorslocked = file->partition->disc->readSectors;
 	printf("generating file map (size %d Byte)",((size/chucksize) + 1)*8);
-	sectortabel =(u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
-	greatownfilebuffer =(u8*)malloc(chucksize * buffslots);
-
-	clusCount = size/partition->bytesPerCluster;
-	cluster = file->startCluster;
-
-
+	sectortabel = (u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
+	greatownfilebuffer = (u8*)malloc(chucksize * buffslots);
+	
+	clusCount = size/(getDiskClusterSize());	//partition->bytesPerCluster;	
+	
+	sint32 fd = -1;
+	struct fd * fdinst = NULL;
+	if(f){
+		fd = fileno(f);
+		fdinst = fd_struct_get(fd);
+		
+		if(fdinst->filPtr){	//File open OK.
+			PosixStructFDLastLoadFile = fd;	//use fd_struct_get(PosixStructFDLastLoadFile) to access the File from now on!
+			cluster = getStructFDFirstSector(fdinst);	//cluster = file->startCluster;
+		}
+		else{	//File open ERROR.
+			clrscr();
+			printf("this is not a FIL * !!");
+			while(1==1){}
+		}
+	}
+	else{
+		clrscr();
+		printf("the FILE * was closed.");
+		while(1==1){}
+	}
+	
 	//setblanc
 	int i = 0;
-	while(i < (partition->bytesPerCluster/chucksize)*clusCount+1)
+	while(i < (getDiskClusterSize()/chucksize)*clusCount+1) //while(i < (partition->bytesPerCluster/chucksize)*clusCount+1)
 	{
 		sectortabel[i*2] = 0x0;
 		i++;
@@ -78,32 +105,38 @@ void generatefilemap(int size)
 		i++;
 	}
 
-
+	//this actual Cluster
 	int mappoffset = 0;
 	i = 0;
-	while(i < (partition->bytesPerCluster/chucksize))
+	while(i < (getDiskClusterSize()/chucksize))	//while(i < (partition->bytesPerCluster/chucksize))
 	{
-		sectortabel[mappoffset*2 + 1] = _FAT_fat_clusterToSector(partition, cluster) + i;
+		sectortabel[mappoffset*2 + 1] = clust2sect(fdinst->filPtr->obj.fs, fdinst->filPtr->obj.sclust) + i;	//_FAT_fat_clusterToSector(partition, cluster) + i;
 		mappoffset++;
 		i++;
 	}
+	
+	//Iterate over several Clusters
+	int ClusterOffset = 1;	//start from next Cluster please
 	while (clusCount > 0) {
 		clusCount--;
-		cluster = _FAT_fat_nextCluster (partition, cluster);
+		//cluster = _FAT_fat_nextCluster (partition, cluster);
 
 		i = 0;
-		while(i < (partition->bytesPerCluster/chucksize))
+		while(i < (getDiskClusterSize()/chucksize))	//while(i < (partition->bytesPerCluster/chucksize))
 		{
-			sectortabel[mappoffset*2 + 1] = _FAT_fat_clusterToSector(partition, cluster) + i;
+			sectortabel[mappoffset*2 + 1] = clust2sect(fdinst->filPtr->obj.fs, fdinst->filPtr->obj.sclust + ClusterOffset) + i;	//_FAT_fat_clusterToSector(partition, cluster) + i;
 			mappoffset++;
 			i++;
 		}
+		ClusterOffset++;
 	}
 
 }
 
 void getandpatchmap(int offsetgba,int offsetthisfile)
 {
+	//todo
+	/*
 	FILE_STRUCT* file = (FILE_STRUCT*)(lastopen);
 	PARTITION* partition;
 	uint32_t cluster;
@@ -121,6 +154,7 @@ void getandpatchmap(int offsetgba,int offsetthisfile)
 		cluster = _FAT_fat_nextCluster (partition, cluster);
 	}
 	sectortabel[mappoffset*2 + 1] = _FAT_fat_clusterToSector(partition, cluster) + offset1;
+	*/
 }
 
 
@@ -145,7 +179,7 @@ u8 ichfly_readu8(unsigned int pos) //need lockup
 	asd = greatownfilebuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 
-	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
+	io_dldi_data->ioInterface.readSectors(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);	//readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
 #ifdef countpagefalts
 pagefehler++;
 #endif
@@ -174,7 +208,7 @@ u16 ichfly_readu16(unsigned int pos) //need lockup
 	asd = greatownfilebuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 	
-	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
+	io_dldi_data->ioInterface.readSectors(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);	//readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
 #ifdef countpagefalts
 pagefehler++;
 #endif
@@ -203,7 +237,7 @@ u32 ichfly_readu32(unsigned int pos) //need lockup
 	asd = greatownfilebuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 
-	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
+	io_dldi_data->ioInterface.readSectors(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);	//readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
 #ifdef countpagefalts
 pagefehler++;
 #endif
@@ -257,7 +291,7 @@ void ichfly_readdma_rom(u32 pos,u8 *ptr,u32 c,int readal) //need lockup only ali
 			asd = (u32*)(greatownfilebuffer + current_pointer * chucksize);
 			sectortabel[mappoffset*2] = (u32)asd;
 
-			readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
+			io_dldi_data->ioInterface.readSectors(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);	//readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
 			#ifdef countpagefalts
 pagefehler++;
 #endif
@@ -307,7 +341,7 @@ pagefehler++;
 			asd = (u16*)(greatownfilebuffer + current_pointer * chucksize);
 			sectortabel[mappoffset*2] = (u32)asd;
 
-			readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
+			io_dldi_data->ioInterface.readSectors(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);	//readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
 			#ifdef countpagefalts
 pagefehler++;
 #endif

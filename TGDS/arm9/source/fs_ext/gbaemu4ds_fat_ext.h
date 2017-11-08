@@ -14,9 +14,10 @@
 #include <sys/dir.h>
 #include <fcntl.h>
 
+#include "GBA.h"
 #include "gui.h"
 #include "nds_cp15_misc.h"
-
+#include "dldi.h"
 #include "fsfat_layer.h"
 #include "file.h"
 #include "InterruptsARMCores_h.h"
@@ -42,7 +43,7 @@ extern "C" {
 #endif
 
 //part of fatfile.c
-extern u32 *sectortabel;
+extern u8 *sectortabel;	//extern u32 *sectortabel;
 extern void * lastopen;
 extern void * lastopenlocked;
 
@@ -50,11 +51,14 @@ extern void * lastopenlocked;
 PARTITION* partitionlocked;
 FN_MEDIUM_READSECTORS	readSectorslocked;
 */
+
+extern int PosixStructFDLastLoadFile;	//Coto: a StructFD non-posix file descriptor having the handle for the FILE * opened at the time the sector table map was generated.
+										//TGDS uses this to access the FSFAT level file attributes
 extern u32 current_pointer;
 extern u32 allocedfild[buffslots];
 extern u8* greatownfilebuffer;
 
-extern void generatefilemap(int size);
+extern void generatefilemap(FILE * f,int size);
 extern void getandpatchmap(int offsetgba,int offsetthisfile);
 
 //part of gbaemu4ds_fat_ext.cpp

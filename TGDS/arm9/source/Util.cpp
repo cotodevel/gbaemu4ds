@@ -879,7 +879,7 @@ u8 *utilLoad(const char *file, //ichfly todo
   int fileSize = ftell_fs(f);
   fseek_fs(f,0,SEEK_SET);
 
-  generatefilemap(fileSize);
+  generatefilemap(f,fileSize);
 
   if(data == NULL)
   {
