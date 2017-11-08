@@ -124,10 +124,10 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 			asm("nop");
 			asm("nop");
 			
-			printf("\n \n [Timer %d] dma Source A %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>10)&1),GBAEMU4DS_IPC->DM1SAD_H,GBAEMU4DS_IPC->DM1SAD_L);
-			printf("\n \n dma Dest A %x %x \n ",GBAEMU4DS_IPC->DM1DAD_H,GBAEMU4DS_IPC->DM1DAD_L);
-			printf("dma A : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasA[3],GBAEMU4DS_IPC->fifodmasA[2],GBAEMU4DS_IPC->fifodmasA[1],GBAEMU4DS_IPC->fifodmasA[0]);
-			printf("DMA1CNT_H: %x \n ",GBAEMU4DS_IPC->DM1CNT_H);
+			printf("    [Timer %d] dma Source A %x %x   ",((SpecificIPCAlign->SOUNDCNT_H>>10)&1),SpecificIPCAlign->DM1SAD_H,SpecificIPCAlign->DM1SAD_L);
+			printf("    dma Dest A %x %x   ",SpecificIPCAlign->DM1DAD_H,SpecificIPCAlign->DM1DAD_L);
+			printf("dma A : %x %x %x %x   ",SpecificIPCAlign->fifodmasA[3],SpecificIPCAlign->fifodmasA[2],SpecificIPCAlign->fifodmasA[1],SpecificIPCAlign->fifodmasA[0]);
+			printf("DMA1CNT_H: %x   ",SpecificIPCAlign->DM1CNT_H);
 			
 			int reg;
 			
@@ -136,13 +136,13 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 			}
 			
 			
-			printf("\n \n [Timer %d] dma Source B %x %x \n ",((GBAEMU4DS_IPC->SOUNDCNT_H>>14)&1),GBAEMU4DS_IPC->DM2SAD_H,GBAEMU4DS_IPC->DM2SAD_L);
-			printf("\n \n dma Dest B %x %x \n ",GBAEMU4DS_IPC->DM2DAD_H,GBAEMU4DS_IPC->DM2DAD_L);
-			printf("dma B : %x %x %x %x \n ",GBAEMU4DS_IPC->fifodmasB[3],GBAEMU4DS_IPC->fifodmasB[2],GBAEMU4DS_IPC->fifodmasB[1],GBAEMU4DS_IPC->fifodmasB[0]);
-			printf("DMA2CNT_H: %x \n ",GBAEMU4DS_IPC->DM2CNT_H);
+			printf("    [Timer %d] dma Source B %x %x   ",((SpecificIPCAlign->SOUNDCNT_H>>14)&1),SpecificIPCAlign->DM2SAD_H,SpecificIPCAlign->DM2SAD_L);
+			printf("    dma Dest B %x %x   ",SpecificIPCAlign->DM2DAD_H,SpecificIPCAlign->DM2DAD_L);
+			printf("dma B : %x %x %x %x   ",SpecificIPCAlign->fifodmasB[3],SpecificIPCAlign->fifodmasB[2],SpecificIPCAlign->fifodmasB[1],SpecificIPCAlign->fifodmasB[0]);
+			printf("DMA2CNT_H: %x   ",SpecificIPCAlign->DM2CNT_H);
 			
-			printf("TM0CNT_L %x / TM0CNT_H %x \n",GBAEMU4DS_IPC->TM0CNT_L,GBAEMU4DS_IPC->TM0CNT_H);
-			printf("TM1CNT_L %x / TM1CNT_H %x \n",GBAEMU4DS_IPC->TM1CNT_L,GBAEMU4DS_IPC->TM1CNT_H);
+			printf("TM0CNT_L %x / TM0CNT_H %x  ",SpecificIPCAlign->TM0CNT_L,SpecificIPCAlign->TM0CNT_H);
+			printf("TM1CNT_L %x / TM1CNT_H %x  ",SpecificIPCAlign->TM1CNT_L,SpecificIPCAlign->TM1CNT_H);
 			
 			asm("nop");
 			asm("nop");
@@ -178,8 +178,9 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 		}
 		break;
 		
+		//ARM7 -> GBA IO
 		case(0xc4740005):{
-			UPDATE_REG(command2, (u32)(command3&0xffff));
+			UPDATE_REG(cmd2, (u32)(cmd3&0xffff));
 		}
 		break;
 		
@@ -203,14 +204,14 @@ void HandleFifoNotEmptyWeakRef(uint32 cmd1,uint32 cmd2,uint32 cmd3,uint32 cmd4){
 			}
 			else
 			{
-				printf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
+				printf("error rec %08X %08X\r ",command1,REG_IPC_FIFO_CR);
 				while(1); //stop to prevent dammage
 			}
 			
 			
 			*/
 			
-			//printf("error rec %08X %08X\r\n",command1,REG_IPC_FIFO_CR);
+			//printf("error rec %08X %08X\r ",command1,REG_IPC_FIFO_CR);
 			//while(1); //stop to prevent dammage
 			
 		}

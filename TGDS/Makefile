@@ -107,6 +107,7 @@ export DIRS_ARM9_SRC = source/	\
 			../common/
 			
 export DIRS_ARM9_HEADER = include/	\
+			source/	\
 			source/interrupts/	\
 			source/gui/	\
 			source/wnifilib/	\

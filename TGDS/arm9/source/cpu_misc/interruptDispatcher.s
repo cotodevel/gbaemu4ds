@@ -27,7 +27,7 @@
 
 
 @new stacks todo mix some stacks
-__sp_undef	=	__dtcm_top - 0x100;	@ichfly @ 1.792 Byte
+__sp_undef	=	_dtcm_end - 0x100;	@ichfly @ 1.792 Byte
 __sp_svc	=	__sp_undef - 0x700;	@ichfly @ 4.096 Byte
 __sp_irq	=	__sp_svc  - 0x1000; @ichfly @ 1.024 Byte each @also in interruptDispatcher.s
 
@@ -47,13 +47,13 @@ IntrMain:
 	add	r12, r12, #0x210
 	ldmia	r12, {r1,r2}
 	ands	r1, r1, r2
-	ldr	r2, =irqTable
+	mov r2,#0			@prevent crash due to new IRQs being rewritten lol	@ldr	r2, =irqTable
 
 
 @---------------------------------------------------------------------------------
 findIRQ:
 @---------------------------------------------------------------------------------
-	ldr r0, [r2, #4]
+	@ldr r0, [r2, #4]	@prevent crash due to new IRQs being rewritten lol
 	cmp	r0, #0
 	beq	no_handler
 	ands	r0, r0, r1

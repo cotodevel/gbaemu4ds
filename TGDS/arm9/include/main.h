@@ -51,6 +51,7 @@ extern int argc;
 extern sint8 **argv;
 extern int main(int _argc, sint8 **_argv);
 
+extern void show_mem();
 #ifdef __cplusplus
 }
 #endif

@@ -26,6 +26,7 @@
 
 #include "System.h"
 #include "ichflysettings.h"
+#include "Port.h"
 
 #define SAVE_GAME_VERSION_1 1
 #define SAVE_GAME_VERSION_2 2

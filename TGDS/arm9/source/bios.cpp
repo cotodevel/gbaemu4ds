@@ -85,7 +85,7 @@ s16 sineTable[256] = {
 void BIOS_ArcTan()
 {
 #ifdef DEV_VERSION
-    log("ArcTan: %08x\n",
+    log("ArcTan: %08x ",
         exRegs[0]);
 #endif
 
@@ -101,7 +101,7 @@ void BIOS_ArcTan()
   exRegs[0] = a;
 
 #ifdef DEV_VERSION
-    log("ArcTan: return=%08x\n",
+    log("ArcTan: return=%08x ",
         exRegs[0]);
 #endif
 }
@@ -109,7 +109,7 @@ void BIOS_ArcTan()
 void BIOS_ArcTan2()
 {
 #ifdef DEV_VERSION
-    log("ArcTan2: %08x,%08x \n",
+    log("ArcTan2: %08x,%08x  ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -143,7 +143,7 @@ void BIOS_ArcTan2()
   exRegs[0] = res;
   
 #ifdef DEV_VERSION
-    log("ArcTan2: return=%08x\n",
+    log("ArcTan2: return=%08x ",
         exRegs[0]);
 #endif
 }  
@@ -151,7 +151,7 @@ void BIOS_ArcTan2()
 void BIOS_BitUnPack()
 {
 #ifdef DEV_VERSION  
-    log("BitUnPack: %08x,%08x,%08x\n",
+    log("BitUnPack: %08x,%08x,%08x ",
         exRegs[0],
         exRegs[1],
         exRegs[2]);
@@ -215,7 +215,7 @@ void BIOS_GetBiosChecksum()
 void BIOS_BgAffineSet()
 {
 #ifdef DEV_VERSION  
-    log("BgAffineSet: %08x,%08x,%08x\n",
+    log("BgAffineSet: %08x,%08x,%08x ",
         exRegs[0],
         exRegs[1],
         exRegs[2]);
@@ -270,7 +270,7 @@ void BIOS_BgAffineSet()
 void BIOS_CpuSet()
 {
 #ifdef DEV_VERSION
-    log("CpuSet: 0x%08x,0x%08x,0x%08x\n", exRegs[0], exRegs[1],
+    log("CpuSet: 0x%08x,0x%08x,0x%08x ", exRegs[0], exRegs[1],
         exRegs[2]);
 #endif
   
@@ -330,7 +330,7 @@ void BIOS_CpuSet()
 void BIOS_CpuFastSet()
 {
 #ifdef DEV_VERSION
-    log("CpuFastSet: 0x%08x,0x%08x,0x%08x\n", exRegs[0], exRegs[1],
+    log("CpuFastSet: 0x%08x,0x%08x,0x%08x ", exRegs[0], exRegs[1],
         exRegs[2]);
 #endif
   
@@ -376,7 +376,7 @@ void BIOS_CpuFastSet()
 void BIOS_Diff8bitUnFilterWram()
 {
 #ifdef DEV_VERSION
-    log("Diff8bitUnFilterWram: 0x%08x,0x%08x\n", exRegs[0],
+    log("Diff8bitUnFilterWram: 0x%08x,0x%08x ", exRegs[0],
         exRegs[1]);
 #endif
   
@@ -407,7 +407,7 @@ void BIOS_Diff8bitUnFilterWram()
 void BIOS_Diff8bitUnFilterVram()
 {
 #ifdef DEV_VERSION
-    log("Diff8bitUnFilterVram: 0x%08x,0x%08x\n", exRegs[0],
+    log("Diff8bitUnFilterVram: 0x%08x,0x%08x ", exRegs[0],
         exRegs[1]);
 #endif
   
@@ -448,7 +448,7 @@ void BIOS_Diff8bitUnFilterVram()
 void BIOS_Diff16bitUnFilter()
 {
 #ifdef DEV_VERSION
-    log("Diff16bitUnFilter: 0x%08x,0x%08x\n", exRegs[0],
+    log("Diff16bitUnFilter: 0x%08x,0x%08x ", exRegs[0],
         exRegs[1]);
 #endif
   
@@ -483,7 +483,7 @@ void BIOS_Diff16bitUnFilter()
 void BIOS_Div()
 {
 #ifdef DEV_VERSION
-    log("Div: 0x%08x,0x%08x\n",
+    log("Div: 0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -498,7 +498,7 @@ void BIOS_Div()
     exRegs[3] = temp < 0 ? (u32)-temp : (u32)temp;
   }
 #ifdef DEV_VERSION
-    log("Div: return=0x%08x,0x%08x,0x%08x\n",
+    log("Div: return=0x%08x,0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1],
         exRegs[3]);
@@ -508,7 +508,7 @@ void BIOS_Div()
 void BIOS_DivARM()
 {
 #ifdef DEV_VERSION
-    log("DivARM: 0x%08x\n",
+    log("DivARM: 0x%08x ",
         exRegs[0]);
 #endif
   
@@ -521,7 +521,7 @@ void BIOS_DivARM()
 void BIOS_HuffUnComp()
 {
 #ifdef DEV_VERSION
-    log("HuffUnComp: 0x%08x,0x%08x\n",
+    log("HuffUnComp: 0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -664,7 +664,7 @@ void BIOS_HuffUnComp()
 void BIOS_LZ77UnCompVram()
 {
 #ifdef DEV_VERSION
-    log("LZ77UnCompVram: 0x%08x,0x%08x\n",
+    log("LZ77UnCompVram: 0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -752,7 +752,7 @@ void BIOS_LZ77UnCompVram()
 void BIOS_LZ77UnCompWram()
 {
 #ifdef DEV_VERSION
-    log("LZ77UnCompWram: 0x%08x,0x%08x\n", exRegs[0], exRegs[1]);
+    log("LZ77UnCompWram: 0x%08x,0x%08x ", exRegs[0], exRegs[1]);
 #endif
   
   u32 source = exRegs[0];
@@ -806,7 +806,7 @@ void BIOS_LZ77UnCompWram()
 void BIOS_ObjAffineSet()
 {
 #ifdef DEV_VERSION
-    log("ObjAffineSet: 0x%08x,0x%08x,0x%08x,0x%08x\n",
+    log("ObjAffineSet: 0x%08x,0x%08x,0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1],
         exRegs[2],
@@ -925,7 +925,7 @@ void BIOS_RegisterRamReset(u32 flags)
 void BIOS_RegisterRamReset()
 {
 #ifdef DEV_VERSION
-    log("RegisterRamReset: 0x%08x\n",
+    log("RegisterRamReset: 0x%08x ",
         exRegs[0]);
 #endif
 
@@ -936,7 +936,7 @@ void BIOS_RegisterRamReset()
 void BIOS_RLUnCompVram()
 {
 #ifdef DEV_VERSION
-    log("RLUnCompVram: 0x%08x,0x%08x\n",
+    log("RLUnCompVram: 0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -1002,7 +1002,7 @@ void BIOS_RLUnCompVram()
 void BIOS_RLUnCompWram()
 {
 #ifdef DEV_VERSION
-    log("RLUnCompWram: 0x%08x,0x%08x\n",
+    log("RLUnCompWram: 0x%08x,0x%08x ",
         exRegs[0],
         exRegs[1]);
 #endif
@@ -1046,7 +1046,7 @@ void BIOS_RLUnCompWram()
 void BIOS_SoftReset()
 {
 #ifdef DEV_VERSION
-    log("SoftReset\n");
+    log("SoftReset ");
 #endif
 
   armState = true;
@@ -1078,12 +1078,12 @@ void BIOS_SoftReset()
 void BIOS_Sqrt()
 {
 #ifdef DEV_VERSION
-    log("Sqrt: %08x\n",
+    log("Sqrt: %08x ",
         exRegs[0]);
 #endif
   exRegs[0] = (u32)sqrt((double)exRegs[0]);
 #ifdef DEV_VERSION
-    log("Sqrt: return=%08x\n",
+    log("Sqrt: return=%08x ",
         exRegs[0]);
 #endif
 }
@@ -1091,7 +1091,7 @@ void BIOS_Sqrt()
 void BIOS_MidiKey2Freq()
 {
 #ifdef DEV_VERSION
-    log("MidiKey2Freq: WaveData=%08x mk=%08x fp=%08x\n",
+    log("MidiKey2Freq: WaveData=%08x mk=%08x fp=%08x ",
         exRegs[0],
         exRegs[1],
         exRegs[2]);
@@ -1103,7 +1103,7 @@ void BIOS_MidiKey2Freq()
   exRegs[0] = (int)((double)freq / tmp);
 
 #ifdef DEV_VERSION
-    log("MidiKey2Freq: return %08x\n",
+    log("MidiKey2Freq: return %08x ",
         exRegs[0]);
 #endif
 }
@@ -1111,7 +1111,7 @@ void BIOS_MidiKey2Freq()
 void BIOS_SndDriverJmpTableCopy()
 {
 #ifdef DEV_VERSION
-    log("SndDriverJmpTableCopy: dest=%08x\n",
+    log("SndDriverJmpTableCopy: dest=%08x ",
         exRegs[0]);
 #endif
   for(int i = 0; i < 0x24; i++) {

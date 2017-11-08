@@ -74,7 +74,7 @@ u32 userinputval(u32 original_val,u32 bits)
 			pressed = (keysDownRepeat()& ~0xFC00);
 		} while (!pressed);
 		printf("\x1b[2J");
-		printf("val %08X multi: %08X\n",original_val,srctempmulti);
+		printf("val %08X multi: %08X ",original_val,srctempmulti);
 
 		if (pressed&KEY_UP) original_val+= srctempmulti;
 		if (pressed&KEY_DOWN) original_val-=srctempmulti;
@@ -96,7 +96,7 @@ void show_gba_mem()
 	u16 pointer = 0;
 	while(1) 
 	{
-		printf("gba src %08X multi: %08X\n",src,srctempmulti);
+		printf("gba src %08X multi: %08X ",src,srctempmulti);
 		switch (type)
 		{
 			case 1:
@@ -221,7 +221,7 @@ void show_nds_mem() //change colour with \x1b[33[0m back with \x1b[39[0m
 	u16 pointer = 0;
 	while(1) 
 	{
-		printf("nds src %08X multi: %08X\n",src,srctempmulti);
+		printf("nds src %08X multi: %08X ",src,srctempmulti);
 		switch (type)
 		{
 			case 1:
@@ -349,15 +349,15 @@ extern u32 recdel;
 extern u32 amr7fehlerfeld[10];
 void showcomdebug()
 {
-	printf("%04X\n",CPUReadHalfWordreal(0x4000200));
-	printf("%08X %08X\n",amr7recmuell,amr7sendcom);
-	printf("%08X %08X\n",amr7directrec,amr7indirectrec);
-	printf("%08X %08X\n",amr7senddma1,amr7senddma2);
-	printf("%08X %08X\n",recDMA1,recDMA2);
-	printf("%08X %08X\n",recdir,recdel);
+	printf("%04X ",CPUReadHalfWordreal(0x4000200));
+	printf("%08X %08X ",amr7recmuell,amr7sendcom);
+	printf("%08X %08X ",amr7directrec,amr7indirectrec);
+	printf("%08X %08X ",amr7senddma1,amr7senddma2);
+	printf("%08X %08X ",recDMA1,recDMA2);
+	printf("%08X %08X ",recdir,recdel);
 	for (int i = 0;i < 8;i+=2)
 	{
-		printf("%08X %08X\n",amr7fehlerfeld[i],amr7fehlerfeld[i + 1]);
+		printf("%08X %08X ",amr7fehlerfeld[i],amr7fehlerfeld[i + 1]);
 	}
 #ifdef countpagefalts
 	printf("%08X",pagefehler);
@@ -373,14 +373,14 @@ void show_mem()
 	while(1)
 	{
 		printf("\x1b[2J");
-		printf("show mem\n");
+		printf("show mem ");
 		printf ("--------------------------------");
 		for(int i = 0; i < 7; i++)
 		{
 			if(i == ausgewauhlt) printf("->");
 			else printf("  ");
 			printf(seloptionsshowmem[i]);
-			printf("\n");
+			printf(" ");
 		}
 		do {
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -430,7 +430,7 @@ void show_mem()
 							int src = 0x023F0000; 
 							int srctempmulti = 0x80000;
 							while(1) {		
-								printf("src %08X multi: %08X\n",src,srctempmulti);
+								printf("src %08X multi: %08X ",src,srctempmulti);
 								if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 								while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 								scanKeys();		
@@ -444,7 +444,7 @@ void show_mem()
 							int size = 0x10000; 
 							int sizetempmulti = 0x10000;
 							while(1) {		
-								printf("size %08X multi: %08X\n",size,sizetempmulti);
+								printf("size %08X multi: %08X ",size,sizetempmulti);
 								scanKeys();		
 								if (keysDown()&KEY_A) break;
 								if (keysDown()&KEY_UP) size+= sizetempmulti;
@@ -455,7 +455,7 @@ void show_mem()
 								while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 								printf("\x1b[2J");
 							}
-							printf("src %08X size: %X\n",src,size);
+							printf("src %08X size: %X ",src,size);
 							while(1) {
 								scanKeys();
 								if (keysDown()&KEY_START) break;

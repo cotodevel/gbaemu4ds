@@ -7,7 +7,7 @@
 	.arm
 	
 
-__sp_undef	=	__dtcm_top - 0x100;	@ichfly @ 1.792 Byte
+__sp_undef	=	_dtcm_end - 0x100;	@ichfly @ 1.792 Byte
 
 
 	.global readbankedsp

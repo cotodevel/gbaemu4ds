@@ -67,9 +67,9 @@ __libnds_mpu_setup:
 	@ Wait for write buffer to empty 
 	mcr	p15, 0, r0, c7, c10, 4
 
-	ldr	r0, =__dtcm_start
+	ldr	r0, =_dtcm_start
 	orr	r0,r0,#0x0a
-	mcr	p15, 0, r0, c9, c1,0		@ DTCM base = __dtcm_start, size = 16 KB
+	mcr	p15, 0, r0, c9, c1,0		@ DTCM base = _dtcm_start, size = 16 KB
 
 	mov	r0,#0x20
 	mcr	p15, 0, r0, c9, c1,1		@ ITCM base = 0 , size = 32 MB
@@ -99,14 +99,14 @@ __libnds_mpu_setup:
 	@-------------------------------------------------------------------------
 	@ Region 5 - DTCM
 	@-------------------------------------------------------------------------
-	ldr	r0,=__dtcm_start
+	ldr	r0,=_dtcm_start
 	orr	r0,r0,#(PAGE_16K | 1)
 	mcr	p15, 0, r0, c6, c5, 0
 
 	@-------------------------------------------------------------------------
 	@ Region 4 - ITCM
 	@-------------------------------------------------------------------------
-	ldr	r0,=__itcm_start
+	ldr	r0,=_itcm_start
 
 	@ align to 32k boundary
 	mov	r0,r0,lsr #15

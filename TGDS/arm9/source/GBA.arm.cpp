@@ -773,7 +773,7 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 			if(((s&0x1FFFFFF) + c*4) > romSize) //slow
 			{
 #ifdef print_uppern_read_emulation
-				printf("highdmaread %X %X %X %X %X %X\r\n",s,d,c,si,di,transfer32);
+				printf("highdmaread %X %X %X %X %X %X\r ",s,d,c,si,di,transfer32);
 #endif
 				if(di == -4 || si == -4)//this can't work the slow way so use the
 				{
@@ -790,9 +790,9 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 #else
 					//doDMAslow(s, d, si, di, c, transfer32);
 					fseek_fs (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
-					//printf("seek %08X\r\n",s&0x1FFFFFF);
+					//printf("seek %08X\r ",s&0x1FFFFFF);
 					int dkdkdkdk = fread_fs ((void*)d,1,c * 4,ichflyfilestream); // fist is buggy
-					//printf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
+					//printf("(%08X %08X %08X) ret %08X\r ",d,c,ichflyfilestream,dkdkdkdk);
 #endif
 				}
 				else
@@ -806,9 +806,9 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 					//printf("teeees");
 					//doDMAslow(s, d, si, di, c, transfer32);
 					fseek_fs (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
-					//printf("seek %08X\r\n",s&0x1FFFFFF);
+					//printf("seek %08X\r ",s&0x1FFFFFF);
 					int dkdkdkdk = fread_fs ((void*)d,1,c * 2,ichflyfilestream);
-					//printf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
+					//printf("(%08X %08X %08X) ret %08X\r ",d,c,ichflyfilestream,dkdkdkdk);
 #endif
 				}
 				//doDMAslow(s, d, si, di, c, transfer32); //very slow way
@@ -1028,7 +1028,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         int count = (SpecificIPCAlign->DM0CNT_L ? SpecificIPCAlign->DM0CNT_L : 0x4000) << 1;
         if(SpecificIPCAlign->DM0CNT_H & 0x0400)
           count <<= 1;
-        printf("DMA0: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma0Source, SpecificIPCAlign->dma0Dest, 
+        printf("DMA0: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma0Source, SpecificIPCAlign->dma0Dest, 
             SpecificIPCAlign->DM0CNT_H,
             count);
       }
@@ -1090,7 +1090,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 		if(reason == 3) {
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA1) {
-				Log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,16);
+				Log("DMA1: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,16);
 			}
 #endif  
 		
@@ -1107,7 +1107,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 				int count = (SpecificIPCAlign->DM1CNT_L ? SpecificIPCAlign->DM1CNT_L : 0x4000) << 1;
 				if(SpecificIPCAlign->DM1CNT_H & 0x0400)
 					count <<= 1;
-				printf("DMA1: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,count);
+				printf("DMA1: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest,SpecificIPCAlign->DM1CNT_H,count);
 			}
 #endif
 			doDMA(SpecificIPCAlign->dma1Source, SpecificIPCAlign->dma1Dest, sourceIncrement, destIncrement,SpecificIPCAlign->DM1CNT_L ? SpecificIPCAlign->DM1CNT_L : 0x4000,SpecificIPCAlign->DM1CNT_H & 0x0400);
@@ -1166,7 +1166,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 #ifdef DEV_VERSION
 			if(systemVerbose & VERBOSE_DMA2) {
 				int count = (4) << 2;
-				Log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
+				Log("DMA2: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
 			}
 #endif             
 			//ori: doDMA(dma2Source, dma2Dest, sourceIncrement, 0, 4,0x0400);
@@ -1180,7 +1180,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 				int count = (SpecificIPCAlign->DM2CNT_L ? SpecificIPCAlign->DM2CNT_L : 0x4000) << 1;
 				if(SpecificIPCAlign->DM2CNT_H & 0x0400)
 					count <<= 1;
-				printf("DMA2: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
+				printf("DMA2: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest,SpecificIPCAlign->DM2CNT_H,count);
 			}
 #endif                  
 			doDMA(SpecificIPCAlign->dma2Source, SpecificIPCAlign->dma2Dest, sourceIncrement, destIncrement,SpecificIPCAlign->DM2CNT_L ? SpecificIPCAlign->DM2CNT_L : 0x4000,SpecificIPCAlign->DM2CNT_H & 0x0400);
@@ -1237,7 +1237,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         int count = (SpecificIPCAlign->DM3CNT_L ? SpecificIPCAlign->DM3CNT_L : 0x10000) << 1;
         if(SpecificIPCAlign->DM3CNT_H & 0x0400)
           count <<= 1;
-        printf("DMA3: s=%08x d=%08x c=%04x count=%08x\n", SpecificIPCAlign->dma3Source, SpecificIPCAlign->dma3Dest,
+        printf("DMA3: s=%08x d=%08x c=%04x count=%08x ", SpecificIPCAlign->dma3Source, SpecificIPCAlign->dma3Dest,
             SpecificIPCAlign->DM3CNT_H,
             count);
       }
@@ -1272,7 +1272,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 {
   	/*if(0x60 > address && address > 0x7)
 	{
-			//printf("UP16 %x %x\r\n",address,value);
+			//printf("UP16 %x %x\r ",address,value);
 		    *(u16 *)((address & 0x3FF) + 0x4000000) = value;
 			//swiDelay(0x2000000);
 			//swiDelay(0x2000000);
@@ -2098,7 +2098,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   
     //soundEvent(address&0xFF, value);  //ichfly send sound to arm7
 #ifdef soundwriteprint
-	  printf("ur %04x to %08x\r\n",value,address);
+	  printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	  SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2146,7 +2146,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xBC:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2159,7 +2159,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xBE:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2171,7 +2171,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xC0:
 #ifdef dmawriteprint
-    printf("ur %04x to %08x\r\n",value,address);
+    printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2183,7 +2183,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xC2:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2195,7 +2195,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xC4:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2207,7 +2207,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 
   case 0xC6:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound	
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2228,7 +2228,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     break;
   case 0xC8:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2239,7 +2239,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     break;
   case 0xCA:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2250,7 +2250,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     break;
   case 0xCC:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2261,7 +2261,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     break;
   case 0xCE:
 #ifdef dmawriteprint
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2274,7 +2274,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   case 0xD0:
 #ifdef dmawriteprint
 
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2287,7 +2287,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   case 0xD2:
 #ifdef dmawriteprint
 
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2358,7 +2358,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
  case 0x100:
     //SpecificIPCAlign->timer0Reload = value;
 #ifdef printsoundtimer
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2377,7 +2377,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
     //cpuNextEvent = cpuTotalTicks;
 	
 #ifdef printsoundtimer
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2392,7 +2392,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   case 0x104:
     //SpecificIPCAlign->timer1Reload = value;
 #ifdef printsoundtimer
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -2406,7 +2406,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
   case 0x106:
 	//SpecificIPCAlign->timer1Value = value;
 #ifdef printsoundtimer
-	printf("ur %04x to %08x\r\n",value,address);
+	printf("ur %04x to %08x\r ",value,address);
 #endif
 #ifdef arm9advsound
 	SendMultipleWordACK(0xc3730000,(u32)address,(u32)value,0x0);
@@ -3076,14 +3076,14 @@ __attribute__((section(".itcm")))
 void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-    printf("w32 %08x to %08x\n",value,address);
+    printf("w32 %08x to %08x ",value,address);
 #endif		  
 		
 
 #ifdef DEV_VERSION
   if(address & 3) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned word write: %08x to %08x from %08x\n",
+      Log("Unaligned word write: %08x to %08x from %08x ",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -3121,7 +3121,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 
 	/*if((0x4000060 > address && address > 0x4000007) || (address > 0x40000FF && address < 0x4000110)) //timer and lcd
 	{
-			//printf("32 %x %x\r\n",address,value);
+			//printf("32 %x %x\r ",address,value);
 		    *(u32 *)(address) = value;
 	}
 	else //dont do twice*/ //don't need that any more
@@ -3175,7 +3175,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
     break;
   case 0x0D:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,value);
+	  	  printf("%X %X \r",address,value);
 #endif
     if(cpuEEPROMEnabled) {
       eepromWrite(address, value);
@@ -3184,7 +3184,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
     goto unwritable;
   case 0x0E:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,value);
+	  	  printf("%X %X \r",address,value);
 #endif
     if(!eepromInUse | cpuSramEnabled | cpuFlashEnabled) {
       (*cpuSaveGameFunc)(address, (u8)value);
@@ -3195,8 +3195,8 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
   unwritable:
  unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal word write: %08x to %08x\n",value, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal word write: %08x to %08x ",value, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -3209,13 +3209,13 @@ __attribute__((section(".itcm")))
 void CPUWriteHalfWord(u32 address, u16 value)
 {
 #ifdef printreads
-printf("w16 %04x to %08x\r\n",value,address);
+printf("w16 %04x to %08x\r ",value,address);
 #endif
 
 #ifdef DEV_VERSION
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned halfword write: %04x to %08x from %08x\n",
+      Log("Unaligned halfword write: %04x to %08x from %08x ",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -3258,7 +3258,7 @@ printf("w16 %04x to %08x\r\n",value,address);
   
   	/*if(0x4000060 > address && address > 0x4000008)
 	{
-			printf("16 %x %x\r\n",address,value);
+			printf("16 %x %x\r ",address,value);
 		    *(u16 *)((address & 0x3FF) + 0x4000000) = value;
 	}*/ //dont do dobble
     if(address < 0x4000400)
@@ -3315,7 +3315,7 @@ printf("w16 %04x to %08x\r\n",value,address);
     break;
   case 13:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,value);
+	  	  printf("%X %X \r",address,value);
 #endif
     if(cpuEEPROMEnabled) {
       eepromWrite(address, (u8)value);
@@ -3324,7 +3324,7 @@ printf("w16 %04x to %08x\r\n",value,address);
     goto unwritable;
   case 14:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,value);
+	  	  printf("%X %X \r",address,value);
 #endif
     if(!eepromInUse | cpuSramEnabled | cpuFlashEnabled) {
       (*cpuSaveGameFunc)(address, (u8)value);
@@ -3334,8 +3334,8 @@ printf("w16 %04x to %08x\r\n",value,address);
   default:
   unwritable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal hword write: %04x to %08x\n",value, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal hword write: %04x to %08x ",value, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -3348,7 +3348,7 @@ __attribute__((section(".itcm")))
 void CPUWriteByte(u32 address, u8 b)
 {
 #ifdef printreads
-	printf("w8 %02x to %08x\r\n",b,address);
+	printf("w8 %02x to %08x\r ",b,address);
 #endif
   switch(address >> 24) {
   case 2:
@@ -3426,7 +3426,7 @@ void CPUWriteByte(u32 address, u8 b)
       case 0x9f:      
 	//soundEvent(address&0xFF, b);  //ichfly disable sound
 #ifdef printsoundwrites
-		  printf("b %02x to %08x\r\n",b,address);
+		  printf("b %02x to %08x\r ",b,address);
 #endif
 		#ifdef arm9advsound
 			SendMultipleWordACK(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
@@ -3435,7 +3435,7 @@ void CPUWriteByte(u32 address, u8 b)
       default:
 	/*if((0x4000060 > address && address > 0x4000008) || (address > 0x40000FF && address < 0x4000110))
 	{
-			//printf("8 %x %x\r\n",address,b);
+			//printf("8 %x %x\r ",address,b);
 		    *(u8 *)(address) = b;
 	}*/ //ichfly don't need that
 	if(address & 1)
@@ -3492,7 +3492,7 @@ void CPUWriteByte(u32 address, u8 b)
     break;    
   case 13:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,b);
+	  	  printf("%X %X \r",address,b);
 #endif
 
     if(cpuEEPROMEnabled) {
@@ -3502,7 +3502,7 @@ void CPUWriteByte(u32 address, u8 b)
     goto unwritable;
   case 14:
 #ifdef printsavewrite
-	  	  printf("%X %X\n\r",address,b);
+	  	  printf("%X %X \r",address,b);
 #endif
       if (!(saveType == 5) && (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)) {
 
@@ -3515,8 +3515,8 @@ void CPUWriteByte(u32 address, u8 b)
   default:
   unwritable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal byte write: %02x to %08x\n",b, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal byte write: %02x to %08x ",b, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -3530,7 +3530,7 @@ void updateVC()
 {
 		u32 temp = REG_VCOUNT;
 		u32 temp2 = REG_DISPSTAT;
-		//printf("Vcountreal: %08x\n",temp);
+		//printf("Vcountreal: %08x ",temp);
 		u16 help3;
 #ifdef usebuffedVcout
 		GBA_VCOUNT = VCountdstogba[temp];
@@ -3562,8 +3562,8 @@ void updateVC()
 			}*/
 		}
 		UPDATE_REG(0x04, GBA_DISPSTAT);
-		//printf("Vcountreal: %08x\n",temp);
-		//printf("GBA_DISPSTAT: %08x\n",temp2);
+		//printf("Vcountreal: %08x ",temp);
+		//printf("GBA_DISPSTAT: %08x ",temp2);
 }
 
 __attribute__((section(".itcm")))
@@ -3572,14 +3572,14 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 #ifdef DEV_VERSION
   if(address & 3) {  
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned word read: %08x at %08x\n", address, armMode ?
+      Log("Unaligned word read: %08x at %08x ", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
 #endif
   
 #ifdef printreads
-  printf("r32 %08x\n",address);
+  printf("r32 %08x ",address);
 #endif
   
   u32 value;
@@ -3589,7 +3589,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          Log("Illegal word read: %08x at %08x\n", address, armMode ?
+          Log("Illegal word read: %08x at %08x ", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -3682,7 +3682,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	if((address&0x1FFFFFC) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r32 %08x\n",address);
+		printf("high r32 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFC))
 		{
@@ -3718,8 +3718,8 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
   unreadable:
   //while(1);
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal word read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal word read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -3765,12 +3765,12 @@ __attribute__((section(".itcm")))
 u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-	printf("r16 %08x\n",address);
+	printf("r16 %08x ",address);
 #endif
 #ifdef DEV_VERSION      
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned halfword read: %08x at %08x\n", address, armMode ?
+      Log("Unaligned halfword read: %08x at %08x ", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
@@ -3784,7 +3784,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          Log("Illegal halfword read: %08x at %08x\n", address, armMode ?
+          Log("Illegal halfword read: %08x at %08x ", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -3887,7 +3887,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r16 %08x\n",address);
+		printf("high r16 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFE))
 		{
@@ -3912,7 +3912,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
     break;    
   case 13:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuEEPROMEnabled)
       // no need to swap this
@@ -3920,7 +3920,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
     goto unreadable;
   case 14:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuFlashEnabled | cpuSramEnabled)
       // no need to swap this
@@ -3929,8 +3929,8 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
   default:
   unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal hword read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal hword read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -3968,7 +3968,7 @@ __attribute__((section(".itcm")))
 u8 CPUReadBytereal(u32 address) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-printf("r8 %02x\n",address);
+printf("r8 %02x ",address);
 #endif
 
   switch(address >> 24) {
@@ -3977,7 +3977,7 @@ printf("r8 %02x\n",address);
       if(address < 0x4000) {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_ILLEGAL_READ) {
-          Log("Illegal byte read: %08x at %08x\n", address, armMode ?
+          Log("Illegal byte read: %08x at %08x ", address, armMode ?
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
@@ -4053,7 +4053,7 @@ printf("r8 %02x\n",address);
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r8 %08x\n",address);
+		printf("high r8 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFF))
 		{
@@ -4077,14 +4077,14 @@ printf("r8 %02x\n",address);
 #endif        
   case 13:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuEEPROMEnabled)
       return eepromRead(address);
     goto unreadable;
   case 14:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuSramEnabled | cpuFlashEnabled)
       return flashRead(address);
@@ -4104,8 +4104,8 @@ printf("r8 %02x\n",address);
   default:
   unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal byte read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal byte read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4132,7 +4132,7 @@ void updateVCsub()
 {
 		u32 temp = REG_VCOUNT;
 		u32 temp2 = REG_DISPSTAT;
-		//printf("Vcountreal: %08x\n",temp);
+		//printf("Vcountreal: %08x ",temp);
 		u16 help3;
 #ifdef usebuffedVcout
 		GBA_VCOUNT = VCountdstogba[temp];
@@ -4164,8 +4164,8 @@ void updateVCsub()
 			}*/
 		}
 		UPDATE_REG(0x04, GBA_DISPSTAT);
-		//printf("Vcountreal: %08x\n",temp);
-		//printf("GBA_DISPSTAT: %08x\n",temp2);
+		//printf("Vcountreal: %08x ",temp);
+		//printf("GBA_DISPSTAT: %08x ",temp2);
 }
 
 
@@ -4177,14 +4177,14 @@ u32 CPUReadMemoryrealpu(u32 address)
 #ifdef DEV_VERSION
   if(address & 3) {  
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned word read: %08x at %08x\n", address, armMode ?
+      Log("Unaligned word read: %08x at %08x ", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
 #endif
   
 #ifdef printreads
-  printf("r32 %08x %08X\n",address,cpu_GetMemPrem());
+  printf("r32 %08x %08X ",address,cpu_GetMemPrem());
 #endif
   
   u32 value;
@@ -4232,7 +4232,7 @@ u32 CPUReadMemoryrealpu(u32 address)
 	if((address&0x1FFFFFC) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r32 %08x\n",address);
+		printf("high r32 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFC))
 		{
@@ -4256,7 +4256,7 @@ u32 CPUReadMemoryrealpu(u32 address)
     break;
   case 13:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuEEPROMEnabled)
       // no need to swap this
@@ -4264,7 +4264,7 @@ u32 CPUReadMemoryrealpu(u32 address)
     goto unreadable;
   case 14:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif
     if(cpuFlashEnabled | cpuSramEnabled)
       // no need to swap this
@@ -4274,8 +4274,8 @@ u32 CPUReadMemoryrealpu(u32 address)
   unreadable:
   //while(1);
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal word read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal word read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4333,12 +4333,12 @@ __attribute__((section(".itcm")))
 u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-	printf("r16 %08x (%08X)\n",address,cpu_GetMemPrem());
+	printf("r16 %08x (%08X) ",address,cpu_GetMemPrem());
 #endif
 #ifdef DEV_VERSION      
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned halfword read: %08x at %08x\n", address, armMode ?
+      Log("Unaligned halfword read: %08x at %08x ", address, armMode ?
           armNextPC - 4 : armNextPC - 2);
     }
   }
@@ -4403,7 +4403,7 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r16 %08x\n",address);
+		printf("high r16 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFE))
 		{
@@ -4428,14 +4428,14 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
     break;    
   case 13:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif    if(cpuEEPROMEnabled)
       // no need to swap this
       return  eepromRead(address);
     goto unreadable;
   case 14:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif    if(cpuFlashEnabled | cpuSramEnabled)
       // no need to swap this
       return flashRead(address);
@@ -4443,8 +4443,8 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
   default:
   unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal hword read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal hword read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4473,7 +4473,7 @@ __attribute__((section(".itcm")))
 u8 CPUReadByterealpu(u32 address) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-printf("r8 %02x\n",address);
+printf("r8 %02x ",address);
 #endif
 
   switch(address >> 24) {
@@ -4515,7 +4515,7 @@ printf("r8 %02x\n",address);
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
-		printf("high r8 %08x\n",address);
+		printf("high r8 %08x ",address);
 #endif
 		if(ichflyfilestreamsize > (address&0x1FFFFFF))
 		{
@@ -4539,13 +4539,13 @@ printf("r8 %02x\n",address);
 #endif        
   case 13:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif    if(cpuEEPROMEnabled)
       return eepromRead(address);
     goto unreadable;
   case 14:
 #ifdef printsaveread
-	  printf("%X\n\r",address);
+	  printf("%X \r",address);
 #endif    if(cpuSramEnabled | cpuFlashEnabled)
       return flashRead(address);
     if(cpuEEPROMSensorEnabled) {
@@ -4564,8 +4564,8 @@ printf("r8 %02x\n",address);
   default:
   unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal byte read: %08x\n", address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal byte read: %08x ", address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4588,14 +4588,14 @@ __attribute__((section(".itcm")))
 void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster because it is smaler
 {
 #ifdef printreads
-    printf("w32 %08x to %08x\n",value,address);
+    printf("w32 %08x to %08x ",value,address);
 #endif		  
 		
 
 #ifdef DEV_VERSION
   if(address & 3) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned word write: %08x to %08x from %08x\n",
+      Log("Unaligned word write: %08x to %08x from %08x ",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -4643,7 +4643,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
 
 	/*if((0x4000060 > address && address > 0x4000007) || (address > 0x40000FF && address < 0x4000110)) //timer and lcd
 	{
-			//printf("32 %x %x\r\n",address,value);
+			//printf("32 %x %x\r ",address,value);
 		    *(u32 *)(address) = value;
 	}
 	else //dont do twice*/ //don't need that any more
@@ -4655,7 +4655,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
     break;
   case 0x0D:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,value);
+	  printf("%X %X \r",address,value);
 #endif
     if(cpuEEPROMEnabled) {
       eepromWrite(address, value);
@@ -4664,7 +4664,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
     goto unwritable;
   case 0x0E:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,value);
+	  printf("%X %X \r",address,value);
 #endif
     if(!eepromInUse | cpuSramEnabled | cpuFlashEnabled) {
       (*cpuSaveGameFunc)(address, (u8)value);
@@ -4675,8 +4675,8 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
   unwritable:
  unreadable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal word write: %08x to %08x\n",value, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal word write: %08x to %08x ",value, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4689,13 +4689,13 @@ __attribute__((section(".itcm")))
 void CPUWriteHalfWordpu(u32 address, u16 value)
 {
 #ifdef printreads
-printf("w16 %04x to %08x\r\n",value,address);
+printf("w16 %04x to %08x\r ",value,address);
 #endif
 
 #ifdef DEV_VERSION
   if(address & 1) {
     if(systemVerbose & VERBOSE_UNALIGNED_MEMORY) {
-      Log("Unaligned halfword write: %04x to %08x from %08x\n",
+      Log("Unaligned halfword write: %04x to %08x from %08x ",
           value,
           address,
           armMode ? armNextPC - 4 : armNextPC - 2);
@@ -4756,7 +4756,7 @@ printf("w16 %04x to %08x\r\n",value,address);
     break;
   case 13:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,value);
+	  printf("%X %X \r",address,value);
 #endif
     if(cpuEEPROMEnabled) {
       eepromWrite(address, (u8)value);
@@ -4765,7 +4765,7 @@ printf("w16 %04x to %08x\r\n",value,address);
     goto unwritable;
   case 14:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,value);
+	  printf("%X %X \r",address,value);
 #endif
     if(!eepromInUse | cpuSramEnabled | cpuFlashEnabled) {
       (*cpuSaveGameFunc)(address, (u8)value);
@@ -4775,8 +4775,8 @@ printf("w16 %04x to %08x\r\n",value,address);
   default:
   unwritable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal hword write: %04x to %08x\n",value, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal hword write: %04x to %08x ",value, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);
@@ -4789,7 +4789,7 @@ __attribute__((section(".itcm")))
 void CPUWriteBytepu(u32 address, u8 b)
 {
 #ifdef printreads
-	printf("w8 %02x to %08x\r\n",b,address);
+	printf("w8 %02x to %08x\r ",b,address);
 #endif
   switch(address >> 24) {
 
@@ -4879,7 +4879,7 @@ void CPUWriteBytepu(u32 address, u8 b)
       case 0x9f:      
 	//soundEvent(address&0xFF, b);  //ichfly disable sound
 #ifdef printsoundwrites
-		  printf("b %02x to %08x\r\n",b,address);
+		  printf("b %02x to %08x\r ",b,address);
 #endif
 	#ifdef arm9advsound
 		SendMultipleWordACK(0xc3730000,(u32)(address & 0x3FF),(u32)b,0x0);
@@ -4888,7 +4888,7 @@ void CPUWriteBytepu(u32 address, u8 b)
       default:
 	/*if((0x4000060 > address && address > 0x4000008) || (address > 0x40000FF && address < 0x4000110))
 	{
-			//printf("8 %x %x\r\n",address,b);
+			//printf("8 %x %x\r ",address,b);
 		    *(u8 *)(address) = b;
 	}*/ //ichfly don't need that
 	if(address & 1)
@@ -4908,7 +4908,7 @@ void CPUWriteBytepu(u32 address, u8 b)
     break;   
   case 13:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,b);
+	  printf("%X %X \r",address,b);
 #endif
     if(cpuEEPROMEnabled) {
       eepromWrite(address, b);
@@ -4917,7 +4917,7 @@ void CPUWriteBytepu(u32 address, u8 b)
     goto unwritable;
   case 14:
 #ifdef printsavewrite
-	  printf("%X %X\n\r",address,b);
+	  printf("%X %X \r",address,b);
 #endif
       if (!(saveType == 5) && (!eepromInUse | cpuSramEnabled | cpuFlashEnabled)) {
 
@@ -4929,8 +4929,8 @@ void CPUWriteBytepu(u32 address, u8 b)
   default:
   unwritable:
 #ifdef checkclearaddrrw
-      //Log("Illegal word read: %08x at %08x\n", address,reg[15].I);
-	  Log("Illegal byte write: %02x to %08x\n",b, address);
+      //Log("Illegal word read: %08x at %08x ", address,reg[15].I);
+	  Log("Illegal byte write: %02x to %08x ",b, address);
 	  REG_IME = IME_DISABLE;
 	  debugDump();
 	  while(1);

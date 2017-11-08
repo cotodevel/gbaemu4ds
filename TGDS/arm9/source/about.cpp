@@ -32,7 +32,7 @@ USA
 
 sint8*  GBAEMU4DSTITLE[] = {
 	"-= GBAEMU4DS",
-	"by ichfly =-\n"
+	"by ichfly =- "
 };
 
 //fullpath	/rompath	/gamedir	/dirgame	/dirpath

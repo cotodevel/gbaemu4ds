@@ -230,9 +230,9 @@ void initspeedupfelder()
 	while(1) 
 	{
 		printf("\x1b[2J");
-		printf("gbaemu DS for r4i gold (3DS) (r4ids.cn) by ichfly\n");
-		if(modusVcount)printf("speedimpr. Vcount mode\n");
-		else printf("dispimpr. Vcount mode\n");
+		printf("gbaemu DS for r4i gold (3DS) (r4ids.cn) by ichfly ");
+		if(modusVcount)printf("speedimpr. Vcount mode ");
+		else printf("dispimpr. Vcount mode ");
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 		scanKeys();
@@ -352,7 +352,7 @@ void VblankHandler(void) {
 
 #ifdef showdebug
 	printf("\x1b[2J");
-	printf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
+	printf("%d %d ",VBlankIntrWaitentertimesshow,IntrWaitnum);
 /*
 #ifdef anyarmcom
 	extern void showcomdebug();
@@ -503,7 +503,7 @@ lastdebugcurrent++;
 if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 #endif
 #ifdef showdebug
-	//printf("ex %d\n",REG_VCOUNT);
+	//printf("ex %d ",REG_VCOUNT);
 #endif
 }
 
@@ -591,14 +591,14 @@ void pausemenue()
 	while(1)
 	{
 		printf("\x1b[2J");
-		printf("Pause\n");
+		printf("Pause ");
 		printf ("--------------------------------");
 		for(int i = 0; i < 5; i++)
 		{
 			if(i == ausgewauhlt) printf("->");
 			else printf("  ");
 			printf(seloptions[i]);
-			printf("\n");
+			printf(" ");
 		}
 		do {
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -617,8 +617,9 @@ void pausemenue()
 					CPUWriteBatteryFile(savePath);
 				break;
 				//gbands/map debugger
-				case 1:
+				case 1:{
 					show_mem();
+				}
 				break;
 				//exit
 				case 2:

@@ -76,7 +76,7 @@ void agbPrintFlush()
 
   u32 address = (debuggerReadHalfWord(0x9fe20fa) << 16);
   if(address != 0xfd0000 && address != 0x1fd0000) {
-    dbgOutput("Did you forget to call AGBPrintInit?\n", 0);
+    dbgOutput("Did you forget to call AGBPrintInit? ", 0);
     // get rid of the text otherwise we will continue to be called
     debuggerWriteHalfWord(0x9fe20fc, put);    
     return;
@@ -92,7 +92,7 @@ void agbPrintFlush()
 
     if(systemVerbose & VERBOSE_AGBPRINT)
       dbgOutput(s, 0);
-    if(c == '\n')
+    if(c == ' ')
       break;
   }
   debuggerWriteHalfWord(0x9fe20fc, get);

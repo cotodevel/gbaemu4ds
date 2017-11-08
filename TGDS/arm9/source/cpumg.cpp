@@ -130,7 +130,7 @@ int durchlauf = 0;
 void debugDump()
 {
 #ifdef ichflyDebugdumpon
-// 	Log("dbgDump\n");
+// 	Log("dbgDump ");
 // 	return;
 	//readbankedextra(cpuGetSPSR());
 
@@ -138,8 +138,8 @@ void debugDump()
 	for(i = 0; i <= 15; i++) {
 		Log("R%d=%X ", i, exRegs[i]);
 	} 
-	Log("\n");
-	Log("sup %X %X\n",SPtoload,SPtemp);
+	Log(" ");
+	Log("sup %X %X ",SPtoload,SPtemp);
 
 	/*if((exRegs[13] &0xFF000000) != 0x3000000)
 	{
@@ -150,28 +150,28 @@ DC_FlushAll();
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu else we may cause an endless loop
 
 	for(i = 0; i < 4; i++) {
-		Log("+%02X: %08X %08X %08X\n", i*3*4, ((u32*)exRegs[13])[i*3], ((u32*)exRegs[13])[i*3+1], ((u32*)exRegs[13])[i*3+2]);
+		Log("+%02X: %08X %08X %08X ", i*3*4, ((u32*)exRegs[13])[i*3], ((u32*)exRegs[13])[i*3+1], ((u32*)exRegs[13])[i*3+2]);
 	}
 
 	pu_Enable(); //back to normal code
 DC_FlushAll();
 	Log("SPSR %08x ",BIOSDBG_SPSR);
-	Log("CPSR %08x\n",cpuGetCPSR());
+	Log("CPSR %08x ",cpuGetCPSR());
 	//Log("irqBank %08x",readbankedsp(0x12));
-	Log("irqBank %08x %08x\n",readbankedlr(0x12),readbankedsp(0x12));
-	Log("userBank %08x %08x\n",readbankedlr(0x1F),readbankedsp(0x1F));
+	Log("irqBank %08x %08x ",readbankedlr(0x12),readbankedsp(0x12));
+	Log("userBank %08x %08x ",readbankedlr(0x1F),readbankedsp(0x1F));
 #ifdef lastdebug
 	int ipr = lastdebugcurrent - 1;
 	if(ipr < 0)ipr= lastdebugsize - 1;
 	while(ipr != lastdebugcurrent)
 	{
-		Log("run %08X\n",lasttime[ipr]);
+		Log("run %08X ",lasttime[ipr]);
 		ipr--;
 		if(ipr < 0)ipr= lastdebugsize - 1;
 	}
-	Log("run %08X\n",lasttime[lastdebugcurrent]); //last
+	Log("run %08X ",lasttime[lastdebugcurrent]); //last
 #endif
-	Log("IEF: %08X\n",CPUReadMemoryreal(0x4000200));
+	Log("IEF: %08X ",CPUReadMemoryreal(0x4000200));
 	  u32 joy = ((~REG_KEYINPUT)&0x3ff);
 	if((joy & KEY_B) && (joy & KEY_R) && (joy & KEY_L))
 	{
@@ -192,10 +192,10 @@ DC_FlushAll();
 
 extern "C" void failcpphandler()
 {
-	printf("something failed\r\n");
+	printf("something failed\r ");
 	REG_IME = IME_DISABLE;
 	debugDump();
-	Log("SSP %08x SLR %08x\n",savedsp,savedlr);
+	Log("SSP %08x SLR %08x ",savedsp,savedlr);
 		while(1);
 }
 
@@ -230,7 +230,7 @@ void undifinedresolver()
 	}
 	else
 	{
-		printf("unknown OP\r\n");
+		printf("unknown OP\r ");
 		debugDump();
 		REG_IME = IME_DISABLE;
 		while(1);
@@ -321,12 +321,12 @@ void gbaInit(bool slow)
 __attribute__((section(".itcm")))
 void gbaswieulatedbios()
 {
-	//Log("\n\rswi\n\r");
+	//Log(" \rswi \r");
 	//debugDump();
 
 //while(1);
 
-	//Log("%08X S\n", readbankedsp(0x12));
+	//Log("%08X S ", readbankedsp(0x12));
 
 
 	u16 tempforwtf = *(u16*)(exRegs[15] - 2);
@@ -356,7 +356,7 @@ void BIOScall(int op,  s32 *R)
 		break;
 	  case 0x02:
 #ifdef DEV_VERSION
-	    Log("Halt: IE %x\n",SpecificIPCAlign->GBA_IE);
+	    Log("Halt: IE %x ",SpecificIPCAlign->GBA_IE);
 #endif
 		//holdState = true;
 		//holdType = -1;
@@ -372,7 +372,7 @@ void BIOScall(int op,  s32 *R)
 		break;
 	  case 0x03:
 #ifdef DEV_VERSION
-		  Log("Stop\n");
+		  Log("Stop ");
 #endif
 			//holdState = true;
 			//holdType = -1;
@@ -383,7 +383,7 @@ void BIOScall(int op,  s32 *R)
 	  case 0x04:
 
 #ifdef DEV_VERSION
-		  Log("IntrWait: 0x%08x,0x%08x\n",
+		  Log("IntrWait: 0x%08x,0x%08x ",
 			  R[0],
 			  R[1]);      
 #endif
@@ -399,7 +399,7 @@ void BIOScall(int op,  s32 *R)
 
 #endif
 #ifdef DEV_VERSION
-		  Log("VBlankIntrWait: 0x%08X 0x%08X\n",REG_IE,anytimejmpfilter);
+		  Log("VBlankIntrWait: 0x%08X 0x%08X ",REG_IE,anytimejmpfilter);
 		  //VblankHandler(); //todo
 	#endif
 		//if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -479,7 +479,7 @@ void BIOScall(int op,  s32 *R)
 		break;
 	  case 0x19:
 	//#ifdef DEV_VERSION
-		  Log("SoundBiasSet: 0x%08x \n",
+		  Log("SoundBiasSet: 0x%08x  ",
 			  R[0]);      
 	//#endif    
 		if(reg[0].I) //ichfly sound todo
@@ -574,19 +574,19 @@ void ndsExceptionHdl()
 		if (	(codeAddress > 0x02000000 && codeAddress < 0x02400000) ||
 		(codeAddress > (u32)0x01000000 && codeAddress < (u32)(0x01000000 + 32768)) )
 		{
-			Log("NDS DATA ABORT AT %08X\n",getExceptionAddress( codeAddress, instrset));
+			Log("NDS DATA ABORT AT %08X ",getExceptionAddress( codeAddress, instrset));
 		}
 		else
 		{
-			Log("NDS DATA ABORT\n");
+			Log("NDS DATA ABORT ");
 		}
 	}
-	else if(mode == 0x1B) Log("NDS UNDEFINED INSTRUCTION\n");
-	else Log("NDS STRANGE EXCEPTION !\n");
-	Log("SAVED PC = %08X (%s)\n", exRegs[15], instrset ? "THUMB" : "ARM");
+	else if(mode == 0x1B) Log("NDS UNDEFINED INSTRUCTION ");
+	else Log("NDS STRANGE EXCEPTION ! ");
+	Log("SAVED PC = %08X (%s) ", exRegs[15], instrset ? "THUMB" : "ARM");
 	debugDump();
-	/*if(instrset) Log("FAILED INSTR = %04X\n", *(u16*)(exRegs[15] - (mode == 0x17 ? 4 : 2)));
-	else Log("FAILED INSTR = %08X\n", *(u32*)(exRegs[15] - (mode == 0x17 ? 8 : 4)));*/ //ichfly don't like that
+	/*if(instrset) Log("FAILED INSTR = %04X ", *(u16*)(exRegs[15] - (mode == 0x17 ? 4 : 2)));
+	else Log("FAILED INSTR = %08X ", *(u32*)(exRegs[15] - (mode == 0x17 ? 8 : 4)));*/ //ichfly don't like that
 			REG_IME = IME_DISABLE;
 		while(1);
 }
@@ -617,20 +617,20 @@ void gbaExceptionHdl()
 	
 	//ndsModeinline();
 	cpuMode = BIOSDBG_SPSR & 0x20;
-	//Log("%08X\n",exRegs[15]);
+	//Log("%08X ",exRegs[15]);
 	
-	//Log("enter\n");
+	//Log("enter ");
 
 #ifndef gba_handel_IRQ_correct
 	BIOSDBG_SPSR = BIOSDBG_SPSR & ~0x80; //sorry but this must be done
 #endif
 
-	//Log("%08X %08X %08X\r\n",exRegs[15],REG_VCOUNT,REG_IE);
+	//Log("%08X %08X %08X\r ",exRegs[15],REG_VCOUNT,REG_IE);
 	/*int i;
 	for(i = 0; i <= 15; i++) {
 		Log("R%d=%X ", i, exRegs[i]);
 	} 
-	Log("\n");*/
+	Log(" ");*/
 
 
 #ifdef trap_unhandled_map
@@ -639,7 +639,7 @@ void gbaExceptionHdl()
 		if(exRegs[15] > 0x08000000)//don't know why this land herer but it dose
 		{
 			//exRegs[15] = (exRegs[15] & 0x01FFFFFF) + (s32)rom;
-			printf("MPU GBAMode PC trapped @ %x! \n",(unsigned int)exRegs[15]);
+			printf("MPU GBAMode PC trapped @ %x!  ",(unsigned int)exRegs[15]);
 			while(1==1){
 				scanKeys();
 				if (keysDown()&KEY_A){
@@ -649,7 +649,7 @@ void gbaExceptionHdl()
 		}
 		else
 		{
-			Log("gba jumped to an unknown region\n");
+			Log("gba jumped to an unknown region ");
 			debugDump(); //test
 			REG_IME = IME_DISABLE;
 			while(1);
@@ -678,7 +678,7 @@ void gbaExceptionHdl()
 	if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 #endif
 	//gbaMode();
-	//Log("exit\n");
+	//Log("exit ");
 }
 
 #ifndef releas

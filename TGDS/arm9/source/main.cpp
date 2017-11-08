@@ -68,6 +68,11 @@ USA
 int argc;
 sint8 **argv;
 
+u32 anytimejmpfilter = 0; 
+
+//todo
+void show_mem(){}
+
 //dmabuffer (old gbaemu4ds way)
 //volatile u8 arm7exchangefild[0x100];
 
@@ -179,7 +184,7 @@ int main(int _argc, sint8 **_argv) {
 	while(true)
 	{
 		int i = REG_IPC_FIFO_RX;
-		printf("%08X\r\n",i);
+		printf("%08X\r ",i);
 		REG_IPC_FIFO_TX = i;
 
 	}*/
@@ -215,7 +220,7 @@ int main(int _argc, sint8 **_argv) {
 		while(1);
 	}
 	else{
-		printf("OK\n");
+		printf("OK ");
 	}
 	
 	//coto: save detection code from whitelist...
@@ -232,10 +237,10 @@ int main(int _argc, sint8 **_argv) {
 	}
 	
 	//printf("Hello World2!");
-	printf("CPUInit\n");
+	printf("CPUInit ");
 	CPUInit(biosPath, useBios,extraram);
 	
-	printf("CPUReset\n");
+	printf("CPUReset ");
 	CPUReset();
 	
 	//Create new savefile or load if exists...
@@ -255,7 +260,7 @@ int main(int _argc, sint8 **_argv) {
 	
 	//coto: added create new savefile
 	if(!frh){
-		printf("no savefile found, creating new one... \n");
+		printf("no savefile found, creating new one...  ");
 		//append "sav"
 		
 		//void * memcpy ( void * destination, const void * source, size_t num );
@@ -271,22 +276,22 @@ int main(int _argc, sint8 **_argv) {
 		strcpy ((char *)savePath, (const char *)fn_noext);
 		if(CPUReadBatteryFile(savePath))
 		{
-			if(cpuSaveType == 0)printf("SaveReadOK![AUTO]\n");
-			if(cpuSaveType == 1)printf("SaveReadOK![EEPROM]\n");
-			if(cpuSaveType == 2)printf("SaveReadOK![SRAM]\n");
-			if(cpuSaveType == 3)printf("SaveReadOK![FLASHROM]\n");
-			if(cpuSaveType == 4)printf("SaveReadOK![EEPROM+SENSOR]\n");
-			if(cpuSaveType == 5)printf("SaveReadOK![NONE]\n");			
+			if(cpuSaveType == 0)printf("SaveReadOK![AUTO] ");
+			if(cpuSaveType == 1)printf("SaveReadOK![EEPROM] ");
+			if(cpuSaveType == 2)printf("SaveReadOK![SRAM] ");
+			if(cpuSaveType == 3)printf("SaveReadOK![FLASHROM] ");
+			if(cpuSaveType == 4)printf("SaveReadOK![EEPROM+SENSOR] ");
+			if(cpuSaveType == 5)printf("SaveReadOK![NONE] ");			
 		}
 		else
 		{
-			printf("failed reading: %s\n",savePath);
+			printf("failed reading: %s ",savePath);
 			while(1);
 		}
 		fclose_fs(frh);
 	}
 	
-	printf("BIOS_RegisterRamReset\n");
+	printf("BIOS_RegisterRamReset ");
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
 	BIOS_RegisterRamReset(0xFF);
 	pu_Enable();
@@ -307,16 +312,16 @@ int main(int _argc, sint8 **_argv) {
 	SendMultipleWordACK(0x1FFFFFFF,syncline,0,0);
 	
 	while(!(REG_IPC_FIFO_CR & RECV_FIFO_IPC_EMPTY))u32 src = REG_IPC_FIFO_RX;
-	printf("irqinit\n");
+	printf("irqinit ");
 	
-	printf("emulateedbiosstart\n");
+	printf("emulateedbiosstart ");
 	emulateedbiosstart();
 	
-	printf("ndsMode\n");
+	printf("ndsMode ");
 	ndsMode();
 	
 	SendMultipleWordACK(0xc1710001,0x0,0x0,0x0);//fifotest
-	printf("gbaInit\n");
+	printf("gbaInit ");
 	
 	/*
 	#ifdef capture_and_pars
@@ -336,7 +341,7 @@ int main(int _argc, sint8 **_argv) {
 	gbaInit(slow);
 	
 	#ifndef capture_and_pars
-		printf("gbaMode2\n");
+		printf("gbaMode2 ");
 	#endif
 		REG_IME = IME_ENABLE;
 		gbaMode2();
