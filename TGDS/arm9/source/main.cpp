@@ -64,6 +64,8 @@ USA
 #include "dma.h"
 #include "cpumg.h"
 #include "posix_hook_shared.h"
+#include "gui_console_connector.h"
+#include "keypad.h"
 
 int argc;
 sint8 **argv;
@@ -88,11 +90,12 @@ u32 amr7fehlerfeld[10];
 #endif
 */
 
+uint8 * stubbedGBAEWRAMPtr;
 
-char biosPath[MAXPATHLEN * 2];
-char patchPath[MAXPATHLEN * 2];
-char savePath[MAXPATHLEN * 2];
-char szFile[MAXPATHLEN * 2];
+char biosPath[MAXPATHLEN * 2];		//bios path
+char patchPath[MAXPATHLEN * 2];		//patch path
+char savePath[MAXPATHLEN * 2];		//save path
+char szFile[MAXPATHLEN * 2];		//file path
 
 char* savetypeschar[7] =
 	{"SaveTypeAutomatic","SaveTypeEeprom","SaveTypeSram","SaveTypeFlash64KB","SaveTypeEepromSensor","SaveTypeNone","SaveTypeFlash128KB"};
@@ -168,6 +171,16 @@ int main(int _argc, sint8 **_argv) {
 	//local nifi: 
 	//switch_dswnifi_mode(dswifi_localnifimode);	//LOCAL NIFI:	//so far NDS7 works
 	
+	//this project uses the start 0x02000000 ~ 0x02040000 as gba wram (256K), so malloc must stub that memory for further malloc operations.
+	stubbedGBAEWRAMPtr=(uint8*)malloc(256*1024);
+	if(stubbedGBAEWRAMPtr){
+		//OK stubbed correctly
+	}
+	else{
+		clrscr();
+		printf("stubPtr Failed. Can't proceed");
+		while(1==1){}
+	}
 	//set up GBA part
 	GBA_DISPCNT  = 0x0080;
 	
@@ -209,18 +222,33 @@ int main(int _argc, sint8 **_argv) {
 	initspeedupfelder();
 	#endif
 	
-	clrscr();
+	//add GUI!
+	GUI_getROM(getfatfsPath((char*)"gba"));	//returns: file.ext-> szFile	<- char * recv from arg: full dir path to look files by extension at
+	GUI_deleteROMSelector();
+	
+	//file.ext -> fullpath/file.ext
+	char tempFname[0x400];
+	strcpy(tempFname, (const char*)szFile);
+	memset ((uint8*)&szFile[0], 0, sizeof(szFile));
+	sprintf(szFile,"%s%s",getfatfsPath((char*)"gba/"),tempFname);
+	printf("Trying:%s Press A",szFile);
+	while (1)
+	{	
+		if ((KEYCNT_READ() & KEY_A))
+		break;
+	}
+	
 	printf("CPULoadRom...");
 	
 	failed = !CPULoadRom(szFile,extraram);
 
 	if(failed)
 	{
-		printf("failed");
+		printf("failed:%s",szFile);
 		while(1);
 	}
 	else{
-		printf("OK ");
+		printf("OK:%s",szFile);
 	}
 	
 	//coto: save detection code from whitelist...

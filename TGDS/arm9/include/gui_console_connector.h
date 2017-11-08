@@ -30,15 +30,19 @@ USA
 #include <ctype.h>
 #include "specific_shared.h"
 
+#include "gui.h"
+#include "gbaemu4ds_fat_ext.h"
+#include "bios.h"
+
 #include "typedefs.h"
 #include "dsregs.h"
 #include "console.h"
-#include "bios.h"
-
+#include "gui_widgets.h"
 #include "console_str.h"
-#include "InterruptsARMCores_h.h"
+#include "about.h"
+#include "dma.h"
 #include "dmaIO.h"
-
+#include "InterruptsARMCores_h.h"
 #include "posix_hook_shared.h"
 #include "fsfat_layer.h"
 #include "keypad.h"
@@ -60,6 +64,10 @@ extern bool InitProjectSpecificConsole();
 
 //2) Uses subEngine: VRAM Layout -> Console Setup
 extern vramSetup * GBAEMU4DS_2DVRAM_SETUP();
+
+extern void GUI_getROM(sint8 *rompath);
+extern void GUI_deleteROMSelector();
+extern int FirstROMSelectorHandler(t_GUIZone *zone, int msg, int param, void *arg);
 
 #ifdef __cplusplus
 }

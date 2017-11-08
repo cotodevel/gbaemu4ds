@@ -23,6 +23,35 @@ USA
 
 #include "gui_console_connector.h"
 #include "toolchain_utils.h"
+#include "main.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdarg.h>
+#include <malloc.h>
+#include <ctype.h>
+#include "specific_shared.h"
+
+#include "gui.h"
+#include "gbaemu4ds_fat_ext.h"
+#include "bios.h"
+
+#include "typedefs.h"
+#include "dsregs.h"
+#include "console.h"
+#include "gui_widgets.h"
+#include "console_str.h"
+#include "about.h"
+#include "dma.h"
+#include "dmaIO.h"
+#include "InterruptsARMCores_h.h"
+#include "posix_hook_shared.h"
+#include "fsfat_layer.h"
+#include "keypad.h"
+#include "video.h"
+
 
 ////////[For custom Console implementation]:////////
 //You need to override :
@@ -201,6 +230,56 @@ bool InitProjectSpecificConsole(){
 	InitializeConsole(DefaultSessionConsole);
 	
 	return true;
+}
+
+
+
+
+
+//read rom from (path)touchscreen:output rom -> CFG.ROMFile
+void GUI_getROM(sint8 *rompath){
+	consoleClear(DefaultSessionConsole);
+
+	// Get ROMs list
+	int		cnt;
+    sint8 **dir_list = FS_getDirectoryList(rompath, "GBA|ZIP|GZ", &cnt);
+	
+	// Alphabetical sort
+	qsort(dir_list, cnt, sizeof(sint8 *), sort_strcmp);
+
+	// Create ROM selector
+	t_GUIScreen *scr = GUI_newSelector(cnt, dir_list, IDS_SELECT_ROM, &trebuchet_9_font);
+    scr->zones[4].handler = NULL; // Remove CANCEL button
+	scr->handler = FirstROMSelectorHandler;
+	
+	GUI_drawScreen(scr, NULL);
+	GUI_start();
+	
+	sint8 *sel = GUISelector_getSelected(scr, NULL);
+
+    sprintf(szFile,"%s",sel);	//szFile	<- char * recv from arg: file.ext
+}
+
+void GUI_deleteROMSelector(){
+	GUI_deleteSelector(GUI.screen); // Should also delete dir_list
+	consoleClear(DefaultSessionConsole);
+}
+
+
+int FirstROMSelectorHandler(t_GUIZone *zone, int msg, int param, void *arg){
+	switch (msg)
+	{
+	case GUI_DRAW:
+		consoleClear(DefaultSessionConsole);
+		break;
+	case GUI_COMMAND:
+		if (param == 3)
+		{
+			GUI.exit = 1;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 //todo GUI
@@ -1086,40 +1165,6 @@ int FirstROMSelectorHandler(t_GUIZone *zone, int msg, int param, void *arg){
 	return 0;
 }
 
-
-//read rom from (path)touchscreen:output rom -> CFG.ROMFile
-void GUI_getROM(sint8 *rompath){
-    GUI.ScanJoypad = 1;
-	consoleClear(DefaultSessionConsole);
-
-	// Get ROMs list
-	int		cnt;
-    sint8 **dir_list = FS_getDirectoryList(rompath, "SMC|SFC|SWC|FIG|ZIP|GZ", &cnt);
-	
-	// Alphabetical sort
-	if (CFG.GUISort){
-		qsort(dir_list, cnt, sizeof(sint8 *), sort_strcmp);
-	}
-
-	// Create ROM selector
-	t_GUIScreen *scr = GUI_newSelector(cnt, dir_list, IDS_SELECT_ROM, &trebuchet_9_font);
-    scr->zones[4].handler = NULL; // Remove CANCEL button
-	scr->handler = FirstROMSelectorHandler;
-	
-	GUI_drawScreen(scr, NULL);
-	
-	GUI_start();
-	
-	sint8 *sel = GUISelector_getSelected(scr, NULL);
-
-    GUI.ScanJoypad = 0;
-	sprintf(CFG.ROMFile,"%s",sel);	//CFG.ROMFile <- selected file from touchscreen: file.ext
-}
-
-void GUI_deleteROMSelector(){
-	GUI_deleteSelector(GUI.screen); // Should also delete dir_list
-	consoleClear(DefaultSessionConsole);
-}
 
 void GUI_createMainMenu(){
 	consoleClear(DefaultSessionConsole);
