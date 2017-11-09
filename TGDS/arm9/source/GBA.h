@@ -279,7 +279,6 @@ extern void cpu_SetCP15Cnt(u32 v);
 extern u32 cpu_GetCP15Cnt();
 
 extern bool cpuIsMultiBoot;
-extern void getandpatchmap(int offsetgba,int offsetthisfile);
 extern void arm7dmareqandcheat();
 
 extern void pu_SetRegion(u32 region, u32 value);

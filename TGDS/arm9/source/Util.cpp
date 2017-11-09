@@ -640,7 +640,7 @@ void patchit(int romSize2)
 			}
 			else
 			{
-				getandpatchmap(offsetgba,offsetthisfile);
+				getandpatchmap(offsetgba,offsetthisfile,patchf);
 			}
 #ifdef debugpatch
 			printf("patch gbaedit from %08X to %08X (%08X) \r",offsetthisfile,offsetgba,ftell_fs(patchf));
@@ -880,14 +880,15 @@ u8 *utilLoad(const char *file, //ichfly todo
   fseek_fs(f,0,SEEK_SET);
 
   generatefilemap(f,fileSize);
-
-  if(data == NULL)
-  {
-	  romSize = 0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
-	  rom = (u8 *)(sbrk(0) + 0x2000/*8K for futur alloc*/);              //rom = (u8 *)0x02180000; //old
-	  image = data = rom;
-	  size = romSize;
-  }
+  
+	//todo
+	if(data == NULL)
+	{
+		romSize = 0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+		rom = (u8 *)(sbrk(0) + 0x2000/*8K for futur alloc*/);              //rom = (u8 *)0x02180000; //old
+		image = data = rom;
+		size = romSize;
+	}
   size_t read = fileSize <= size ? fileSize : size;
 
 

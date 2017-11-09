@@ -43,7 +43,7 @@ extern "C" {
 #endif
 
 //part of fatfile.c
-extern u8 *sectortabel;	//extern u32 *sectortabel;
+extern u32 *sectortabel;
 extern void * lastopen;
 extern void * lastopenlocked;
 
@@ -59,7 +59,7 @@ extern u32 allocedfild[buffslots];
 extern u8* greatownfilebuffer;
 
 extern void generatefilemap(FILE * f,int size);
-extern void getandpatchmap(int offsetgba,int offsetthisfile);
+extern void getandpatchmap(int offsetgba,int offsetthisfile,FILE * fhandle);
 
 //part of gbaemu4ds_fat_ext.cpp
 
