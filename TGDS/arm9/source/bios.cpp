@@ -853,7 +853,10 @@ void BIOS_RegisterRamReset(u32 flags)
   CPUUpdateRegister(0x0, 0x80);
   
   if(flags) {
-    if(flags & 0x01) {
+    
+	//todo, revise all these pointers, they must point to proper memory in NDS
+	/*
+	if(flags & 0x01) {
       // clear work RAM
       memset(workRAM, 0, 0x40000);
     }
@@ -873,7 +876,8 @@ void BIOS_RegisterRamReset(u32 flags)
       // clean OAM
       memset(emultoroam, 0, 0x400);
     }
-
+	*/
+	
     if(flags & 0x80) {
       int i;
       for(i = 0; i < 0x10; i++)

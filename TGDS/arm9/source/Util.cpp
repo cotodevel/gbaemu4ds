@@ -880,14 +880,19 @@ u8 *utilLoad(const char *file, //ichfly todo
   fseek_fs(f,0,SEEK_SET);
 
   generatefilemap(f,fileSize);
-  
-	//todo
+
+	//use the ewram directly
 	if(data == NULL)
 	{
-		romSize = 0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
-		rom = (u8 *)(sbrk(0) + 0x2000/*8K for futur alloc*/);              //rom = (u8 *)0x02180000; //old
-		image = data = rom;
-		size = romSize;
+		//ori
+		//romSize = 0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+		//rom = (u8 *)(sbrk(0) + 0x2000);	//8K for futur alloc
+		//image = data = rom;
+		//size = romSize;
+		
+		//new
+		size = 0x40000;	//256K anyway
+		image = data = rom = (u8*)0x2000000;
 	}
   size_t read = fileSize <= size ? fileSize : size;
 
@@ -908,6 +913,9 @@ u8 *utilLoad(const char *file, //ichfly todo
 	f = fopen_fs(file, "rb"); //close and open
   }*/
 
+	//Prevent Cache problems.
+	coherent_user_range_by_size((uint32)image, (int)0x40000);
+	
 	r = fread_fs(image, 1, read, f);
 	
 	//set up header
@@ -919,20 +927,22 @@ u8 *utilLoad(const char *file, //ichfly todo
   ichflyfilestream = f;
 #endif
 
-  if(r != read) {
-    systemMessage(MSG_ERROR_READING_IMAGE,
-                  N_("Error reading image %s"), file);
-	while(1);
-  }  
+	if(r != read) {
+		systemMessage(MSG_ERROR_READING_IMAGE,N_("Error reading image %s"), file);
+		while(1);
+	}
 #ifdef uppern_read_emulation
   ichflyfilestreamsize = fileSize;
 #endif
   //size = fileSize;
   
   if(patchPath[0] != 0)patchit(romSize);
-
-
-  return image;
+	//clrscr();
+	//printf("OK image copied to 0x02000000");
+	//printf("fetch:%x",*(uint32*)0x02000000);
+	//while(1){}
+	
+	return image;
 }
 
 
@@ -1007,14 +1017,16 @@ char* strtolower(char* s) {
 //coto: if a game is defined here savetype from gamecode will be used
 int save_decider(){
 
-//void * memcpy ( void * destination, const void * source, size_t num );
-int savetype=0;
-char gamecode[6]; 
+//Set by default 128K flash, this will break games! We must use 64K by default but not now
+//Flash setup: 0 auto / 1 eeprom / 2 sram / 3 flashrom /4 eeprom + sensor / 5 none
+int savetype=3;
+char gamecode[7];
+gamecode[6] = '\0';
 memcpy((char*)gamecode,(u8*)&SpecificIPCAlign->gbaheader.gamecode,6);
 
-//printf("GameCode is: %s  ",gamecode);
-//printf("GameCode is: %s  ",strtoupper(gamecode));
-//printf("GameCode is: %s  ",strtolower(gamecode));
+//printf("GameCode is: %s",gamecode);
+//printf("GameCode is: %s",strtoupper(gamecode));
+//printf("GameCode is: %s",strtolower(gamecode));
 //while(1);
 
     if( strncmp( 

@@ -51,7 +51,7 @@
 #include "ichflysettings.h"
 #include "dma.h"
 
-#ifndef loadindirect
+#ifdef loadEmbedded
 #include "puzzleorginal_bin.h"
 #endif
 
@@ -535,7 +535,7 @@ bool CPUWriteBatteryFile(const char *fileName)
   }
   
   if((gbaSaveType) && (gbaSaveType!=5)) {
-    FILE *file = fopen_fs(fileName, "wb");
+    FILE *file = fopen_fs(fileName, "w+");
     
     if(!file) {
       systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
@@ -625,13 +625,11 @@ int CPULoadRom(const char *szFile,bool extram)
                   "WRAM");
     return 0;
   }*/
-#ifdef loadindirect
+#ifndef loadEmbedded
   u8 *whereToLoad = rom;
   if(cpuIsMultiBoot)whereToLoad = workRAM;
 
-		if(!utilLoad(szFile,
-						  whereToLoad,
-						  romSize,extram))
+		if(!utilLoad(szFile,whereToLoad,romSize,extram))
 		{
 			return 0;
 		}
@@ -2589,6 +2587,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   saveType = 0;
   useBios = false;
   
+  
   if(useBiosFile) {
     int size = 0x4000;
     if(utilLoad(biosFileName,
@@ -2661,12 +2660,17 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   for(i = 0x304; i < 0x400; i++)
     ioReadable[i] = false;
 
+	/*
   if(romSize < 0x1fe2000) {
     *((u16 *)&rom[0x1fe209c]) = 0xdffa; // SWI 0xFA
     *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
-  } else {
+  } 
+  else {
     agbPrintEnable(false);
   }
+  */
+  
+  agbPrintEnable(false);
 }
 
 void CPUReset()

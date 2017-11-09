@@ -21,7 +21,7 @@
 
 //settings
 
-#define loadindirect	//load homebrew(disabled) or stream from slot 1 (enabled)
+//#define loadEmbedded	//load homebrew(enabled) or stream from slot 1 (disabled)
 
 #define ichflytestkeypossibillity	// disallow Left+Right or Up+Down of being pressed at the same time
 //#define powerpatches //do some hacky things that give the emulator more Vb in some cases.

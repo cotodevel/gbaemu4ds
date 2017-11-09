@@ -293,7 +293,7 @@ extern u32 savedsp;
 extern u32 savedlr;
 //extern void swiHalt(void);
 
-
+extern int gbaSaveType;
 #ifdef __cplusplus
 }
 #endif
