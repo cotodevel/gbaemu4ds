@@ -354,3 +354,60 @@ pagefehler++;
 		}
 	}
 }
+
+//test case: 
+//use original gbaemu4ds streaming code to recreate the file. Uses generatefilemap's sectortable. The output file should run in any other emu.
+void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open at this point.
+	
+	clrscr();
+	printf("begin test case");
+	char * outputTestCaseFile = "TestCaseFile.bin";
+	sint32 streamBufSize = 64*1024;	//higher buffer == faster testing code
+	uint8 * streambuf = (uint8 *)malloc(streamBufSize);
+	FILE * fout = fopen_fs(getfatfsPath(outputTestCaseFile),"w+");
+	
+	//1st sector is bugged in gbaemu4ds filesystem code so we must recreate that one (it seems to fetch the disk sector?)
+	uint8 firstSect[0x200];
+	fseek_fs(f,0,SEEK_SET);
+	fread_fs((uint8*)firstSect,1,sizeof(firstSect),f);
+	
+	//2nd sector onwards
+	int FileOffsetChunks = fileSize / streamBufSize;
+	int index = 0;
+	for(index = 0; index < FileOffsetChunks ; index++){		
+		uint32 * strmBuf = (uint32 *)streambuf;
+		memset (streambuf, 0, streamBufSize);
+		int indexBlock = 0;
+		for(indexBlock = 0; indexBlock < (streamBufSize/sizeof(uint32)) ; indexBlock++){
+			int fileOffset = (index*streamBufSize) + ( (indexBlock*sizeof(uint32)) );
+			strmBuf[indexBlock] = ichfly_readu32(fileOffset);
+		}
+		fwrite_fs((uint8*)strmBuf,1,streamBufSize,fout);		
+	}
+	
+	int FileMapChunks = fileSize % streamBufSize;
+	if(FileMapChunks > 0){
+		//means this file is not log2 aligned, and we need to extract that modulus part as well
+		memset (streambuf, 0, streamBufSize);
+		int indexBlock = 0;
+		for(indexBlock = 0; indexBlock < FileMapChunks ; indexBlock++){
+			int fileOffset = (FileOffsetChunks * streamBufSize) + indexBlock;
+			streambuf[indexBlock] = ichfly_readu8(fileOffset);
+		}
+		fwrite_fs((uint8*)streambuf,1,FileMapChunks,fout);
+		printf("this file is UNEVEN!");
+	}
+	else{
+		printf("this file is even!");
+	}
+	
+	//rewrite first sector & set end file
+	fseek_fs(fout,0,SEEK_SET);
+	fwrite_fs((uint8*)firstSect,1,sizeof(firstSect),fout);
+	fseek_fs(fout,fileSize,SEEK_SET);
+	
+	free(streambuf);
+	fclose_fs(fout);
+	fseek_fs(f,0,SEEK_SET);
+	printf("done. Use %s file in other emu.",(char*)outputTestCaseFile);
+}

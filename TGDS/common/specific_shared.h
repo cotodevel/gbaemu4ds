@@ -206,6 +206,8 @@ typedef struct sSpecificIPC {
 //#define anyarmcom
 //#define arm7dmapluscheats		//for dma fifo sound + cheats (old implementation)
 
+
+//#define testGBAEMU4DSFSCode	//enable for generating a file you can later test in any emu, that file is created (you pick from the list) is using the same gbaemu4ds streaming driver.
 #endif
 
 #ifdef __cplusplus

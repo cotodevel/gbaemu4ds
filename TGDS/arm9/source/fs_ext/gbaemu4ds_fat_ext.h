@@ -68,6 +68,7 @@ extern u16 ichfly_readu16(unsigned int pos);
 extern u32 ichfly_readu32(unsigned int pos);
 extern void ichfly_readdma_rom(u32 pos,u8 *ptr,u32 c,int readal);
 
+extern void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize);
 #ifdef __cplusplus
 }
 #endif

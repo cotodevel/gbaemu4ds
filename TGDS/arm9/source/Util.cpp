@@ -879,8 +879,14 @@ u8 *utilLoad(const char *file, //ichfly todo
   int fileSize = ftell_fs(f);
   fseek_fs(f,0,SEEK_SET);
 
-  generatefilemap(f,fileSize);
-
+	generatefilemap(f,fileSize);
+	
+	#ifdef testGBAEMU4DSFSCode
+	//run test // <- a file TestCaseFile.bin will be generated on root SD directory, from the file you select. 
+	//Use that file to test if the gbaemu4ds streaming code will actually work. (Use an emu to test this file)
+	testGBAEMU4DSFSTGDS(f,fileSize);
+	#endif
+	
 	//use the ewram directly
 	if(data == NULL)
 	{
