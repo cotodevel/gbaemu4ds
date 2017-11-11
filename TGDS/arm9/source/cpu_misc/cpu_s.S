@@ -1,25 +1,19 @@
 	.text
-
 	.equ REG_IME, 0x04000208
-
 	.align 4
 	.code 32
 	.arm
-	
 
-__sp_undef	=	_dtcm_end - 0x100;	@ichfly @ 1.792 Byte
-
+sp_UND	=	_dtcm_start - 0x100;	@ichfly @ 1.792 Byte
 
 	.global readbankedsp
    .type   readbankedsp STT_FUNC
 readbankedsp:
 	push {r1-r4}
 	
-	
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
 	and	r0, r0, #0x1F
-	
 	
 	cmp r0,#0x10 @ichfly user is system
 	moveq r0,#0x1F
@@ -28,9 +22,7 @@ readbankedsp:
 	msr	cpsr, r4	@ hop, c'est fait
 	
 	mov r0,sp
-	
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
-	
 	pop {r1-r4}
 	
 	bx lr
@@ -40,11 +32,9 @@ readbankedsp:
 readbankedlr:
 	push {r1-r4}
 	
-	
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
 	and	r0, r0, #0x1F
-	
 	
 	cmp r0,#0x10 @ichfly user is system
 	moveq r0,#0x1F
@@ -52,14 +42,10 @@ readbankedlr:
 	orr	r4, r4, r0
 	msr	cpsr, r4	@ hop, c'est fait
 	
-	mov r0,lr
-	
+	mov r0,lr	
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
-	
-	
 	pop {r1-r4}
 	bx lr
-	
 	
 	.global cpuSetCPSR
    .type   cpuSetCPSR STT_FUNC
@@ -228,7 +214,6 @@ pu_GetWriteBufferability:
 
 
 
-
 @swicode
 
 @---------------------------------------------------------------------------------
@@ -248,7 +233,6 @@ ichflyswiWaitForVBlank:
 @---------------------------------------------------------------------------------
 ichflyswiIntrWait:
 @---------------------------------------------------------------------------------
-
 	push {lr}
 	cmp	r0, #0
 	blne	testirq
@@ -264,8 +248,6 @@ wait_irq:
 	
 	mrs	r2, cpsr
 	bic	r3, r2, #0xC0
-	
-	
 	
 	@push regs
 	push {r0-r3}
@@ -297,8 +279,6 @@ wait_irq:
 	BLX memcpy
 	pop {r0-r3}
 
-
-
 	@ichfly my code end
 	
 	bl	testirq
@@ -318,11 +298,9 @@ testirq:
 	bx	lr
 
 
-
 @---------------------------------------------------------------------------------
 	.global ichflyswiHalt
    .type   ichflyswiHalt STT_FUNC
-
 @---------------------------------------------------------------------------------
 ichflyswiHalt:
 @---------------------------------------------------------------------------------
@@ -333,12 +311,9 @@ ichflyswiHalt:
 	pop {r12}
 	bx	lr
 	
-	
-	
 @---------------------------------------------------------------------------------
 	.global resettostartup
 	.type   resettostartup STT_FUNC
-
 @---------------------------------------------------------------------------------
 resettostartup:
 @---------------------------------------------------------------------------------

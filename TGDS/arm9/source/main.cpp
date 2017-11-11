@@ -143,7 +143,16 @@ int main(int _argc, sint8 **_argv) {
 	GUI_init(project_specific_console);
 	GUI_clear();
 	
+	REG_IE = 0;
+	
+	EnableIrq(IRQ_HBLANK | IRQ_RECVFIFO_NOT_EMPTY);
+	REG_IPC_FIFO_CR |= (1<<2);  //send empty irq
+    REG_IPC_FIFO_CR |= (1<<10); //recv empty irq
+    
+    *(u16*)0x04000184 = *(u16*)0x04000184 | (1<<15); //enable fifo send recv
+	REG_IF = ~0;
 	REG_POWERCNT &= ~((POWER_3D_CORE | POWER_MATRIX) & 0xFFFF);//powerOff(POWER_3D_CORE | POWER_MATRIX); //3D use power so that is not needed
+	DISPCNT  = 0x0080;
 	
 	sint32 fwlanguage = (sint32)getLanguage();
 	GUI_setLanguage(fwlanguage);
@@ -348,32 +357,23 @@ int main(int _argc, sint8 **_argv) {
 	//VblankHandler();
 	
 	u32 syncline = 159;
-	//ori
-	//REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
-	//REG_IPC_FIFO_TX = syncline;
-	
-	SendMultipleWordACK(0x1FFFFFFF,syncline,0,0);
-	
-	//while(!(REG_IPC_FIFO_CR & RECV_FIFO_IPC_EMPTY))u32 src = REG_IPC_FIFO_RX;	//ori
-	
-	//printf("irqinit ");
 	
 	//ok so far here
 	
+	VblankHandler();
+	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
+	REG_IPC_FIFO_TX = syncline;
+	while(!(REG_IPC_FIFO_CR & IRQ_RECVFIFO_NOT_EMPTY))u32 src = REG_IPC_FIFO_RX;
+	iprintf("irqinit\n");
+	
+	anytimejmpfilter = 0;
 	emulateedbiosstart();
 	printf("emulateedbiosstart ");
 	
 	//so far here
-	
 	ndsMode();
 	printf("ndsMode ");
-	
 	//so far here
-	
-	#ifndef capture_and_pars
-		printf("jump to %x-> %x  ",(unsigned int)rom,*(uint32*)rom);
-	#endif
-	
 	SendMultipleWordACK(0xc1710001,0x0,0x0,0x0);//fifotest
 	printf("gbaInit ");
 	
@@ -392,14 +392,15 @@ int main(int _argc, sint8 **_argv) {
 	#endif
 	*/
 	
-	clrscr();
+	gbaInit(slow);
+	REG_IME = IME_ENABLE;
+	gbaMode2();
+	
 	#ifndef capture_and_pars
-	printf("gbaMode2: %x-> %x",(unsigned int)rom,*(uint32*)rom);
+		printf("jump to %x-> %x  ",(unsigned int)rom,*(uint32*)rom);
 	#endif
 	
-	gbaInit(slow);
-	//REG_IME = IME_ENABLE;
-	gbaMode2();
+	
 	//can't use printf here lol the writes are handled by the MPU
 	cpu_ArmJumpforstackinit((u32)0x02000000, 0);
 

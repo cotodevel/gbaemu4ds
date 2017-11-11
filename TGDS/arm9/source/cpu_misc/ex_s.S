@@ -1,40 +1,31 @@
-
 #include "../ichflysettings.h"
+.section	.itcm,"ax",%progbits
+.equ REG_BASE,	0x04000000
+.equ REG_IME,	0x04000208
+.align 4
+.code 32
+.arm
 
-
-
-	.section	.itcm,"ax",%progbits
-
-	.equ REG_BASE,	0x04000000
-	.equ REG_IME,	0x04000208
-
-	.align 4
-	.code 32
-	.arm
-
-
-
-@__sp_svc	=	_dtcm_end - 0x100;   @ichfly old
-@__sp_irq	=	__sp_svc - 0x100;
-@__sp_usr	=	__sp_irq - 0x100;
-@__sp_exc = __sp_usr - 0x100;
+@sp_SVC	=	_dtcm_start - 0x100;   @ichfly old
+@sp_IRQ	=	sp_SVC - 0x100;
+@sp_USR	=	sp_IRQ - 0x100;
+@__sp_exc = sp_USR - 0x100;
 
 @new stacks todo mix some stacks @ichfly also old
-@__sp_undef	=	_dtcm_end - 0x100;	@ichfly @ 1.792 Byte
-@__sp_svc	=	__sp_undef - 0x700;	@ichfly @ 2.048 Byte
-@__sp_data	=	__sp_svc   - 0x800; @ichfly @ 2.048 Byte
-@__sp_irq	=	__sp_data  - 0x800; @ichfly @ 2.048 Byte each
+@sp_UND	=	_dtcm_start - 0x100;	@ichfly @ 1.792 Byte
+@sp_SVC	=	sp_UND - 0x700;	@ichfly @ 2.048 Byte
+@sp_ABT	=	sp_SVC   - 0x800; @ichfly @ 2.048 Byte
+@sp_IRQ	=	sp_ABT  - 0x800; @ichfly @ 2.048 Byte each
 
 @new stacks todo mix some stacks
-__sp_undef	=	_dtcm_end - 0x100;	@ichfly @ 1.792 Byte
-__sp_svc	=	__sp_undef - 0x700;	@ichfly @ 4.096 Byte
-__sp_irq	=	__sp_svc  - 0x1000; @ichfly @ 1.024 Byte each @also in interruptDispatcher.s
+sp_UND	=	_dtcm_start - 0x100;	@ichfly @ 1.792 Byte
+sp_SVC	=	sp_UND - 0x700;	@ichfly @ 4.096 Byte
+sp_IRQ	=	sp_SVC  - 0x1000; @ichfly @ 1.024 Byte each @also in interruptDispatcher.s
 
 @========== Exception code ====================
 	
-	.section	.vectors,"ax",%progbits
-	
-		.global irqhandler2
+.section	.vectors,"ax",%progbits	
+.global irqhandler2
 irqhandler2:
 b	inter_Reset + 0x1FF8000
 b	inter_undefined + 0x1FF8000
@@ -58,8 +49,6 @@ inter_res2:
 	ldr lr, =exHandler
 	str sp,[lr]
 	b dointerwtf
-	
-
 
 
 .global savedsp
@@ -73,7 +62,7 @@ _exMain_tmpPuplain:
 	.word 0
 .global SPtoload
 SPtoload:
-	.word __sp_irq
+	.word sp_IRQ
 	
 .global SPtemp
 SPtemp: @lol not realy
@@ -94,19 +83,15 @@ inter_irq:
 thisi1:	
 	str r2, [pc,#(_exMain_tmpPuplain - thisi1 -8)]
 	
-	BL IntrMain
+	BL NDS_IRQHandlerSpecial
 	
 	mov	r0, #0x4000000		@ REG_BASE @ptr+4 to 03FFFFFC (mirror of 03007FFC) from gbabios
 	ldr	r1, [r0, #0x214]	@get IF
-	
-		
-
 	
 	ldr	r2, =anytimejmpfilter
 	ldr r2, [r2]
 @thisi2:	
 	@ldr r2, [pc,#(anytimejmpfilter - thisi2 -8)]
-	
 	ands r1,r1,r2 @ anytimejmpfilter und IF
 	BEQ	irqexitdirect
 	
@@ -140,9 +125,7 @@ thisi3:
 	mcr	p15, 0, r2, c5, c0, 2	
 
 	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
-	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
-	
-	
+	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)	
 
 #else
 inter_irq:
@@ -165,8 +148,6 @@ inter_irq:
 	mcr	p15, 0, r1, c5, c0, 2
 	ldr	r1, =_exMain_tmpPuplain
 	str	r2, [r1] @ichfly
-		
-	@BL IntrMain
 	
 	mov	r12, #0x4000000		@ REG_BASE
 	ldr	r4, [r12, #0x214]		
@@ -177,18 +158,12 @@ inter_irq:
 	ldr	r1, =_exMain_tmpPuplain
 	ldr	r2, [r1] @ichfly
 	
-
-	
-
 	mcr	p15, 0, r2, c5, c0, 2
-	
 	
 	ldr	r2, =IME
 	ldrh r2, [r2]
 	cmp r2,#1
 	BNE	noIME
-		
-
 	
 	ldr	r2, =anytimejmpfilter
 	ldr r2, [r2]
@@ -197,15 +172,12 @@ inter_irq:
 	@cmp r4,#0 @the s flag in and
 	BNE	got_over_gba_handler
 
-
 noIME:
 
 	LDMIA SP!, {R0-R4,R12,LR} @exit
 	
 	@ichfly marker todoooooooooooooooooooooooooo!
 	str sp,[pc, #-0x90]  @ichfly sizechange
-	
-	
 	
 	ldr sp,[pc, #-0x90]  @ichfly sizechange
 	SUBS pc, lr, #0x4
@@ -217,13 +189,11 @@ got_over_gba_handler:
 	@nop
 
 	ldr	r1, =0x06333333
-	
 	mcr	p15, 0, r1, c5, c0, 2
 	
 	LDMIA SP!, {R0-R4,R12,LR} @exit
 	str sp,[pc, #-0xA8]  @ichfly sizechange
 	ldr sp,[pc, #-0xA8]  @ichfly sizechange
-
 
 nop @need this nops
 nop
@@ -237,7 +207,6 @@ nop
 nop
 nop
 nop
-
 
 	@original from gba
 	stmfd  SP!, {R0-R3,R12,LR} @save registers to SP_irq
@@ -257,11 +226,7 @@ nop
 	
 	ldr	r1, =_exMain_tmpPuplain @ichfly einschub
 	ldr	r2, [r1] @ichfly
-	
-	
-	mcr	p15, 0, r2, c5, c0, 2	
-
-	  
+	mcr	p15, 0, r2, c5, c0, 2
 	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
 	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
 #endif
@@ -269,9 +234,8 @@ nop
 
 .global SPtoloadswi
 SPtoloadswi:
-	.word __sp_svc
+	.word sp_SVC
 inter_swi:
-
 
 	@ change the PU to nds mode
 	ldr	SP,=0x36333333	@ see cpumg.cpp for meanings protections
@@ -286,13 +250,9 @@ inter_swi:
 	@ jump into the personal handler
 	ldr	r1, =exHandlerswi
 	ldr	r1, [r1]
-	
-	
 	ldr	sp, =SPtoloadswi	@ use the new stack
 	ldr sp, [sp]
-	
 	blx	r1 @ichfly change back if possible
-	
 	
 	ldr	r1, =SPtoloadswi	@save old stack
 	str sp, [r1]
@@ -301,11 +261,8 @@ inter_swi:
 	ldr	lr, =exRegs
 	ldmia	lr, {r0-r12}
 	
-	ldr	lr, [lr, #(15 * 4)] 
-	
+	ldr	lr, [lr, #(15 * 4)] 		
 	subs    pc, lr, #0 @ichfly this is not working	
-
-
 
 
 inter_fetch: @ break function todo
@@ -317,10 +274,6 @@ inter_fetch: @ break function todo
 	@ldr r2, [pc,#(rom - thisi4 -8)]
 	add		lr,lr,sp
 	subs    pc, lr, #4
-
-
-
-
 
 inter_undefined:
 
@@ -337,9 +290,8 @@ inter_undefined:
 	@ jump into the personal handler
 	ldr	r1, =exHandlerundifined
 	ldr	r1, [r1]
-	
-	
-	ldr	sp, =__sp_undef	@ use the new stack
+		
+	ldr	sp, =sp_UND	@ use the new stack
 	
 	blx	r1 @ichfly change back if possible
 	
@@ -348,29 +300,13 @@ inter_undefined:
 	ldmia	lr, {r0-r12}
 	
 	ldr	lr, [lr, #(15 * 4)] 
-	
 	subs    pc, lr, #4 @ichfly this is not working	
 
 
-
-
-
-
-
-
-
-
 dointerwtf:
-
 inter_data:
-	
-
-	
 	ldr	SP, =exRegs
-
 	str	lr, [SP, #(15 * 4)]	@ save r15 (lr is r15)
-
-
 	
 	@ save the registres 0->12
 	stmia	SP!, {r0-r12}
@@ -378,11 +314,7 @@ inter_data:
 	@ change the PU to nds mode
 	ldr	r7,=0x36333333	@ see cpumg.cpp for meanings protections
 	mcr	p15, 0, r7, c5, c0, 2
-
-	
-
 	MRS r5,spsr
-
 	
 	mov r6,SP
 #ifndef directcpu
@@ -395,7 +327,6 @@ inter_data:
 	bic	r4, r3, #0x1F
 	and	r1, r5, #0x1F
 	
-	
 	cmp r1,#0x10 @ichfly user is system
 	moveq r1,#0x1F
 	
@@ -404,8 +335,6 @@ inter_data:
 	
 	stmia r6, {r13-r14} @save the registrers	@ on sauvegarde les registres bankés (r13 et r14)
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
-
-
 
 #ifdef directcpu
 	
@@ -422,30 +351,23 @@ inter_data:
 itisARM:
 
 	ldr r0, [LR, #-0x8]
-	ldr	sp, =__sp_undef	@ use the new stack
+	ldr	sp, =sp_UND	@ use the new stack
 	BL emuInstrARM 	@ is emuInstrARM(u32 opcode, s32 *R)
 	B exitdirectcpu
 itisTHUMB:
 	ldrh r0, [LR,#-0x8]
 	sub LR, #0x2
 	str LR, [r1, #15*4]
-	ldr	sp, =__sp_undef	@ use the new stack
+	ldr	sp, =sp_UND	@ use the new stack
 	BL emuInstrTHUMB @ is emuInstrTHUMB(u16 opcode, s32 *R)
 exitdirectcpu:
 #else
-
-	ldr	sp, =__sp_undef	@ use the new stack
-
+	ldr	sp, =sp_UND	@ use the new stack
 	@ jump into the personal handler @ on appelle l'handler perso
 	ldr	r12, =exHandler
 	ldr	r12, [r12]
-
-
 	blx	r12
-	
 #endif      
-
-	
 
 	@ restore SPSR @ on restaure les bankés
 #ifndef directcpu
@@ -467,56 +389,45 @@ exitdirectcpu:
 	ldmia r6, {r13-r14}	@restor r13 and r14  @ on restaure les registres bankés (r13 et r14). /!\ N'allons pas croire qu'on les a restauré dans notre contexte: en effet, on a changé de mode là !
 	msr	cpsr, r3	@chagne to mode "normal"@ on revient au mode "normal"
 	
-
-
-
-	
 	BIC SP,r7,#0x30000000 @ldr	SP, =0x06333333
 	mcr	p15, 0, SP, c5, c0, 2
-
-
 
 	@restore r0-r12 easy
 	sub lr,r6,#13 * 4 @ldr	lr, =exRegs
 	ldmia	lr, {r0-r12}
-			
+	
 	@restore PU from the handler @ restaure la protection du PU, comme voulue par l'handler perso
-	
-
-	
 	
 	@my speedup code
 	ldr	lr, [lr, #(15 * 4)] 
 	
-	subs    pc, lr, #4
+	subs    pc, lr, #4	
 	
-	
-	.section	.dtcm,"ax",%progbits
-
-		.global BIOSDBG_SPSR
+.section	.dtcm,"ax",%progbits
+.global BIOSDBG_SPSR
 BIOSDBG_SPSR:
 	.word 0
 
 _exMain_tmpPu:
 	.word 0
-			
-	.global exHandler
+	
+.global exHandler
 exHandler:
 	.word	0
 	
-	.global exHandlerundifined
+.global exHandlerundifined
 exHandlerundifined:
 	.word	0
 
-	.global exHandlerswi
+.global exHandlerswi
 exHandlerswi:
 	.word	0
-			
-	.global exPuProtection
+
+.global exPuProtection
 exPuProtection:
 	.word 0
 	
-	.global exRegs
+.global exRegs
 exRegs:
 	.word	0
 	.word	0
@@ -534,6 +445,6 @@ exRegs:
 	.word	0
 	.word	0
 	.word	0
-		
-	.pool
-	.end
+	
+.pool
+.end
