@@ -395,10 +395,10 @@ void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open a
 			streambuf[indexBlock] = ichfly_readu8(fileOffset);
 		}
 		fwrite_fs((uint8*)streambuf,1,FileMapChunks,fout);
-		printf("this file is UNEVEN!");
+		printf("this file is ODD!-Size:%d",fileSize);
 	}
 	else{
-		printf("this file is even!");
+		printf("this file is EVEN!-Size:%d",fileSize);
 	}
 	
 	//rewrite first sector & set end file
