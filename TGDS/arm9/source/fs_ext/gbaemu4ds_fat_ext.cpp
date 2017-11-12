@@ -90,23 +90,25 @@ void generatefilemap(FILE * f, int size)	//FILE * f is already open at this poin
 	}
 
 	//this actual Cluster
+	int ClusterOffset = 0;
+	
 	int mappoffset = 0;
 	i = 0;
 	while(i < (getDiskClusterSizeBytes()/chucksize))
 	{
-		sectortabel[mappoffset*2 + 1] = clust2sect(fdinst->filPtr->obj.fs, fdinst->filPtr->obj.sclust) + i;
+		sectortabel[mappoffset*2 + 1] = getStructFDSectorOffset(fdinst,ClusterOffset,i);
 		mappoffset++;
 		i++;
 	}
 	
 	//Iterate over several Clusters
-	int ClusterOffset = 1;	//start from next Cluster please
+	ClusterOffset = 1;	//start from next Cluster please
 	while (clusCount > 0) {
 		clusCount--;
 		i = 0;
 		while(i < (getDiskClusterSizeBytes()/chucksize))
 		{
-			sectortabel[mappoffset*2 + 1] = clust2sect(fdinst->filPtr->obj.fs, fdinst->filPtr->obj.sclust + ClusterOffset) + i;
+			sectortabel[mappoffset*2 + 1] = getStructFDSectorOffset(fdinst,ClusterOffset,i);
 			mappoffset++;
 			i++;
 		}
@@ -149,7 +151,7 @@ void generatefilemap(FILE * f, int size)	//FILE * f is already open at this poin
 
 void getandpatchmap(int offsetgba,int offsetthisfile,FILE * f)	//FILE * f is already open at this point.
 {
-	int clusCount;
+	int clusCount = 0;
 	sint32 fd = -1;
 	struct fd * fdinst = NULL;
 	clusCount = offsetthisfile/getDiskClusterSizeBytes();
@@ -159,7 +161,7 @@ void getandpatchmap(int offsetgba,int offsetthisfile,FILE * f)	//FILE * f is alr
 		fd = fileno(f);
 		fdinst = fd_struct_get(fd);
 		if(fdinst->filPtr){	//File open OK.
-			sectortabel[mappoffset*2 + 1] = clust2sect(fdinst->filPtr->obj.fs, fdinst->filPtr->obj.sclust + clusCount) + offset1;
+			sectortabel[mappoffset*2 + 1] = getStructFDSectorOffset(fdinst,clusCount,offset1);
 		}
 		else{	//File open ERROR.
 			clrscr();
