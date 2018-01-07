@@ -1,13 +1,13 @@
 #include "dmaIO.h"
 #include "sound.h"
 #include "main.h"
-#include "bios.h"
+#include "biosTGDS.h"
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 #include "specific_shared.h"
 
 u16 callline = 0xFFFF;

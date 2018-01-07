@@ -39,33 +39,33 @@ USA
 #include "InterruptsARMCores_h.h"
 #include "specific_shared.h"
 #include "ff.h"
-#include "mem_handler_shared.h"
+#include "memoryHandleTGDS.h"
 #include "reent.h"
 #include "sys/types.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
-#include "typedefs.h"
-#include "console.h"
-#include "toolchain_utils.h"
+#include "typedefsTGDS.h"
+#include "consoleTGDS.h"
+#include "utilsTGDS.h"
 #include "devoptab_devices.h"
-#include "fsfat_layer.h"
-#include "usrsettings.h"
-#include "video.h"
-#include "keypad.h"
-#include "gui.h"
+#include "fsfatlayerTGDS.h"
+#include "usrsettingsTGDS.h"
+#include "videoTGDS.h"
+#include "keypadTGDS.h"
+#include "guiTGDS.h"
 #include "dswnifi_lib.h"
 
 #include "Globals.h"
 #include "interrupts.h"
 #include "GBA.h"
 #include "Util.h"
-#include "bios.h"
-#include "ipc.h"
-#include "dma.h"
+#include "biosTGDS.h"
+#include "dmaTGDS.h"
 #include "cpumg.h"
-#include "posix_hook_shared.h"
+#include "posixHandleTGDS.h"
 #include "gui_console_connector.h"
-#include "keypad.h"
+#include "keypadTGDS.h"
+#include "bios.h"
 
 int argc;
 sint8 **argv;
@@ -297,7 +297,7 @@ int main(int _argc, sint8 **_argv) {
 
 	//detect savefile (filename.sav)
 	sprintf(fn_noext,"%ssav",fn_noext);
-	FILE * frh = fopen_fs(fn_noext,"r");
+	FILE * frh = fopen(fn_noext,"r");
 
 	//if(frh)
 	//    printf("current save path: %s DO exists",fn_noext);
@@ -336,7 +336,7 @@ int main(int _argc, sint8 **_argv) {
 		}
 	}
 	
-	fclose_fs(frh);
+	fclose(frh);
 	//printf("SaveFile Handle! ");
 	
 	//so far ok
@@ -364,7 +364,7 @@ int main(int _argc, sint8 **_argv) {
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
 	REG_IPC_FIFO_TX = syncline;
 	while(!(REG_IPC_FIFO_CR & IRQ_RECVFIFO_NOT_EMPTY))u32 src = REG_IPC_FIFO_RX;
-	iprintf("irqinit\n");
+	printf("irqinit\n");
 	
 	anytimejmpfilter = 0;
 	emulateedbiosstart();

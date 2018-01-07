@@ -20,7 +20,7 @@
 #define gzFile void* //ichfly
 #define voidp void*
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 #include <stdio.h>

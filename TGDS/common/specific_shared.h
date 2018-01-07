@@ -18,15 +18,15 @@ USA
 
 */
 
-//inherits what is defined in: common_shared.h
+//inherits what is defined in: ipcfifoTGDS.h
 #ifndef __specific_shared_h__
 #define __specific_shared_h__
 
 #include "dsregs.h"
 #include "dsregs_asm.h"
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 #include "dswnifi.h"
-#include "mem_handler_shared.h"
+#include "memoryHandleTGDS.h"
 
 //gba dma fifo
 #define INTERNAL_FIFO_SIZE 	(sint32)(16)	//each DMA
@@ -51,7 +51,7 @@ typedef struct
 
 
 //aligned struct, shared code works just fine from here
-struct sAlignedIPCProy	//sAlignedIPC as in common_shared.h but project specific implementation
+struct sAlignedIPCProy	//sAlignedIPC as in ipcfifoTGDS.h but project specific implementation
 {
 	//GBA Header
     gbaHeader_t gbaheader;

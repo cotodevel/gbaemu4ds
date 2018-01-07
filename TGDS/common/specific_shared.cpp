@@ -19,7 +19,7 @@ USA
 
 */
 
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 #include "specific_shared.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
@@ -30,7 +30,7 @@ USA
 
 #include "main.h"
 #include "wifi_arm7.h"
-#include "spifw.h"
+#include "spiTGDS.h"
 #include "dmaIO.h"
 
 #endif

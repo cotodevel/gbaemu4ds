@@ -23,25 +23,25 @@ USA
 #include "InterruptsARMCores_h.h"
 #include "interrupts.h"
 
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 #include "specific_shared.h"
 
 #include "wifi_arm7.h"
-#include "usrsettings.h"
-#include "timer.h"
-#include "bios.h"
-#include "spifw.h"
+#include "usrsettingsTGDS.h"
+#include "timerTGDS.h"
+#include "biosTGDS.h"
+#include "spiTGDS.h"
 #include "dmaIO.h"
+#include "CPUARMTGDS.h"
 
 //---------------------------------------------------------------------------------
 int main(int _argc, sint8 **_argv) {
 //---------------------------------------------------------------------------------
 	IRQInit();
-	
-	// Block execution until we get control of vram D
 	while (!(*((vuint8*)0x04000240) & 0x2));
-	
-	installWifiFIFO();
+	useARM7VRAMStacks();	//change ARM7 stacks to VRAM
+	installWifiFIFO();		//use DSWIFI
+	initTGDSAudioSystem();	//Init Audio NDS7
 	
 	ykeypp = false;
 	isincallline = false;

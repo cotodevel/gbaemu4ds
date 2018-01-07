@@ -1,14 +1,14 @@
 #include "sound.h"
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
 #include "specific_shared.h"
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 
-#include "timer.h"
-#include "dma.h"
+#include "timerTGDS.h"
+#include "dmaTGDS.h"
 
 u8* soundbuffA = 0;
 u8* soundbuffB = 0;

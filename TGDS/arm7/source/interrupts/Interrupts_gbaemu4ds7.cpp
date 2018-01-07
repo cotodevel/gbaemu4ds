@@ -21,7 +21,7 @@ USA
 #include "InterruptsARMCores_h.h"
 #include "wifi_arm7.h"
 #include "main.h"
-#include "timer.h"
+#include "timerTGDS.h"
 
 
 //User Handler Definitions

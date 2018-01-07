@@ -18,14 +18,12 @@ USA
 
 */
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
 #include "InterruptsARMCores_h.h"
-#include "ipc.h"
 #include "interrupts.h"
-
 #include "specific_shared.h"
 
 #ifdef ARM7

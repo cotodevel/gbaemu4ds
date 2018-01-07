@@ -1,10 +1,10 @@
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
 #include "screenshot.h"
 #include "GBA.h"
-#include "posix_hook_shared.h"
+#include "posixHandleTGDS.h"
 
 int ofs=0;
 u8 *pbuf;
@@ -103,8 +103,8 @@ u8* CreateBMPImage()
 int writebuf2file(char * filename,u8 * buf,int size){
     
 	//w+
-	FILE * fh_dump = fopen_fs(filename,"w+");
-	int sizewritten=fwrite_fs((u8*)buf, 1, size, fh_dump);
+	FILE * fh_dump = fopen(filename,"w+");
+	int sizewritten=fwrite((u8*)buf, 1, size, fh_dump);
 	
 	if(sizewritten > 0)
 		printf("write ok!  ");
@@ -112,7 +112,7 @@ int writebuf2file(char * filename,u8 * buf,int size){
 		printf("write was 0.. :(");
 	}
 	
-	fclose_fs(fh_dump);
+	fclose(fh_dump);
     
     return sizewritten;
 }

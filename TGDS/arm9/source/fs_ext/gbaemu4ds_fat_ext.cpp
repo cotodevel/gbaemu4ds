@@ -1,5 +1,5 @@
 #include "gbaemu4ds_fat_ext.h"
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
@@ -13,21 +13,21 @@
 #include <fcntl.h>
 
 #include "GBA.h"
-#include "gui.h"
+#include "guiTGDS.h"
 #include "nds_cp15_misc.h"
 #include "dldi.h"
-#include "fsfat_layer.h"
-#include "file.h"
+#include "fsfatlayerTGDS.h"
+#include "fileHandleTGDS.h"
 #include "InterruptsARMCores_h.h"
 #include "specific_shared.h"
 #include "ff.h"
-#include "mem_handler_shared.h"
+#include "memoryHandleTGDS.h"
 #include "reent.h"
 #include "sys/types.h"
-#include "console.h"
-#include "toolchain_utils.h"
+#include "consoleTGDS.h"
+#include "utilsTGDS.h"
 #include "devoptab_devices.h"
-#include "posix_hook_shared.h"
+#include "posixHandleTGDS.h"
 #include "about.h"
 #include "xenofunzip.h"
 #include "ichflysettings.h"
@@ -58,19 +58,11 @@ void generatefilemap(FILE * f, int size)	//FILE * f is already open at this poin
 	if(f){
 		fd = fileno(f);
 		fdinst = fd_struct_get(fd);
-		
-		if(fdinst->filPtr){	//File open OK.
-			PosixStructFDLastLoadFile = fd;		//use fd_struct_get(PosixStructFDLastLoadFile) to access the File from now on!
-		}
-		else{	//File open ERROR.
-			clrscr();
-			printf("this is not a FIL * !!");
-			while(1==1){}
-		}
+		PosixStructFDLastLoadFile = fd;		//use fd_struct_get(PosixStructFDLastLoadFile) to access the File from now on!
 	}
 	else{
 		clrscr();
-		printf("the FILE * was closed.");
+		printf("the FILE * could not be opened.");
 		while(1==1){}
 	}
 	
@@ -120,17 +112,17 @@ void generatefilemap(FILE * f, int size)	//FILE * f is already open at this poin
 	//read sector table from original gbaemu4ds
 	uint8 * sectortabel_read = (uint8*)malloc(((size/chucksize) + 1)*8);
 	//compare the sector tables from original GBAEMU4DS against TGDS version
-	FILE * fcompare = fopen_fs(getfatfsPath((char*)"gbaemu4dsori_sectortabel.bin"),"r");
+	FILE * fcompare = fopen(getfatfsPath((char*)"gbaemu4dsori_sectortabel.bin"),"r");
 	//size_t fread ( void * ptr, size_t size, size_t count, FILE * stream )
-	int sizeRead = fread_fs((uint8*)sectortabel_read,1,(((size/chucksize) + 1)*8),fcompare);
-	fclose_fs(fcompare);
+	int sizeRead = fread((uint8*)sectortabel_read,1,(((size/chucksize) + 1)*8),fcompare);
+	fclose(fcompare);
 	
 	//clrscr();
 	printf("Read %d bytes!",sizeRead);
 	//save TGDS sector table
-	FILE * fsave = fopen_fs(getfatfsPath((char*)"TGDS-sectortabel.bin"),"w+");
-	fwrite_fs((uint8*)sectortabel,1,(((size/chucksize) + 1)*8),fsave);
-	fclose_fs(fsave);
+	FILE * fsave = fopen(getfatfsPath((char*)"TGDS-sectortabel.bin"),"w+");
+	fwrite((uint8*)sectortabel,1,(((size/chucksize) + 1)*8),fsave);
+	fclose(fsave);
 	
 	uint32 * sectorPtr1 = (uint32*)sectortabel_read;
 	uint32 * sectorPtr2 = (uint32*)sectortabel;
@@ -160,14 +152,12 @@ void getandpatchmap(int offsetgba,int offsetthisfile,FILE * f)	//FILE * f is alr
 	if(f){
 		fd = fileno(f);
 		fdinst = fd_struct_get(fd);
-		if(fdinst->filPtr){	//File open OK.
-			sectortabel[mappoffset*2 + 1] = getStructFDSectorOffset(fdinst,clusCount,offset1);
-		}
-		else{	//File open ERROR.
-			clrscr();
-			printf("this is not a FIL * !!");
-			while(1==1){}
-		}
+		sectortabel[mappoffset*2 + 1] = getStructFDSectorOffset(fdinst,clusCount,offset1);
+	}
+	else{
+		clrscr();
+		printf("this is not a FIL * !!");
+		while(1==1){}
 	}
 }
 
@@ -366,12 +356,12 @@ void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open a
 	char * outputTestCaseFile = "TestCaseFile.bin";
 	sint32 streamBufSize = 64*1024;	//higher buffer == faster testing code
 	uint8 * streambuf = (uint8 *)malloc(streamBufSize);
-	FILE * fout = fopen_fs(getfatfsPath(outputTestCaseFile),"w+");
+	FILE * fout = fopen(getfatfsPath(outputTestCaseFile),"w+");
 	
 	//1st sector is bugged in gbaemu4ds filesystem code so we must recreate that one (it seems to fetch the disk sector?)
 	uint8 firstSect[0x200];
-	fseek_fs(f,0,SEEK_SET);
-	fread_fs((uint8*)firstSect,1,sizeof(firstSect),f);
+	fseek(f,0,SEEK_SET);
+	fread((uint8*)firstSect,1,sizeof(firstSect),f);
 	
 	//2nd sector onwards
 	int FileOffsetChunks = fileSize / streamBufSize;
@@ -384,7 +374,7 @@ void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open a
 			int fileOffset = (index*streamBufSize) + ( (indexBlock*sizeof(uint32)) );
 			strmBuf[indexBlock] = ichfly_readu32(fileOffset);
 		}
-		fwrite_fs((uint8*)strmBuf,1,streamBufSize,fout);		
+		fwrite((uint8*)strmBuf,1,streamBufSize,fout);		
 	}
 	
 	int FileMapChunks = fileSize % streamBufSize;
@@ -396,7 +386,7 @@ void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open a
 			int fileOffset = (FileOffsetChunks * streamBufSize) + indexBlock;
 			streambuf[indexBlock] = ichfly_readu8(fileOffset);
 		}
-		fwrite_fs((uint8*)streambuf,1,FileMapChunks,fout);
+		fwrite((uint8*)streambuf,1,FileMapChunks,fout);
 		printf("this file is ODD!-Size:%d",fileSize);
 	}
 	else{
@@ -404,12 +394,12 @@ void testGBAEMU4DSFSTGDS(FILE * f,sint32 fileSize){	//FILE * f is already open a
 	}
 	
 	//rewrite first sector & set end file
-	fseek_fs(fout,0,SEEK_SET);
-	fwrite_fs((uint8*)firstSect,1,sizeof(firstSect),fout);
-	fseek_fs(fout,fileSize,SEEK_SET);
+	fseek(fout,0,SEEK_SET);
+	fwrite((uint8*)firstSect,1,sizeof(firstSect),fout);
+	fseek(fout,fileSize,SEEK_SET);
 	
 	free(streambuf);
-	fclose_fs(fout);
-	fseek_fs(f,0,SEEK_SET);
+	fclose(fout);
+	fseek(f,0,SEEK_SET);
 	printf("done. Use %s file in other emu.",(char*)outputTestCaseFile);
 }

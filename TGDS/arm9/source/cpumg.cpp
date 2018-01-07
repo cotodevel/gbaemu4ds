@@ -1,9 +1,9 @@
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
-#include "common_shared.h"
+#include "ipcfifoTGDS.h"
 #include "specific_shared.h"
 
 #include "getopt.h"
@@ -32,7 +32,7 @@
 #include "anothercpu.h"
 #endif
 
-#include "posix_hook_shared.h"
+#include "posixHandleTGDS.h"
 
 #define debugandhalt()\
   {\
@@ -55,13 +55,14 @@ FILE * pFile;
 #include "Flash.h"
 #include "Sound.h"
 #include "Sram.h"
-#include "bios.h"
+#include "biosTGDS.h"
 #include "Cheats.h"
 #include "NLS.h"
 #include "elf.h"
 #include "Util.h"
 #include "Port.h"
 #include "agbprint.h"
+#include "bios.h"
 
 //#define DEV_VERSION
 
@@ -175,16 +176,16 @@ DC_FlushAll();
 	  u32 joy = ((~REG_KEYINPUT)&0x3ff);
 	if((joy & KEY_B) && (joy & KEY_R) && (joy & KEY_L))
 	{
-					FILE* file = fopen_fs("fat:/gbadump.bin", "wb"); // 396.288 Byte @outdate
-					fwrite_fs((u8*)(0x03000000), 1, 0x8000, file);
-					fwrite_fs(ioMem, 1, 0x400, file);
-					fwrite_fs((u8*)(0x04000000), 1, 0x400, file);//IO
-					fwrite_fs((u8*)(0x05000000), 1, 0x400, file);
-					fwrite_fs((u8*)(0x07000000), 1, 0x800, file);
-					fwrite_fs((u8*)(0x01000000), 1, 0x8000, file);
-					fwrite_fs((u8*)(0x0b000000), 1, 0x4000, file);
-					fwrite_fs((u8*)(0x06000000), 1, 0x18000, file); //can't get this with half dumps
-					fwrite_fs((u8*)(0x02000000), 1, 0x40000, file); //can't get this with half dumps
+					FILE* file = fopen("fat:/gbadump.bin", "wb"); // 396.288 Byte @outdate
+					fwrite((u8*)(0x03000000), 1, 0x8000, file);
+					fwrite(ioMem, 1, 0x400, file);
+					fwrite((u8*)(0x04000000), 1, 0x400, file);//IO
+					fwrite((u8*)(0x05000000), 1, 0x400, file);
+					fwrite((u8*)(0x07000000), 1, 0x800, file);
+					fwrite((u8*)(0x01000000), 1, 0x8000, file);
+					fwrite((u8*)(0x0b000000), 1, 0x4000, file);
+					fwrite((u8*)(0x06000000), 1, 0x18000, file); //can't get this with half dumps
+					fwrite((u8*)(0x02000000), 1, 0x40000, file); //can't get this with half dumps
 	}
 #endif
 }

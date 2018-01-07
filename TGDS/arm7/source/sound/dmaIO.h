@@ -17,7 +17,7 @@ USA
 #ifndef __dmaio7_h__
 #define __dmaio7_h__
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 #include <stdbool.h>

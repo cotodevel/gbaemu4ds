@@ -37,14 +37,14 @@ d_objs_arm9:=	${file_arm9_src_c:.c=.d}	${file_arm9_src_s:.s=.d}	${file_arm9_src_
 MAPFILE = $(DIR_ARM9).map
 SHARED_FLAGS	=	-mcpu=arm946e-s	-mthumb-interwork
 AS_ASFLAGS		=	$(SHARED_FLAGS)	-defsym debug=0	-defsym	appver='$(EXECUTABLE_VERSION)'	-defsym ASM_OPCODES='1'	-defsym	ARM9='1'
-CC_ASFLAGS		=	$(SHARED_FLAGS)	-Wall	-w	-DNDS -DASM_OPCODES -DARM9	-fno-common	-mtune=arm946e-s	-marm	-O2 -ffast-math -fomit-frame-pointer	-Ddebug=0	-Dappver='$(EXECUTABLE_VERSION)'
+CC_ASFLAGS		=	$(SHARED_FLAGS)	-Wall	-DNDS -DASM_OPCODES -DARM9	-fno-common	-mtune=arm946e-s	-marm	-O2 -ffast-math -fomit-frame-pointer	-Ddebug=0	-Dappver='$(EXECUTABLE_VERSION)'
 BUILD			= 	$(BUILD_ARM9)
 DIR_SRC			=	$(DIRS_ARM9_SRC)
 
 #--gc-sections: allows relocatable sections linked (already) to be included, otherwise unused sections are discarded.
 #check arm9.map "Discarded input sections" to see --gc-sections in action.
-LDFLAGS	=	-specs=$(TARGET_LIBRARY_LINKER_PATH_LD)nds_arm9_ld.specs	-Wl,--no-gc-sections,-Map,$(MAPFILE)
-
+LDFLAGS	=	-specs=gbands_arm9_ld.specs	-Wl,--no-gc-sections,-Map,$(MAPFILE)
+LIBRARIES =	-$(TARGET_LIBRARY_LIBNAME_9)	-lcnano9
 
 ################################################################################################
 
@@ -95,14 +95,12 @@ $(OBJDIR)/%.o : %.S
 $(TARGET_LIBRARY_CRT0_FILE_9).o:	$(TARGET_LIBRARY_LINKER_FILE_9)
 	-@echo 'S Compile start: crt0s'
 	$(G++)	-x assembler-with-cpp	$(DIRLIBS_HDR)	$(DIRLIBS_SRC)	$(CC_ASFLAGS)	-o $(OBJDIR)/$@ -c $<
-	cp	-r $(TARGET_LIBRARY_LINKER_PATH_LD)nds_arm9_ld.ld $(CURDIR)
-	cp	-r $(TARGET_LIBRARY_LINKER_PATH_LD)nds_arm9_ld.specs $(CURDIR)
 	-@echo 'S Compile end: crt0s'
 
 #Linkage. 
 $(OBJPROG): $(addprefix $(OBJDIR)/, $(OBJECTS))
 	-@echo 'Entering Linking phase'
-	$(G++) $^ $(LDFLAGS)  $(DIRLIBS_HDR)	$(DIRLIBS_SRC)	$(DIRLIBS_SHARED)	-L	$(LIBPATHNEWLIB)	-l:libcnano9.a	-l:libtoolchaingen9.a	-lm	-o $@
+	$(CC) $^ $(LDFLAGS)	$(DIRLIBS_HDR)	$(DIRLIBS_SRC)	$(DIRLIBS_SHARED)	-L	$(LIBPATHNEWLIB)	-L	$(TARGET_LIBRARY_PATH)/	$(LIBRARIES)	-L	$(TARGET_LIBRARY_LINKER_PATH_LD)	-o $@
 	-@echo 'Leaving Linking phase. Output: $@'
 
 #keep only binary sections from elf. --only-section
@@ -115,4 +113,4 @@ $(BINSTRIP_RULE_9): $(OBJPROG)
 
 clean:
 	-@echo 'cleanup $(DIR_ARM9)'
-	-@rm -fr $(OBJDIR)	$(BINSTRIP_RULE_9)	$(MAPFILE)	$(CURDIR)/nds_arm9_ld.specs	$(CURDIR)/nds_arm9_ld.ld
+	-@rm -fr $(OBJDIR)	$(BINSTRIP_RULE_9)	$(MAPFILE)

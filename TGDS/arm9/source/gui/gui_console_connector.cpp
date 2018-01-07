@@ -22,7 +22,7 @@ USA
 
 
 #include "gui_console_connector.h"
-#include "toolchain_utils.h"
+#include "utilsTGDS.h"
 #include "main.h"
 
 #include <stdio.h>
@@ -34,23 +34,23 @@ USA
 #include <ctype.h>
 #include "specific_shared.h"
 
-#include "gui.h"
+#include "guiTGDS.h"
 #include "gbaemu4ds_fat_ext.h"
-#include "bios.h"
+#include "biosTGDS.h"
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "console.h"
+#include "consoleTGDS.h"
 #include "gui_widgets.h"
 #include "console_str.h"
 #include "about.h"
-#include "dma.h"
+#include "dmaTGDS.h"
 #include "dmaIO.h"
 #include "InterruptsARMCores_h.h"
-#include "posix_hook_shared.h"
-#include "fsfat_layer.h"
-#include "keypad.h"
-#include "video.h"
+#include "posixHandleTGDS.h"
+#include "fsfatlayerTGDS.h"
+#include "keypadTGDS.h"
+#include "videoTGDS.h"
 
 
 ////////[For custom Console implementation]:////////
@@ -1139,7 +1139,7 @@ int MainScreenHandler(t_GUIZone *zone, int msg, int param, void *arg){
 		}		
 		if (param == 7) // HideGUI
 		{
-			GUI.hide = 1;
+			gui.hide = 1;
 			powerOFF(POWER_2D_B);
 			setBacklight(PM_BACKLIGHT_TOP);
 		}

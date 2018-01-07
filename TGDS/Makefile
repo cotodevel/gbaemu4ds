@@ -49,6 +49,7 @@ export G++	= $(GCC_BUILD_ENV)$(GCC_BIN_PATH)$(GCC_G++)
 export OBJCOPY	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)$(GCC_OBJCOPY)
 export NDSTOOL	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)ndstool.exe
 export AR	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)arm-none-eabi-ar.exe
+export LD	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)arm-none-eabi-ld.exe
 
 
 #GCC Defs

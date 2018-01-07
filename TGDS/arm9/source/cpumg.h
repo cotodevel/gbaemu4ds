@@ -1,7 +1,7 @@
 #ifndef __CPU_H__
 #define __CPU_H__
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 

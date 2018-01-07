@@ -57,7 +57,7 @@
 #define s8  signed   char
 */
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 

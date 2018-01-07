@@ -1,7 +1,7 @@
 #ifndef __sound7_h__
 #define __sound7_h__
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 

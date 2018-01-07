@@ -30,23 +30,23 @@ USA
 #include <ctype.h>
 #include "specific_shared.h"
 
-#include "gui.h"
+#include "guiTGDS.h"
 #include "gbaemu4ds_fat_ext.h"
-#include "bios.h"
+#include "biosTGDS.h"
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
-#include "console.h"
+#include "consoleTGDS.h"
 #include "gui_widgets.h"
 #include "console_str.h"
 #include "about.h"
-#include "dma.h"
+#include "dmaTGDS.h"
 #include "dmaIO.h"
 #include "InterruptsARMCores_h.h"
-#include "posix_hook_shared.h"
-#include "fsfat_layer.h"
-#include "keypad.h"
-#include "video.h"
+#include "posixHandleTGDS.h"
+#include "fsfatlayerTGDS.h"
+#include "keypadTGDS.h"
+#include "videoTGDS.h"
 
 #endif
 

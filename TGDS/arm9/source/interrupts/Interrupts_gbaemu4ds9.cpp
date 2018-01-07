@@ -18,7 +18,7 @@ USA
 #include "specific_shared.h"
 #include "dsregs_asm.h"
 #include "main.h"
-#include "keypad.h"
+#include "keypadTGDS.h"
 #include "interrupts.h"
 #include "dswnifi_lib.h"
 #include "dswnifi.h"

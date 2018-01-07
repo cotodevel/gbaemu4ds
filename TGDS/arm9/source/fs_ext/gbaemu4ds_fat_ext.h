@@ -1,7 +1,7 @@
 #ifndef __gbaemu4dsfatext_h__
 #define __gbaemu4dsfatext_h__
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
@@ -15,21 +15,21 @@
 #include <fcntl.h>
 
 #include "GBA.h"
-#include "gui.h"
+#include "guiTGDS.h"
 #include "nds_cp15_misc.h"
 #include "dldi.h"
-#include "fsfat_layer.h"
-#include "file.h"
+#include "fsfatlayerTGDS.h"
+#include "fileHandleTGDS.h"
 #include "InterruptsARMCores_h.h"
 #include "specific_shared.h"
 #include "ff.h"
-#include "mem_handler_shared.h"
+#include "memoryHandleTGDS.h"
 #include "reent.h"
 #include "sys/types.h"
-#include "console.h"
-#include "toolchain_utils.h"
+#include "consoleTGDS.h"
+#include "utilsTGDS.h"
 #include "devoptab_devices.h"
-#include "posix_hook_shared.h"
+#include "posixHandleTGDS.h"
 #include "about.h"
 #include "xenofunzip.h"
 #include "ichflysettings.h"

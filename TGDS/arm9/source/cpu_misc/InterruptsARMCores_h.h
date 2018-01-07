@@ -24,8 +24,8 @@ USA
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
-#include "linker_ext.h"
-#include "common_shared.h"
+#include "linkerTGDS.h"
+#include "ipcfifoTGDS.h"
 
 #ifdef ARM9
 

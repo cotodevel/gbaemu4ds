@@ -20,7 +20,7 @@
 #ifndef VBA_GBA_H
 #define VBA_GBA_H
 
-#include "typedefs.h"
+#include "typedefsTGDS.h"
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
