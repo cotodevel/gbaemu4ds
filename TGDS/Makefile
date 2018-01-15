@@ -51,6 +51,8 @@ export NDSTOOL	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)ndstool.exe
 export AR	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)arm-none-eabi-ar.exe
 export LD	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)arm-none-eabi-ld.exe
 
+#add bin2c rule
+export BIN2C	=	$(GCC_BUILD_ENV)$(GCC_BIN_PATH)bin2c.exe
 
 #GCC Defs
 export TARGET_LIBRARY_NAME_7 = toolchaingen7
@@ -89,13 +91,15 @@ MAKEFLAGS += --no-builtin-rules
 export DIRS_ARM7_SRC = source/	\
 			source/interrupts/	\
 			source/sound/	\
-			../common/
+			../common/	\
+			data/
 			
 export DIRS_ARM7_HEADER = source/	\
 			source/interrupts/	\
 			source/sound/	\
 			include/	\
-			../common/
+			../common/	\
+			data/
 #####################################################ARM9#####################################################
 
 export DIRS_ARM9_SRC = source/	\
@@ -105,7 +109,8 @@ export DIRS_ARM9_SRC = source/	\
 			source/cpu_misc/	\
 			source/sound/	\
 			source/fs_ext/	\
-			../common/
+			../common/	\
+			data/
 			
 export DIRS_ARM9_HEADER = include/	\
 			source/	\
@@ -115,8 +120,9 @@ export DIRS_ARM9_HEADER = include/	\
 			source/cpu_misc/	\
 			source/sound/	\
 			source/fs_ext/	\
-			../common/
-
+			../common/	\
+			data/
+			
 #cleanup default C/C++/ASM flags
 export CFLAGS	=''
 export CPPFLAGS	=''
