@@ -173,7 +173,7 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.data[0] = toBCD(getTime()->tm_year);
                 rtcClockData.data[1] = toBCD(getTime()->tm_mon);
                 rtcClockData.data[2] = toBCD(getTime()->tm_mday);
-                rtcClockData.data[3] = toBCD(getDayOfWeek());
+                rtcClockData.data[3] = toBCD(TGDSgetDayOfWeek());
                 rtcClockData.data[4] = toBCD(getTime()->tm_hour);
                 rtcClockData.data[5] = toBCD(getTime()->tm_min);
                 rtcClockData.data[6] = toBCD(getTime()->tm_sec);
