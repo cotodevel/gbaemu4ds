@@ -48,7 +48,7 @@ USA
 #include "consoleTGDS.h"
 #include "utilsTGDS.h"
 #include "devoptab_devices.h"
-#include "fsfatlayerTGDS.h"
+#include "fsfatlayerTGDSLegacy.h"
 #include "usrsettingsTGDS.h"
 #include "videoTGDS.h"
 #include "keypadTGDS.h"

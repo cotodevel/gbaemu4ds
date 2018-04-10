@@ -44,7 +44,7 @@ USA
 #include "dmaIO.h"
 #include "InterruptsARMCores_h.h"
 #include "posixHandleTGDS.h"
-#include "fsfatlayerTGDS.h"
+#include "fsfatlayerTGDSLegacy.h"
 #include "keypadTGDS.h"
 #include "videoTGDS.h"
 

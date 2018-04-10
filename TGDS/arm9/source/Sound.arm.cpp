@@ -37,7 +37,7 @@
 #include "dsregs.h"
 #include "dsregs_asm.h"
 
-#include "fsfatlayerTGDS.h"
+#include "fsfatlayerTGDSLegacy.h"
 #include "fileHandleTGDS.h"
 #include "InterruptsARMCores_h.h"
 #include "specific_shared.h"

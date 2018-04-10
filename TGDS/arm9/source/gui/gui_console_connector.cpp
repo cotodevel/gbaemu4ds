@@ -48,7 +48,7 @@ USA
 #include "dmaIO.h"
 #include "InterruptsARMCores_h.h"
 #include "posixHandleTGDS.h"
-#include "fsfatlayerTGDS.h"
+#include "fsfatlayerTGDSLegacy.h"
 #include "keypadTGDS.h"
 #include "videoTGDS.h"
 
@@ -115,7 +115,7 @@ vramSetup * GBAEMU4DS_2DVRAM_SETUP(){
 	vramSetupDefault->vramBankSetupInst[VRAM_F_INDEX].enabled = true;
 	
 	//vramSetBankG(VRAM_G_BG_EXT_PALETTE);
-	vramSetupDefault->vramBankSetupInst[VRAM_G_INDEX].vrambankCR = VRAM_G_SLOT_ENGINE_A_BG_EXTENDED;
+	vramSetupDefault->vramBankSetupInst[VRAM_G_INDEX].vrambankCR = VRAM_G_SLOT01_ENGINE_A_BG_EXTENDED;
 	vramSetupDefault->vramBankSetupInst[VRAM_G_INDEX].enabled = true;
 	
 	// unused
