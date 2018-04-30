@@ -9,7 +9,6 @@ extern "C"{
 
 // void cpu_GbaMemPerm();
 // void cpu_NdsMemPerm();
-
 // extern void cpu_GbaSetIwram();
 
 void cpu_ArmJump(u32 address, u32 r1);
@@ -38,11 +37,17 @@ void cpupausemodeexit();
 void cpupausemode();
 //void debugDump();
 
+extern bool disableMessage;
 
 void ichflyswiHalt();
 void ichflyswiWaitForVBlank();
 void ichflyswiIntrWait(u32 i,u32 c);
 
+extern __attribute__((section(".dtcm")))	void (*exHandler)();
+extern __attribute__((section(".dtcm")))	void (*exHandlerswi)();
+extern __attribute__((section(".dtcm")))	void (*exHandlerundifined)();
+extern __attribute__((section(".dtcm")))	u32  exRegs[];
+extern __attribute__((section(".dtcm")))	u32 BIOSDBG_SPSR;
 
 #ifdef __cplusplus
 }

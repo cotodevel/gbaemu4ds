@@ -67,3 +67,10 @@ this is bugged, cause games to segfault/loop
 
 
 --
+
+
+smb3 boots to language menu then stucks when using the anothercpu.arm.c from 
+28092017-gbaemu4ds-newhwirq-stable-sleepmode-vcountirqfailing_NEWMODE1-gitd.zip
+
+but causes fifo glitches, the read/writes aren't gbaemu4ds specific, but generic (cpuread/write rather than cpuread/writepu realpu etc), that fixes smb3 but also cause fifo 
+glitches

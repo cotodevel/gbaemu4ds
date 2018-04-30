@@ -22,6 +22,7 @@
 
 #include <nds.h>
 #include <stdio.h>
+#include "GBA.h"
 
 #ifndef VBA_UTIL_H
 #define VBA_UTIL_H
@@ -114,6 +115,19 @@ extern u8 clzero(u32 var);
 extern char* strtoupper(char* s);
 extern char* strtolower(char* s);
 extern int save_decider();
+
+//static global instance of actual ARM core volatile registers.
+//ori: extern reg_pair* myregs;
+extern reg_pair * myregs;
+
+extern u32 STMW_myregs(u32 opcode, u32 temp, u32 address,u32 val,u32 num,u32 base);
+extern u32 STM_myregs(u32 opcode, u32 address,u32 val,u32 num);
+extern u32 LDM_myregs(u32 opcode, u32 address,u32 val,u32 num);
+extern u32 THUMB_STM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r,u32 b);
+extern u32 THUMB_LDM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r);
+extern u32 PUSH_myregs(u32 opcode, u32 address,u32 val, u32 r);
+extern u32 POP_myregs(u32 opcode, u32 address,u32 val, u32 r);
+
 
 #ifdef __cplusplus
 }

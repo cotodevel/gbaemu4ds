@@ -17,8 +17,6 @@
 
 
 
-bool disableMessage = false;
-
 #define C_CORE
 
 #define UPDATE_OLD_myregs \
@@ -2949,9 +2947,9 @@ bool disableMessage = false;
 
 
 #ifdef directcpu
-void __attribute__ ((hot)) emuInstrARM(u32 opcode, s32 *R)
+void __attribute__ ((hot)) emuInstrARM(u32 opcode, u32 *R)
 #else
-inline void emuInstrARM(u32 opcode, s32 *R)
+void emuInstrARM(u32 opcode, u32 *R)
 #endif
 		{
 
@@ -8563,10 +8561,10 @@ if(cond_res) {*/
 
 #ifdef directcpu
 __attribute__((section(".itcm")))
-void __attribute__ ((hot)) emuInstrTHUMB(u16 opcode, s32 *R) 
+void __attribute__ ((hot)) emuInstrTHUMB(u16 opcode, u32 *R) 
 #else
 __attribute__((section(".itcm")))
-inline void emuInstrTHUMB(u16 opcode, s32 *R) 
+void emuInstrTHUMB(u16 opcode, u32 *R) 
 #endif
 {
 

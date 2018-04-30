@@ -143,8 +143,8 @@ typedef union {
 extern "C" {
 #endif
 
-extern void emuInstrARM(u32 opcode, s32 *R);
-extern void emuInstrTHUMB(u16 opcode, s32 *R);
+extern void emuInstrARM(u32 opcode, u32 *R);
+extern void emuInstrTHUMB(u16 opcode, u32 *R);
 
 extern void unknowndebugprint(reg_pair *myregs);
 extern void unkommeopcode(u32 opcode, reg_pair *myregs);
@@ -246,7 +246,7 @@ extern void VblankHandler();
 extern void frameasyncsync();
 extern void pausemenue();
 
-extern void BIOScall(int op,  s32 *R);
+extern void BIOScall(int op,  u32 *R);
 
 #ifdef __cplusplus
 }
