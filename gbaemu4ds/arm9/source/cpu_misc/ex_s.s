@@ -91,7 +91,7 @@ thisi1:
 	
 gba_handler:
 
-	ldr	r1, =0x06333333          @set pu
+	ldr	r1, =0x06300033          @set pu
 	mcr	p15, 0, r1, c5, c0, 2
 
 #ifdef checkclearaddr
@@ -194,7 +194,7 @@ got_over_gba_handler:
 	@nop
 	@nop
 
-	ldr	r1, =0x06333333
+	ldr	r1, =0x06300033
 	
 	mcr	p15, 0, r1, c5, c0, 2
 	
@@ -437,7 +437,7 @@ exitdirectcpu:
 
 
 	
-	BIC SP,r7,#0x30000000 @ldr	SP, =0x06333333
+	ldr	SP, =0x06300033
 	mcr	p15, 0, SP, c5, c0, 2
 
 

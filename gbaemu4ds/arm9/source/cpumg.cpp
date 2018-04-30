@@ -308,8 +308,8 @@ void gbaInit(bool slow)
 
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu while configurating pu
 
-	pu_SetDataCachability(   0b00111100);
-	pu_SetCodeCachability(   0b00111100);
+	pu_SetDataCachability(   0b00111110);
+	pu_SetCodeCachability(   0b00111110);
 	pu_GetWriteBufferability(0b00100010);	
 
 
@@ -319,11 +319,11 @@ void gbaInit(bool slow)
 
 	WRAM_CR = 0; //swap wram in
 	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-	pu_SetRegion(1, 0);	//cached memory in nds, uncached in gba (gives speedup)
-	pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);	//cached in gba, but protected in nds mode (mpu allows to redirect access to mirror ewram gba)
-	pu_SetRegion(3, 0x02080000 | PU_PAGE_256K | 1); //cached in gba, but protected in nds mode
-	pu_SetRegion(4, 0x020C0000 | PU_PAGE_256K | 1); //cached in gba, but protected in nds mode
-	pu_SetRegion(5, 0x02100000 | PU_PAGE_1M | 1);
+	pu_SetRegion(1, 0x027C0000 | PU_PAGE_16K | 1);	//dtcm helper: enable I/Dtcm caches in DTCM region: gives speedup
+	pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);	//ewram mirror gba #1, nds mode mpu traps this region: #1: 0x02040000 ~ 0x0207ffff / speedup access by MPU
+	pu_SetRegion(3, 0x02080000 | PU_PAGE_256K | 1); //ewram mirror gba #2, nds mode mpu traps this region: #2: 0x02080000 ~ 0x020fffff / speedup access by MPU
+	pu_SetRegion(4, 0x020C0000 | PU_PAGE_256K | 1); //ewram mirror gba #3, nds mode mpu traps this region: #3: 0x02100000 ~ 0x0213ffff / speedup access by MPU
+	pu_SetRegion(5, 0x02100000 | PU_PAGE_1M | 1);	//nds ewram emu helper: enable I/Dtcm caches in EWRAM NDS emulator code region: gives speedup
 	pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
 	pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
 	
