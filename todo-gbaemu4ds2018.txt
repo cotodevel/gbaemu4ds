@@ -18,3 +18,52 @@ TGDS port:
 
 Coto:
 27/04/2018
+
+
+notes:
+
+using swi code
+
+
+swi:
+inter_swi:
+@change the PU to nds mode
+ldr	SP,=0x36333333	
+mcr	p15, 0, SP, c5, c0, 2	
+
+@ save the GBA frame context
+ldr	r12, =exRegs
+stmia	r12, {r0-r11}	@lr is GBA PC
+str lr, [r12,#(4*15)]
+
+@ restore nds swi stack context
+ldr	sp, =__sp_svc
+@ldr sp,[sp]	@could cause bugs
+
+@coto: gba mode spsr to define what offset of swi we need.
+mrs r0,spsr
+
+@ jump into the personal handler
+ldr	r1, =exHandlerswi
+ldr	r1, [r1]	
+blx	r1
+
+@save nds swi stack context
+ldr	r1, =__sp_svc
+@ldr r1,[r1]	@could cause bugs
+str sp, [r1]	
+
+@restore the GBA frame context (this LR is reusable, r13 no because we need to restore it and r15 is the on-exit frame address) 
+ldr	lr, =exRegs
+ldmia	lr, {r0-r11}
+ldr sp,[lr,#(4*13)]	@coto: yeah this means another instruction but even if upcoming PSR swap stacks we maintain original stack in future SPSR 
+ldr lr,[lr,#(4*15)]
+MOVS PC,LR			@GBA PC is next NDS PC
+@code ok
+@---- swi end
+
+this is bugged, cause games to segfault/loop
+
+
+
+--
