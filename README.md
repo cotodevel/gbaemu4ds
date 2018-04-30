@@ -22,10 +22,12 @@ Instructions:
 
 How to build: 
  - Open msys2 console, head to hbmenu folder, write "make clean", then "make", then copy the hbmenu.nds to root directory in SD card.
- - Same msys2 console: Head to gbaemu4ds folder write "make clean", then "make", then copy the gbaemu4ds.nds inside root/gbaemu4ds/ directory in SD card.
+ - Same msys2 console: Head to gbaemu4ds folder write "make clean", then "make", then copy the gbaemu4ds.nds file inside root/gbaemu4ds/ directory in SD card. (MUST BE THIS DIRECTORY)
  - Or just copy /release folder contents in root directory in SD card, and launch hbmenu.nds
 
 
 How to boot: 
- - Follow the on-screen instructions. If you are unsure just press A until the game boots. If the game boots.
+ - Follow the on-screen instructions. If you are unsure just choose the file and press A until the game boots. If the game boots.
  
+ 
+ Coto.
