@@ -1,7 +1,6 @@
 /*-----------------------------------------------------------------
- Copyright (C) 2005 - 2010
-	Michael "Chishm" Chisholm
-	Dave "WinterMute" Murphy
+
+ Copyright (C) 2010  Dave "WinterMute" Murphy
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -19,40 +18,19 @@
 
 ------------------------------------------------------------------*/
 
-#ifndef FILE_BROWSE_H
-#define FILE_BROWSE_H
+#include <nds.h>
+#include <fat.h>
 
+#include <stdio.h>
 
-#define MAXPATHLEN 255
+#include "nds_loader_arm9.h"
 
-#ifdef __cplusplus
-	#include <string>
-	#include <vector>
-
-	void browseForFile (const std::vector<std::string> extensionList);
-
-#endif
-
-
-#endif //FILE_BROWSE_H
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern char biosPath[MAXPATHLEN * 2];
-
-extern char patchPath[MAXPATHLEN * 2];
-
-extern char savePath[MAXPATHLEN * 2];
-
-extern char szFile[MAXPATHLEN * 2];
-
-extern char temppath[MAXPATHLEN * 2];
-
-extern bool cpuIsMultiBoot;
-
-#ifdef __cplusplus
+int main( int argc, char **argv) {
+	consoleDemoInit();
+	if (fatInitDefault()) {
+		runNdsFile("/BOOT.NDS", 0, NULL);
+	} else {
+		printf("FAT init failed!\n");
+	}
+	while(1) swiWaitForVBlank();
 }
-#endif

@@ -1,7 +1,6 @@
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
-.SECONDARY:
 
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
@@ -9,12 +8,6 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
-export HBMENU_MAJOR	:= 0
-export HBMENU_MINOR	:= 4
-export HBMENU_PATCH	:= 3
-
-
-VERSION	:=	$(HBMENU_MAJOR).$(HBMENU_MINOR).$(HBMENU_PATCH)
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -23,33 +16,45 @@ VERSION	:=	$(HBMENU_MAJOR).$(HBMENU_MINOR).$(HBMENU_PATCH)
 # DATA is a list of directories containing binary files embedded using bin2o
 # GRAPHICS is a list of directories containing image files to be converted with grit
 #---------------------------------------------------------------------------------
-TARGET		:=	hbmenu
+TARGET		:=	$(shell basename $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
-INCLUDES	:=	include
+
+SOURCES		:=	source \
+				source/hbmenustub
+ 
+INCLUDES	:=	include	\
+						include/SDL	\
+						include/gl2d \
+						source/hbmenustub
 DATA		:=	data  
-GRAPHICS	:=  gfx
+GRAPHICS	:=	gfx  
+@NITRODATA	:=	nitrofiles
+
+# These set the information text in the nds file
+GAME_TITLE		:=	gbaemu4ds
+GAME_SUBTITLE1	:=	2015 Coto - 2013 ichfly/ichichfly
+GAME_SUBTITLE2	:=	2015
 
 #---------------------------------------------------------------------------------
-# options for code generation -Wall -O2
+# options for code generation  # -save-temps
 #---------------------------------------------------------------------------------
-ARCH	:=	-mthumb -mthumb-interwork
-
-CFLAGS	:=	-g\
- 		-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
-		-ffast-math \
+ARCH	:= -mthumb-interwork -march=armv5te -mtune=arm946e-s -marm -mstructure-size-boundary=32
+CFLAGS	:= -g -Wall -Ofast\
+ 		-mapcs-frame	\
+		-funsafe-math-optimizations	\
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM9
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS       =       --specs=../tgba_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
+
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project (order is important)
 #---------------------------------------------------------------------------------
-LIBS	:= 	-lfat -lnds9
+LIBS	:= 	-lfat	-lnds9
  
  
 #---------------------------------------------------------------------------------
@@ -75,9 +80,9 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-BINFILES	:=	load.bin bootstub.bin
+PNGFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.png)))
+BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
  
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -96,7 +101,9 @@ endif
 export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 					$(PNGFILES:.png=.o) \
 					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
- 
+ ifneq ($(strip $(NITRODATA)),)
+	export NITRO_FILES	:=	$(CURDIR)/$(NITRODATA)
+endif
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					-I$(CURDIR)/$(BUILD)
@@ -113,44 +120,23 @@ else
 	endif
 endif
  
-.PHONY: bootloader bootstub BootStrap $(BUILD) clean
-
-all:	bootloader bootstub $(BUILD) BootStrap
-	
-dist:	all
-	@rm	-fr	hbmenu
-	@mkdir hbmenu
-	@cp hbmenu.nds hbmenu/BOOT.NDS
-	@cp BootStrap/_BOOT_MP.NDS BootStrap/TTMENU.DAT BootStrap/_DS_MENU.DAT BootStrap/ez5sys.bin BootStrap/akmenu4.nds hbmenu
-	@zip -9r hbmenu-$(VERSION).zip hbmenu testfiles README.html COPYING hbmenu -x@exclude.lst
+.PHONY: $(BUILD) clean
+ 
 
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@$(MAKE) --no-print-directory -C $(BUILD) -o $(BUILD) -f $(CURDIR)/Makefile
  
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds $(TARGET).arm9 data
-	@$(MAKE) -C bootloader clean
-	@$(MAKE) -C bootstub clean
-	@$(MAKE) -C BootStrap clean
-
-data:
-	@mkdir -p data
-
-bootloader: data
-	@$(MAKE) -C bootloader
-
-bootstub: data
-	@$(MAKE) -C bootstub
-
-BootStrap:
-	@$(MAKE) -C BootStrap
+	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds
 
 #---------------------------------------------------------------------------------
 else
+ 
+ DEPENDS := $(OFILES:.o=.d)
  
 #---------------------------------------------------------------------------------
 # main targets
@@ -174,7 +160,7 @@ $(OUTPUT).elf	:	$(OFILES)
 #---------------------------------------------------------------------------------
 	grit $< -fts -o$*
 
--include $(DEPSDIR)/*.d
+-include $(DEPENDS)
  
 #---------------------------------------------------------------------------------------
 endif

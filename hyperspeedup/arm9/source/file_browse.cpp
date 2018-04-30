@@ -20,13 +20,18 @@
 ------------------------------------------------------------------*/
 #include "file_browse.h"
 
-#ifdef __cplusplus
+char biosPath[MAXPATHLEN * 2];
+char patchPath[MAXPATHLEN * 2];
+char savePath[MAXPATHLEN * 2];
+char szFile[MAXPATHLEN * 2];
+char temppath[MAXPATHLEN * 2];
 
-	#include <vector>
-	#include <algorithm>
 
-#endif
-
+#include "ichflysettings.h"
+#ifdef standalone
+#include "Util.h"
+#include <vector>
+#include <algorithm>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -43,19 +48,6 @@ extern "C" u32 fileRead (char* buffer, u32 cluster, u32 startOffset, u32 length)
 #define ENTRIES_PER_SCREEN 22
 #define ENTRIES_START_ROW 2
 #define ENTRY_PAGE_LENGTH 10
-
-char biosPath[MAXPATHLEN * 2];
-
-char patchPath[MAXPATHLEN * 2];
-
-char savePath[MAXPATHLEN * 2];
-
-char szFile[MAXPATHLEN * 2];
-
-char temppath[MAXPATHLEN * 2];
-
-
-bool cpuIsMultiBoot = false;
 
 
 using namespace std;
@@ -81,7 +73,7 @@ char showbuff[0x10];
 
 gbaHeader_t gbaheader;
 
-char* filetypsforemu [4] = {(char*)"gbafile (start emu)",(char*)"savefile",(char*)"bios",(char*)"patch"};
+char* filetypsforemu [4] = {"gbafile (start emu)","savefile","bios","patch"};
 
 
 struct DirEntry {
@@ -90,61 +82,14 @@ struct DirEntry {
 } ;
 
 
-extern bool cpuIsMultiBoot;
 
-bool utilIsGBAImage(const char * file)
-{
-  cpuIsMultiBoot = false;
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
+bool nameEndsWith (const string& name, const string& extension) {
 
-    if(p != NULL) {
-      if(strcmp(p, ".gba") == 0)
-        return true;
-      if(strcmp(p, ".agb") == 0)
-        return true;
-      if(strcmp(p, ".bin") == 0)
-        return true;
-      /*if(_stricmp(p, ".elf") == 0)
-        return true;*/ //todo
-      if(strcmp(p, ".mb") == 0) {
-        cpuIsMultiBoot = true;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-
-bool utilIsSAV(const char * file)
-{
-  if(strlen(file) > 4) {
-    const char * p = strrchr(file,'.');
-
-    if(p != NULL) {
-      if(strcmp(p, ".sav") == 0) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-
-
-bool nameEndsWith (const string& name, const vector<string> extensionList) {
-
-	if (name.size() == 0) return false;
-	if (extensionList.size() == 0) return true;
-
-	for (int i = 0; i < (int)extensionList.size(); i++) {
-		const string ext = extensionList.at(i);
-		if ( strcasecmp (name.c_str() + name.size() - ext.size(), ext.c_str()) == 0) return true;
+	if (name.size() == 0 || name.size() < extension.size() || extension.size() == 0) {
+		return false;
 	}
-	return false;
+	
+	return strcasecmp (name.c_str() + name.size() - extension.size(), extension.c_str()) == 0;
 }
 
 bool dirEntryPredicate (const DirEntry& lhs, const DirEntry& rhs) {
@@ -158,7 +103,7 @@ bool dirEntryPredicate (const DirEntry& lhs, const DirEntry& rhs) {
 	return strcasecmp(lhs.name.c_str(), rhs.name.c_str()) < 0;
 }
 
-void getDirectoryContents (vector<DirEntry>& dirContents, const vector<string> extensionList) {
+void getDirectoryContents (vector<DirEntry>& dirContents, const string& extension) {
 	struct stat st;
 
 	dirContents.clear();
@@ -177,7 +122,7 @@ void getDirectoryContents (vector<DirEntry>& dirContents, const vector<string> e
 			dirEntry.name = pent->d_name;
 			dirEntry.isDirectory = (st.st_mode & S_IFDIR) ? true : false;
 
-			if (dirEntry.name.compare(".") != 0 && (dirEntry.isDirectory || nameEndsWith(dirEntry.name, extensionList))) {
+			if (dirEntry.name.compare(".") != 0 /*&& (dirEntry.isDirectory || nameEndsWith(dirEntry.name, extension))*/) {
 				dirContents.push_back (dirEntry);
 			}
 
@@ -190,8 +135,7 @@ void getDirectoryContents (vector<DirEntry>& dirContents, const vector<string> e
 }
 
 void getDirectoryContents (vector<DirEntry>& dirContents) {
-	vector<string> extensionList;
-	getDirectoryContents (dirContents, extensionList);
+	getDirectoryContents (dirContents, "");
 }
 
 void showDirectoryContents (const vector<DirEntry>& dirContents, int startRow) {
@@ -287,21 +231,16 @@ void printgbainfo (const char* filename)  {
 
 
 
-void browseForFile (const vector<string> extensionList) {
-
+void browseForFile (const string& extension) {
 	int pressed = 0;
 	int screenOffset = 0;
 	int fileOffset = 0;
 	vector<DirEntry> dirContents;
 	
-
-			getDirectoryContents (dirContents, extensionList);
+	getDirectoryContents (dirContents, extension);
 
 	showDirectoryContents (dirContents, screenOffset);
 	
-
-
-
 	while (true) 
 	{
 		// Clear old cursors
@@ -315,7 +254,9 @@ void browseForFile (const vector<string> extensionList) {
 		do {
 			scanKeys();
 			pressed = keysDownRepeat();
-			swiWaitForVBlank();
+			//swiWaitForVBlank();
+			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+			while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 			
 		} while (!pressed);
 	
@@ -340,10 +281,9 @@ void browseForFile (const vector<string> extensionList) {
 		if (pressed & KEY_A) {
 			DirEntry* entry = &dirContents.at(fileOffset);
 			if (entry->isDirectory) {
-				iprintf("Entering directory\n");
 				// Enter selected directory
 				chdir (entry->name.c_str());
-				getDirectoryContents (dirContents, extensionList);
+				getDirectoryContents (dirContents, extension);
 				screenOffset = 0;
 				fileOffset = 0;
 				showDirectoryContents (dirContents, screenOffset);
@@ -459,10 +399,12 @@ void browseForFile (const vector<string> extensionList) {
 		if (pressed & KEY_B) {
 			// Go up a directory
 			chdir ("..");
-			getDirectoryContents (dirContents, extensionList);
+			getDirectoryContents (dirContents, extension);
 			screenOffset = 0;
 			fileOffset = 0;
 			showDirectoryContents (dirContents, screenOffset);
 		}
 	}
 }
+
+#endif

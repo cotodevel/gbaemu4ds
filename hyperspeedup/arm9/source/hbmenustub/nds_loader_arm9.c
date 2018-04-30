@@ -26,7 +26,8 @@
 #include <fat.h>
 
 #include "load_bin.h"
-#include "file_browse.h"
+
+#include "../file_browse.h"
 
 #ifndef _NO_BOOTSTUB_
 #include "bootstub_bin.h"
