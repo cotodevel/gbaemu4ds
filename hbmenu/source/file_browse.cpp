@@ -18,15 +18,11 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 ------------------------------------------------------------------*/
+
+
 #include "file_browse.h"
-
-#ifdef __cplusplus
-
-	#include <vector>
-	#include <algorithm>
-
-#endif
-
+#include <vector>
+#include <algorithm>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -44,22 +40,17 @@ extern "C" u32 fileRead (char* buffer, u32 cluster, u32 startOffset, u32 length)
 #define ENTRIES_START_ROW 2
 #define ENTRY_PAGE_LENGTH 10
 
+using namespace std;
+
+extern char* arcvsave;
+
+
 char biosPath[MAXPATHLEN * 2];
-
 char patchPath[MAXPATHLEN * 2];
-
 char savePath[MAXPATHLEN * 2];
-
 char szFile[MAXPATHLEN * 2];
-
 char temppath[MAXPATHLEN * 2];
 
-
-bool cpuIsMultiBoot = false;
-
-
-using namespace std;
-/*
 typedef struct
 {
 	u32 entryPoint;
@@ -75,13 +66,13 @@ typedef struct
 	u8 complement;
 	u16 res;
 } __attribute__ ((__packed__)) gbaHeader_t;
-*/
+
 char showbuff[0x10];
 
 
 gbaHeader_t gbaheader;
 
-char* filetypsforemu [4] = {(char*)"gbafile (start emu)",(char*)"savefile",(char*)"bios",(char*)"patch"};
+char* filetypsforemu [5] = {"gbafile (default)","gbafile (start emu)","savefile","bios","patch"};
 
 
 struct DirEntry {
@@ -294,13 +285,8 @@ void browseForFile (const vector<string> extensionList) {
 	int fileOffset = 0;
 	vector<DirEntry> dirContents;
 	
-
-			getDirectoryContents (dirContents, extensionList);
-
+	getDirectoryContents (dirContents, extensionList);
 	showDirectoryContents (dirContents, screenOffset);
-	
-
-
 
 	while (true) 
 	{
@@ -377,7 +363,7 @@ void browseForFile (const vector<string> extensionList) {
 					iprintf("Use as\n");
 					
 
-					for(int i = 0; i < 4; i++)
+					for(int i = 0; i < 5; i++)
 					{
 						if(i == ausgewauhlt) iprintf("->");
 						else iprintf("  ");
@@ -399,7 +385,15 @@ void browseForFile (const vector<string> extensionList) {
 						{
 							switch(ausgewauhlt)
 							{
-								case 0:
+							case 0:
+							{
+								getcwd (szFile, MAXPATHLEN);
+								pathLen = strlen (szFile);
+								strcpy (szFile + pathLen, entry->name.c_str());
+								arcvsave = szFile;
+								return;
+							}
+								case 1:
 							{
 								getcwd (szFile, MAXPATHLEN);
 								pathLen = strlen (szFile);
@@ -421,7 +415,7 @@ void browseForFile (const vector<string> extensionList) {
 								return;
 							}
 
-								case 1:
+								case 2:
 							{
 								getcwd (savePath, MAXPATHLEN);
 								pathLen = strlen (savePath);
@@ -429,7 +423,7 @@ void browseForFile (const vector<string> extensionList) {
 								nichtausgewauhlt = false;
 								break;
 							}
-								case 2:
+								case 3:
 							{
 								getcwd (biosPath, MAXPATHLEN);
 								pathLen = strlen (biosPath);
@@ -437,7 +431,7 @@ void browseForFile (const vector<string> extensionList) {
 								nichtausgewauhlt = false;
 								break;
 							}
-								case 3:
+								case 4:
 							{
 								getcwd (patchPath, MAXPATHLEN);
 								pathLen = strlen (patchPath);
@@ -451,8 +445,7 @@ void browseForFile (const vector<string> extensionList) {
 						if (pressed&KEY_UP && ausgewauhlt != 0) {ausgewauhlt--; break;}
 					}
 				}
-				showDirectoryContents (dirContents, screenOffset);
-							//ichfly some sort wtf end
+				showDirectoryContents (dirContents, screenOffset);//ichfly some sort wtf end
 			}
 		}
 		

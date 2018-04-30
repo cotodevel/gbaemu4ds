@@ -1,8 +1,0 @@
-1. copy ld and specs from arm7 (2) /arm9 (3) to C:\devkitPro\devkitARM\arm-none-eabi\lib
-2. copy libgl2d.a and libSDL.a from /lib to C:\devkitPro\devkitARM\arm-none-eabi\lib
-3. open shell (to compile), go to gbalive4dsemu then write MAKE, press enter.
-3. repeat above step except go to hbmenu folder and do MAKE on root.
-   copy hbmenu.nds to root SD directory, and create a new folder called "gbalive4ds".
-   then copy gbalive4dsemu.nds inside the newly created folder.
-
-coto 
