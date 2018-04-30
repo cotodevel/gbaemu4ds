@@ -1,0 +1,20 @@
+gbaemu4ds original code that must be resolved for TGDS port to happen:
+
+[main codebase; branch:alpha2fix5-arm9irqs-fixed+fireredgreenleaffixed-03092016_NEWMODE1-gitd.zip]
+- firered version (sound) is codebase (new save method already applied), but...
+[branch:gbaemu4DS-ancient-correct-mode0-gitd.zip]
+- merge ancient branch mode0 fix into firered version (through a #ifdef template so we can change between mode0/mode1)
+
+- merge branches into main codebase: 
+[branch:28092017-gbaemu4ds-newhwirq-stable-sleepmode-vcountirqfailing_NEWMODE1-gitd.zip]
+[branch:28092017-alpha2fix5_dmalogicnew_9112016_newsave_NEWMODE1-gitd.zip]
+
+
+TGDS port:
+- remove all printf
+- add new irqs from tgds to gbaemu4ds
+- use old libfat
+
+
+Coto:
+27/04/2018
