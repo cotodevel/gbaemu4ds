@@ -51,7 +51,7 @@ extern vu32 debugsrc2;
 extern vu32 debugfr1;
 extern vu32 debugfr2;
 
-
+extern void vcount_handler();
 #ifdef __cplusplus
 }
 #endif

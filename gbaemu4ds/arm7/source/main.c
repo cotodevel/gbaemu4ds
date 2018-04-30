@@ -1,4 +1,5 @@
 #include "main.h"
+#include "ipc/touch_ipc.h"
 
 #include <nds.h>
 #include <nds/arm7/audio.h>
@@ -380,7 +381,12 @@ int main() {
 	REG_IPC_FIFO_CR = IPC_FIFO_ENABLE;
 	REG_IPC_FIFO_CR = IPC_FIFO_SEND_CLEAR | IPC_FIFO_ENABLE | IPC_FIFO_ERROR;
 
-
+	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
+	
+	REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ; //| (VCOUNT_LINE_INTERRUPT << 15);
+	
+	u32 curIRQ = REG_IE ;
+	irqEnable(REG_IE|IRQ_VCOUNT);
 	//soundbuffA = malloc(32);
 	//soundbuffB = malloc(32);
 
@@ -401,7 +407,7 @@ int main() {
 		if((REG_VCOUNT == callline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
 		{
 			if(!isincallline)
-			{
+			{	
 				//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
 				SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
 #ifdef anyarmcom
@@ -1015,3 +1021,11 @@ void checkstart()
 
 }
 #endif
+
+
+
+//ok
+void vcount_handler(){
+	//IPC ARM7/ARM9 process: handles touchscreen,time,etc
+	gbaemu4ds_ipc();
+}

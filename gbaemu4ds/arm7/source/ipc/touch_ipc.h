@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-extern void updateMyIPC();
+extern void gbaemu4ds_ipc();
 
 #ifdef __cplusplus
 }

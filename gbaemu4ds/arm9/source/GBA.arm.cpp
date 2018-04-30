@@ -2912,6 +2912,7 @@ void CPUReset()
   //lastTime = systemGetClock();
 
   //SWITicks = 0;
+  rtcEnable(true); //coto: nds7 clock 
 }
 
 #ifdef SDL

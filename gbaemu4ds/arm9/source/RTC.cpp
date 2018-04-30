@@ -18,7 +18,6 @@
 
 #include "System.h"
 #include "GBA.h"
-#include "Globals.h"
 #include "Port.h"
 #include "Util.h"
 #include "NLS.h"
@@ -34,6 +33,10 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
+
+//coto
+//Shared memory region static object
+#include "../../common/gba_ipc.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
@@ -77,7 +80,8 @@ u16 rtcRead(u32 address)
     }
   }
   
-  return READ16LE((&rom[address & 0x1FFFFFE]));
+  //return READ16LE((&rom[address & 0x1FFFFFE])); //no
+  return 0;
 }
 
 static u8 toBCD(u8 value)
@@ -132,11 +136,12 @@ bool rtcWrite(u32 address, u16 value)
               break;
             case 0x65:
               {
+                /*
                 struct tm *newtime;
                 time_t long_time;
 
-                time( &long_time );                /* Get time as long integer. */
-                newtime = localtime( &long_time ); /* Convert to local time. */
+                time( &long_time );                // Get time as long integer. 
+                newtime = localtime( &long_time );// Convert to local time. 
                 
                 rtcClockData.dataLen = 7;
                 rtcClockData.data[0] = toBCD(newtime->tm_year);
@@ -147,21 +152,44 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.data[5] = toBCD(newtime->tm_min);
                 rtcClockData.data[6] = toBCD(newtime->tm_sec);
                 rtcClockData.state = DATA;
+                */
+                
+                //coto: own IPC.
+                rtcClockData.dataLen = 7;
+                rtcClockData.data[0] = toBCD(gba_get_yearbytertc());
+                rtcClockData.data[1] = toBCD(gba_get_monthrtc());
+                rtcClockData.data[2] = toBCD(gba_get_dayrtc());
+                rtcClockData.data[3] = toBCD(gba_get_dayofweekrtc());
+                rtcClockData.data[4] = toBCD(gba_get_hourrtc());
+                rtcClockData.data[5] = toBCD(gba_get_minrtc());
+                rtcClockData.data[6] = toBCD(gba_get_secrtc());
+                rtcClockData.state = DATA;
+                
               }
               break;              
             case 0x67:
               {
+                /*
                 struct tm *newtime;
                 time_t long_time;
 
-                time( &long_time );                /* Get time as long integer. */
-                newtime = localtime( &long_time ); /* Convert to local time. */
+                time( &long_time );                 // Get time as long integer.
+                newtime = localtime( &long_time ); // Convert to local time. 
                 
                 rtcClockData.dataLen = 3;
                 rtcClockData.data[0] = toBCD(newtime->tm_hour);
                 rtcClockData.data[1] = toBCD(newtime->tm_min);
                 rtcClockData.data[2] = toBCD(newtime->tm_sec);
                 rtcClockData.state = DATA;
+                */
+                
+                //coto: own IPC.
+                rtcClockData.dataLen = 3;
+                rtcClockData.data[0] = toBCD(gba_get_hourrtc());
+                rtcClockData.data[1] = toBCD(gba_get_minrtc());
+                rtcClockData.data[2] = toBCD(gba_get_secrtc());
+                rtcClockData.state = DATA;
+                
               }
               break;
             default:
