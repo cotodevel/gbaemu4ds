@@ -1137,28 +1137,13 @@ memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
 return savetype;
 }
 
-//OK
-/*
-#define STMW_myregs(val,num) \
-  if(opcode & (val)) {\
-    CPUWriteMemorypu(address, myregs[(num)].I);\
-    if(!offset) {\
-      myregs[base].I = temp;\
-       \
-      offset = 1;\
-    } else {\
-       \
-    }\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 STMW_myregs(u32 opcode, u32 temp, u32 address,u32 val,u32 num,u32 base){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val)) {
-		CPUWriteMemory(address, myregs[(num)].I);
+		CPUWriteMemorypu(address, myregs[(num)].I);
 		if(!offset) {
 			myregs[base].I = temp;
 			offset = 1;
@@ -1168,27 +1153,14 @@ u32 STMW_myregs(u32 opcode, u32 temp, u32 address,u32 val,u32 num,u32 base){
 return address;
 }
 
-//OK
-/*
-#define STM_myregs(val,num) \
-  if(opcode & (val)) {\
-    CPUWriteMemorypu(address, myregs[(num)].I);\
-    if(!offset) {\
-       \
-      offset = 1;\
-    } else {\
-       \
-    }\
-    address += 4;\
-  }
-*/
+
 __attribute__((section(".itcm")))
 u32 STM_myregs(u32 opcode, u32 address,u32 val,u32 num){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val))	{
-		CPUWriteMemory(address, myregs[(num)].I);
+		CPUWriteMemorypu(address, myregs[(num)].I);
 		if(!offset) {
 			offset = 1;
 		} 
@@ -1197,24 +1169,12 @@ u32 STM_myregs(u32 opcode, u32 address,u32 val,u32 num){
 return address;
 }
 
-//OK
-/*
-#define LDM_myregs(val,num) \
-  if(opcode & (val)) {\
-    myregs[(num)].I = CPUReadMemoryrealpu(address);\
-    if(offset){}\
-    else {\
-      offset = 1;\
-    }\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 LDM_myregs(u32 opcode, u32 address,u32 val,u32 num){
 	//summon (static) offset fixup
 	extern int offset;
 	if(opcode & (val)) {
-		myregs[(num)].I = CPUReadMemory(address);
+		myregs[(num)].I = CPUReadMemoryrealpu(address);
     if(offset){}
     else {
       offset = 1;
@@ -1224,25 +1184,13 @@ u32 LDM_myregs(u32 opcode, u32 address,u32 val,u32 num){
 return address;
 }
 
-//OK
-/*
-#define THUMB_STM_myregs(val,r,b) \
-  if(opcode & (val)) {\
-    CPUWriteMemorypu(address, myregs[(r)].I);\
-    if(!offset) {\
-      myregs[(b)].I = temp;\
-    }\
-    offset = 1;\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 THUMB_STM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r,u32 b){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val)) {
-		CPUWriteMemory(address, myregs[(r)].I);
+		CPUWriteMemorypu(address, myregs[(r)].I);
 		if(!offset) {
 			myregs[(b)].I = temp;
 		}
@@ -1252,65 +1200,39 @@ u32 THUMB_STM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r,u32 b){
 return address;
 }
 
-//OK
-/*
-#define THUMB_LDM_myregs(val,r) \
-  if(opcode & (val)) {\
-    myregs[(r)].I = CPUReadMemoryrealpu(address);\
-    offset = 1;\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 THUMB_LDM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val)) {
-		myregs[(r)].I = CPUReadMemory(address);
+		myregs[(r)].I = CPUReadMemoryrealpu(address);
 		offset = 1;
 		address += 4;
 	}
 return address;
 }
 
-//OK
-/*
-#define PUSH_myregs(val, r) \
-  if(opcode & (val)) {\
-    CPUWriteMemorypu(address, myregs[(r)].I);\
-    offset = 1;\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 PUSH_myregs(u32 opcode, u32 address,u32 val, u32 r){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val)) {
-		CPUWriteMemory(address, myregs[(r)].I);
+		CPUWriteMemorypu(address, myregs[(r)].I);
 		offset = 1;
 		address += 4;
 	}
 return address;
 }
 
-/*
-#define POP_myregs(val, r) \
-  if(opcode & (val)) {\
-    myregs[(r)].I = CPUReadMemoryrealpu(address);\
-    offset = 1;\
-    address += 4;\
-  }
-*/
 __attribute__((section(".itcm")))
 u32 POP_myregs(u32 opcode, u32 address,u32 val, u32 r){
 	//summon (static) offset fixup
 	extern int offset;
 	
 	if(opcode & (val)) {
-		myregs[(r)].I = CPUReadMemory(address);
+		myregs[(r)].I = CPUReadMemoryrealpu(address);
 		offset = 1;
 		address += 4;
 	}
