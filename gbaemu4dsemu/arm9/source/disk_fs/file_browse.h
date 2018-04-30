@@ -22,76 +22,27 @@
 #ifndef FILE_BROWSE_H
 #define FILE_BROWSE_H
 
-
-#define MAXPATHLEN 255
-#include <nds.h>
-
-typedef struct
-{
-	u32 entryPoint;
-	u8 logo[156];
-	char title[0xC];
-	char gamecode[0x4];
-	char makercode[0x2];
-	u8 is96h;
-	u8 unitcode;
-	u8 devicecode;
-	u8 unused[7];
-	u8 version;
-	u8 complement;
-	u16 res;
-	u8 somedata[100000];
-} __attribute__ ((__packed__)) gbaHeader_t;
-
-typedef struct
-{
-	u32 Version;
-	u32 listentr;
-} __attribute__ ((__packed__)) patch_t;
-
-typedef struct
-{
-	u32 gamecode;
-	u8 homebrew;
-	u64 crc;
-	char patchPath[MAXPATHLEN * 2];
-	u8 swaplcd;
-	u8 savfetype;
-	u8 frameskip;
-	u8 frameskipauto;
-	u16 frameline;
-	u8 fastpu;
-	u8 mb;
-	u8 loadertype;
-} __attribute__ ((__packed__)) patch2_t;
-
-
-#endif //FILE_BROWSE_H
-
 #ifdef __cplusplus
-	#include <string>
-	#include <vector>
+#include <string>
 
-	void browseForFile (const std::vector<std::string> extensionList);
+void browseForFile (const std::string& extension);
 
 #endif
 
+#define MAXPATHLEN 255
+
+#endif //FILE_BROWSE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern char biosPath[MAXPATHLEN * 2];
-
 extern char patchPath[MAXPATHLEN * 2];
-
 extern char savePath[MAXPATHLEN * 2];
-
 extern char szFile[MAXPATHLEN * 2];
-
 extern char temppath[MAXPATHLEN * 2];
 
-extern bool cpuIsMultiBoot;
 
 #ifdef __cplusplus
 }

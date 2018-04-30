@@ -1,0 +1,16 @@
+steps to do a DMA FIFO 1/2 interrupt (Timer 0/1 drive the DMA FIFO)
+
+Set ARM7 Timer0/1, when they interrupt, read DMA 1/2 properties ONLY
+if bit 3 special is set
+
+write DMACNT_LH with bit 3 (sound FIFO)
+
+call CPUCheckDMA(3, dmamask[DMA0==1,DMA1==2,DMA2==4,DMA3==8]) /
+read from IO ports what offset , source address, and what FIFO dest.
+From ARM7
+
+When transfer is ready, DMA 1/2 should raise an interrupt
+
+
+then ARM7 should clear the IF from DMA Sources, once played 
+the FIFO + index buffer.
