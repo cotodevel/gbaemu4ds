@@ -49,6 +49,7 @@ extern __attribute__((section(".dtcm")))	void (*exHandlerundifined)();
 extern __attribute__((section(".dtcm")))	u32  exRegs[];
 extern __attribute__((section(".dtcm")))	u32 BIOSDBG_SPSR;
 
+extern void DrainWriteBuffer();
 #ifdef __cplusplus
 }
 #endif

@@ -308,60 +308,42 @@ void gbaInit(bool slow)
 
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu while configurating pu
 
-	if(slow)
-	{
-		pu_SetDataCachability(   0b01111100);
-		pu_SetCodeCachability(   0b01111100);
-		pu_GetWriteBufferability(0b01111100);
-	}
-	else
-	{
-		pu_SetDataCachability(   0b00111100);
-		pu_SetCodeCachability(   0b00111100);
-		pu_GetWriteBufferability(0b00111100);
-	}	
+	pu_SetDataCachability(   0b00111100);
+	pu_SetCodeCachability(   0b00111100);
+	pu_GetWriteBufferability(0b00100010);	
 
 
 #ifdef releas
 	exInit(gbaExceptionHdl); //define handler
 #endif
 
-
-
 	WRAM_CR = 0; //swap wram in
-
-	if(slow)
-	{
-		pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-		//pu_SetRegion(1, 0x0b000000 | PU_PAGE_16K | 1);
-		pu_SetRegion(1, 0);
-		pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);
-		pu_SetRegion(3, 0x02080000 | PU_PAGE_256K | 1);
-		pu_SetRegion(4, 0x020C0000 | PU_PAGE_128K | 1);
-		pu_SetRegion(5, 0x020E0000 | PU_PAGE_16K | 1);
-		pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
-		pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
-	}
-	else
-	{
-		pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-		//pu_SetRegion(1, 0x0b000000 | PU_PAGE_16K | 1);
-		pu_SetRegion(1, 0);
-		pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);
-		pu_SetRegion(3, 0x02080000 | PU_PAGE_512K | 1);
-		pu_SetRegion(4, 0x02100000 | PU_PAGE_1M | 1);
-		pu_SetRegion(5, 0x02200000 | PU_PAGE_2M | 1);
-		pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
-		pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
-	}
-
+	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
+	pu_SetRegion(1, 0);	//cached memory in nds, uncached in gba (gives speedup)
+	pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);	//cached in gba, but protected in nds mode (mpu allows to redirect access to mirror ewram gba)
+	pu_SetRegion(3, 0x02080000 | PU_PAGE_256K | 1); //cached in gba, but protected in nds mode
+	pu_SetRegion(4, 0x020C0000 | PU_PAGE_256K | 1); //cached in gba, but protected in nds mode
+	pu_SetRegion(5, 0x02100000 | PU_PAGE_1M | 1);
+	pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
+	pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
+	
 	pu_Enable(); //PU go
-
-	DC_FlushAll(); //try it
-	
-	
+	DC_FlushAll(); //try it	
 	IC_InvalidateAll();
-	
+}
+
+__attribute__((section(".itcm")))
+void puGba()
+{
+	pu_SetCodePermissions(0x06300033);	
+	pu_SetDataPermissions(0x06300033);
+}
+
+__attribute__((section(".itcm")))
+void puNds()
+{	
+	pu_SetDataPermissions(0x33333333);
+	pu_SetCodePermissions(0x33333333);
 }
 
 __attribute__((section(".itcm")))
@@ -586,21 +568,6 @@ void downgreadcpu()
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | BIT(15));
 }
 
-__attribute__((section(".itcm")))
-inline void puGba()
-{
-	pu_SetCodePermissions(0x06333333);	
-	pu_SetDataPermissions(0x06333333);
-}
-
-__attribute__((section(".itcm")))
-inline void puNds()
-{	
-	pu_SetDataPermissions(0x33333333);
-	pu_SetCodePermissions(0x33333333);
-}
-
-
 
 
 #ifndef releas
@@ -632,7 +599,7 @@ void ndsExceptionHdl()
 }
 #endif
 
-inline void ndsModeinline()
+void ndsModeinline()
 {
 	puNds();
 #ifndef releas
@@ -743,7 +710,7 @@ void gbaMode2()
 	puGba();	
 }
 __attribute__((section(".itcm")))
-inline void gbaMode()
+void gbaMode()
 {
 	puGba();	
 }

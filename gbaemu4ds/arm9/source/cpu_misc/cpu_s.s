@@ -1,12 +1,9 @@
-	.text
-
-	.equ REG_IME, 0x04000208
-
+	.section	.itcm,"ax",%progbits
 	.align 4
-	.code 32
 	.arm
 	
-
+	.equ REG_IME, 0x04000208
+	
 	.global readbankedsp
    .type   readbankedsp STT_FUNC
 readbankedsp:

@@ -95,3 +95,10 @@ DC_InvalidateRange:
 	cmp	r0, r1
 	blt	.invalidate
 	bx	lr
+
+.global DrainWriteBuffer
+.type   DrainWriteBuffer STT_FUNC
+DrainWriteBuffer:
+mov r0,#0
+mcr	p15, 0, r0, c7, c10, 4
+bx lr

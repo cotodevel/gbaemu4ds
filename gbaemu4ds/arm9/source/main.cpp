@@ -589,6 +589,7 @@ REG_IPC_FIFO_TX = 0x2222222;
 	bgUpdate();
 #endif
 
+	REG_IME = IME_ENABLE;
 	gbaInit(slow);
 
 
@@ -610,18 +611,14 @@ REG_IPC_FIFO_TX = 0x4444444;
 #ifndef capture_and_pars
 	iprintf("gbaMode2\n");
 #endif
-	REG_IME = IME_ENABLE;
 	gbaMode2();
+	REG_IF = IRQ_HBLANK;
 #ifndef capture_and_pars
-	iprintf("jump to (%08X):%08X %08X ",rom,*rom,*(rom+1));
+	iprintf("jump to (%08X):",rom);
 #endif
 
 	//iprintf("\x1b[2J"); //reset (not working huh)
 	//show_mem();
-	
-	touchPosition touchpos;
-	touchReadXY_gbaemu4ds(&touchpos);
-	
 	cpu_ArmJumpforstackinit((u32)rom, 0);
 	
 	

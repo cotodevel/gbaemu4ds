@@ -49,14 +49,26 @@ GAME_SUBTITLE2	:=
 #---------------------------------------------------------------------------------
 # options for code generation  # -save-temps
 #---------------------------------------------------------------------------------
-ARCH	:= -mthumb-interwork -march=armv5te -mtune=arm946e-s -marm -mstructure-size-boundary=32
-CFLAGS	:= -g -Wall -O3\
- 		-mapcs-frame	\
-		-funsafe-math-optimizations	\
-		$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM9
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -fdata-sections -ffunction-sections
+export GLOBAL_SHARED_FLAGS_9 = -march=armv5te	-mthumb-interwork
+
+#CPU code builder settings
+export GLOBAL_AS_COMPILER_FLAGS =	-defsym	readvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-defsym		NDS='1'
+export GLOBAL_CC_COMPILER_FLAGS =	-w 	-g	-marm	-mapcs-frame	-O -fno-common -Dreadvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
+export GLOBAL_CXX_COMPILER_FLAGS =	-g	-marm	-O	-fno-exceptions	-fno-common	-MMD	-MP	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
+
+#CPU code builder settings TGDS project specific
+export SPECIFIC_AS_COMPILER_FLAGS_7		= -defsym	ARM7='1'	-defsym	appver='$(EXECUTABLE_VERSION)'
+export SPECIFIC_CC_COMPILER_FLAGS_7		= -DARM7	-Dappver='$(EXECUTABLE_VERSION)'
+export SPECIFIC_CXX_COMPILER_FLAGS_7	= $(SPECIFIC_CC_COMPILER_FLAGS_7)
+
+export SPECIFIC_AS_COMPILER_FLAGS_9		= -defsym	ARM9='1'	-defsym	appver='$(EXECUTABLE_VERSION)'
+export SPECIFIC_CC_COMPILER_FLAGS_9		= -DARM9	-Dappver='$(EXECUTABLE_VERSION)'
+export SPECIFIC_CXX_COMPILER_FLAGS_9	= $(SPECIFIC_CC_COMPILER_FLAGS_9)
+
+
+CFLAGS	:= $(INCLUDE)	$(GLOBAL_SHARED_FLAGS_9)	$(GLOBAL_CC_COMPILER_FLAGS) $(SPECIFIC_CC_COMPILER_FLAGS_9)
+CXXFLAGS	:= $(INCLUDE)	$(GLOBAL_SHARED_FLAGS_9)	$(GLOBAL_CXX_COMPILER_FLAGS)	$(SPECIFIC_CC_COMPILER_FLAGS_9)
 
 ASFLAGS	:=	-s $(ARCH)
 LDFLAGS       =       --specs=../tgba_arm9.specs $(ARCH) -Wl,--gc-sections,-Map,$(notdir $*.map) 
