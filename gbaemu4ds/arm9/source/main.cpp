@@ -131,7 +131,7 @@ extern int framewtf;
 
 
 
-extern "C" int SPtoload;
+extern "C" int spirq;
 extern "C" int SPtemp;
 
 u32 arm7amr9buffer = 0;
