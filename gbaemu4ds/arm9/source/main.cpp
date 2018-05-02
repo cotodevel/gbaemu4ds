@@ -190,14 +190,14 @@ int main( int argc, char **argv) {
 vramSetPrimaryBanks(	
 VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode
 VRAM_B_MAIN_BG_0x06020000,      //Mode 1/2/3/4 special bitmap/rotscale modes (engine A bg0,1,2,3 needs them)
-VRAM_C_LCD,
-VRAM_D_LCD
+VRAM_C_LCD,	//6840000h-685FFFFh
+VRAM_D_LCD	//6860000h-687FFFFh
 ); //needed for main emulator
 
 
 vramSetBanks_EFG(
 VRAM_E_MAIN_SPRITE,        //GBA -> NDS Sprites (same PPU format!)
-VRAM_F_LCD,                
+VRAM_F_LCD,                	//F       16K   0    -     6890000h-6893FFFh
 VRAM_G_LCD
 );
 vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screan 

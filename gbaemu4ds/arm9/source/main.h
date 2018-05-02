@@ -17,4 +17,9 @@ extern char savePath[MAXPATHLEN * 2];
 
 extern char szFile[MAXPATHLEN * 2];
 
+extern u8 var8;
+extern u16 var16;
+extern u32 var32;
+
+
 #endif /*__MAIN_H__*/

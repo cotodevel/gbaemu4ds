@@ -1221,9 +1221,15 @@ int _FAT_fsync_r (struct _reent *r, int fd) {
 
 PARTITION* partitionlocked;
 FN_MEDIUM_READSECTORS	readSectorslocked;
+
+__attribute__((section(".dtcm")))
 u32 current_pointer = 0;
-u32 allocedfild[buffslots];
+
+u32* allocedfild = (u32*)0x06890000;	//relocate to vram: //u32 allocedfild[buffslots]
+
+__attribute__((section(".dtcm")))
 u8* greatownfilebuffer;
+
 void generatefilemap(int size)
 {
 	FILE_STRUCT* file = (FILE_STRUCT*)(lastopen);
@@ -1236,7 +1242,15 @@ void generatefilemap(int size)
 
 	readSectorslocked = file->partition->disc->readSectors;
 	iprintf("generating file map (size %d Byte)",((size/chucksize) + 1)*8);
-	sectortabel =(u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
+	
+	//use vram to prevent waitstates in ewram if file is 16M or less
+	if( (((size/chucksize) + 1)*8) > 262160 ){
+		sectortabel =(u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
+	}
+	else{
+		sectortabel =(u8*)0x06840000;
+	}
+	
 	greatownfilebuffer =(u8*)malloc(chucksize * buffslots);
 
 	clusCount = size/partition->bytesPerCluster;

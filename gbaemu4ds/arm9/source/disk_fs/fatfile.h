@@ -117,7 +117,9 @@ extern void * lastopenlocked;
 extern PARTITION* partitionlocked;
 extern FN_MEDIUM_READSECTORS	readSectorslocked;
 extern u32 current_pointer;
-extern u32 allocedfild[buffslots];
+
+extern u32* allocedfild;	//u32 allocedfild[buffslots]
+
 extern u8* greatownfilebuffer;
 
 extern void generatefilemap(int size);
