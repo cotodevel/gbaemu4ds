@@ -210,20 +210,9 @@ vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 #endif
 #endif
 	
-	//fifo init setup ORI
-	//__irqSet(IRQ_FIFO_NOT_EMPTY,HandleFifo,irqTable); //todo async
-	//irqEnable(IRQ_FIFO_NOT_EMPTY);
-	
 	__irqSet(IRQ_FIFO_NOT_EMPTY,HandleFifo,irqTable); //todo async
 	irqEnable(IRQ_FIFO_NOT_EMPTY);
-
-	 // REG_IPC_FIFO_CR = IPC_FIFO_ENABLE | IPC_FIFO_SEND_CLEAR | IPC_FIFO_RECV_IRQ;
-    REG_IPC_FIFO_CR |= (1<<2);  //send empty irq
-    REG_IPC_FIFO_CR |= (1<<10); //recv empty irq
-    
-    *(u16*)0x04000184 = *(u16*)0x04000184 | (1<<15); //enable fifo send recv
-    
-	REG_IF = ~0;
+	REG_IPC_FIFO_CR = IPC_FIFO_ENABLE | IPC_FIFO_SEND_CLEAR | IPC_FIFO_RECV_IRQ;
 	
 	//bg = bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0,0);
 	consoleDemoInit();
@@ -547,7 +536,7 @@ REG_IPC_FIFO_TX = 0x7654321;
 	VblankHandler();
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
 	REG_IPC_FIFO_TX = syncline;
-	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX;
+	//while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX;
 	iprintf("irqinit\n");
 
 	anytimejmpfilter = 0;
