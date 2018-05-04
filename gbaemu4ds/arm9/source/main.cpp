@@ -25,7 +25,6 @@
 #include "file_browse.h"
 #include "arm7sound.h"
 #include "main.h"
-#include "memory_handler_gba/mem_handler.h"
 #include "ipc/touch_ipc.h"
 
 
