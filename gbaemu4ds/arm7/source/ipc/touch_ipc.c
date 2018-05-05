@@ -43,11 +43,13 @@
 //coto: we better restore original libnds touchscreen... really.
 void gbaemu4ds_ipc()
 {
+	struct sIPCSharedGBA* GBAIPC = GetsIPCSharedGBA();
+	
 	uint16 but=0, batt=0;
 	int t1=0, t2=0;
 	uint32 temp=0;
 	u32 i=0;
-	u8 clock_buf[sizeof(GBAEMU4DS_IPC->clockdata)];
+	u8 clock_buf[sizeof(GBAIPC->clockdata)];
     
     touchPosition tempPos;
     touchReadXY(&tempPos);
@@ -62,32 +64,32 @@ void gbaemu4ds_ipc()
 	// Read the temperature
 	temp = touchReadTemperature(&t1, &t2);
  
-	GBAEMU4DS_IPC->mailBusy = 1;
+	GBAIPC->mailBusy = 1;
 	
     // Update the IPC struct
-	GBAEMU4DS_IPC->buttons		= but;
-	GBAEMU4DS_IPC->touched      = ((tempPos.px > 0) || (tempPos.py > 0)) ? 1 : 0;
+	GBAIPC->buttons		= but;
+	GBAIPC->touched      = ((tempPos.px > 0) || (tempPos.py > 0)) ? 1 : 0;
 	
     //raw x/y
-    GBAEMU4DS_IPC->touchX    = tempPos.rawx;
-    GBAEMU4DS_IPC->touchY    = tempPos.rawy;
+    GBAIPC->touchX    = tempPos.rawx;
+    GBAIPC->touchY    = tempPos.rawy;
     
     //TFT x/y pixel
-    GBAEMU4DS_IPC->touchXpx = tempPos.px;
-    GBAEMU4DS_IPC->touchYpx = tempPos.py;    
+    GBAIPC->touchXpx = tempPos.px;
+    GBAIPC->touchYpx = tempPos.py;    
     
-	GBAEMU4DS_IPC->touchZ1 = tempPos.z1;
-	GBAEMU4DS_IPC->touchZ2 = tempPos.z2;
-	GBAEMU4DS_IPC->battery		= batt;
+	GBAIPC->touchZ1 = tempPos.z1;
+	GBAIPC->touchZ2 = tempPos.z2;
+	GBAIPC->battery		= batt;
 	
     //Get time
     for(i=0; i< sizeof(clock_buf); i++){
-        GBAEMU4DS_IPC->clockdata[i] = clock_buf[i];
+        GBAIPC->clockdata[i] = clock_buf[i];
     }
     
-	GBAEMU4DS_IPC->temperature = temp;
-	GBAEMU4DS_IPC->tdiode1 = t1;
-	GBAEMU4DS_IPC->tdiode2 = t2;	
+	GBAIPC->temperature = temp;
+	GBAIPC->tdiode1 = t1;
+	GBAIPC->tdiode2 = t2;	
     
-    GBAEMU4DS_IPC->mailBusy = 0;
+    GBAIPC->mailBusy = 0;
 }

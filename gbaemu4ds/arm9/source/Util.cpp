@@ -954,7 +954,7 @@ u8 *utilLoad(const char *file, //ichfly todo
 	r = fread(image, 1, read, f);
 	
 	//set up header
-    memcpy((u8*)&GBAEMU4DS_IPC->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
+    memcpy((u8*)&GetsIPCSharedGBA()->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
     
 #ifndef uppern_read_emulation
   fclose(f);
@@ -1053,7 +1053,7 @@ int save_decider(){
 //void * memcpy ( void * destination, const void * source, size_t num );
 int savetype=0;
 char gamecode[6]; 
-memcpy((char*)gamecode,(u8*)&GBAEMU4DS_IPC->gbaheader.gamecode,6);
+memcpy((char*)gamecode,(u8*)&GetsIPCSharedGBA()->gbaheader.gamecode,6);
 
 //iprintf("GameCode is: %s \n",gamecode);
 //iprintf("GameCode is: %s \n",strtoupper(gamecode));

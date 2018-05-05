@@ -31,7 +31,7 @@ typedef struct
 
 
 //---------------------------------------------------------------------------------
-typedef struct sMyIPC {
+struct sIPCSharedGBA{
 //---------------------------------------------------------------------------------
     int16 touchX,   touchY;   // raw x/y
 	int16 touchXpx, touchYpx; // TFT x/y pixel
@@ -192,20 +192,11 @@ typedef struct sMyIPC {
     //GBA Virtual Sound Controller
     u16 SOUNDCNT_L;
     u16 SOUNDCNT_H;
-    
-    //GBA IO MAP
-    //bool ioReadable[0x400];     //GBA IO MAP Permissions (offset[n] true == GBA IO MAP Write / false == cant write GBA IO MAP)
-    //u8 ioMem[0x400];            //GBA IO MAP
-    
+        
     u8 ioMem[0x400];
 	*/
 
-} tMyIPC;
-
-//Shared Work     027FF000h 4KB    -     -    -    R/W
-//IPC Struct
-#define SHARED_ADDR_REGION 0x027FF000
-#define GBAEMU4DS_IPC ((tMyIPC volatile *)(SHARED_ADDR_REGION))
+};
 
 //4000136h - NDS7 - EXTKEYIN - Key X/Y Input (R)
 //  0      Button X     (0=Pressed, 1=Released)
@@ -257,6 +248,10 @@ extern u8 gba_get_secrtc();
 
 //sleepmode
 extern void enterGBASleepMode();
+
+//IPC
+extern struct sIPCSharedGBA* GetsIPCSharedGBA();
+
 #ifdef __cplusplus
 }
 #endif

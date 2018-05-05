@@ -8,13 +8,14 @@
 
 void touchReadXY_gbaemu4ds(touchPosition * touchpos_inst){
     
-    touchpos_inst->rawx =   GBAEMU4DS_IPC->touchX;
-    touchpos_inst->rawy =   GBAEMU4DS_IPC->touchY;
+	struct sIPCSharedGBA* GBAIPC = GetsIPCSharedGBA();
+    touchpos_inst->rawx =   GBAIPC->touchX;
+    touchpos_inst->rawy =   GBAIPC->touchY;
     
     //TFT x/y pixel
-    touchpos_inst->px   =   GBAEMU4DS_IPC->touchXpx;
-    touchpos_inst->py   =   GBAEMU4DS_IPC->touchYpx;
+    touchpos_inst->px   =   GBAIPC->touchXpx;
+    touchpos_inst->py   =   GBAIPC->touchYpx;
     
-    touchpos_inst->z1   =   GBAEMU4DS_IPC->touchZ1;
-    touchpos_inst->z2   =   GBAEMU4DS_IPC->touchZ2;
+    touchpos_inst->z1   =   GBAIPC->touchZ1;
+    touchpos_inst->z2   =   GBAIPC->touchZ2;
 }
