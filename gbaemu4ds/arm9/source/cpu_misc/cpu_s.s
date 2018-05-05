@@ -328,6 +328,38 @@ ichflyswiHalt:
 	bx	lr
 	
 	
+
+@coto: sleep mode protection for gba
+@---------------------------------------------------------------------------------
+	.global backup_mpu_setprot
+	.type   backup_mpu_setprot STT_FUNC
+@---------------------------------------------------------------------------------
+backup_mpu_setprot:
+
+	push {r6,r7}
+	@read MPU mode (should be NDS)
+	ldr	r6, =MPUPERMBACKUPSET_SWI		@MPU current Protection Settings for Data Region are backd
+	mrc	p15, 0, r7, c5, c0, 2      
+	str	r7, [r6]
+	pop {r6,r7}
+	bx lr
+	
+	
+@-----------------------------------
+	.global restore_mpu_setprot
+	.type   restore_mpu_setprot STT_FUNC
+@---------------------------------------------------------------------------------
+restore_mpu_setprot:
+
+	push {r6,r7}
+	@restore MPU mode (should be NDS anyway)
+	ldr	r6, =MPUPERMBACKUPSET_SWI  @MPU current Protection Settings for Data Region are restored
+	ldr	r7, [r6]
+	mcr	p15, 0, r7, c5, c0, 2	
+	pop {r6,r7}
+	
+	bx lr
+
 	
 @---------------------------------------------------------------------------------
 	.global resettostartup

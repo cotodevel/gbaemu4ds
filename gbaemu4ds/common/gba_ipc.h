@@ -8,6 +8,11 @@
 #define SHAREDIPC_MAX_ARGS 4
 #define ARM7ARM9SLOTCMDS 16
 
+#define FIFO_SWI_SLEEPMODE (u32)(0xff1100aa 	& ~0xC0000000)
+#define ARM9_REQ_SWI_TO_ARM7 (u32)(0xff1100ab	& ~0xC0000000)
+#define ARM7_REQ_SWI_TO_ARM9 (u32)(0xff1100ac	& ~0xC0000000)
+
+
 typedef struct
 {
 	u32 entryPoint;
@@ -250,6 +255,8 @@ extern u8 gba_get_hourrtc();
 extern u8 gba_get_minrtc();
 extern u8 gba_get_secrtc();
 
+//sleepmode
+extern void enterGBASleepMode();
 #ifdef __cplusplus
 }
 #endif

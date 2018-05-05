@@ -87,7 +87,8 @@ extern "C" void swiHalt(void);
 #include "Util.h"
 #include "Port.h"
 #include "agbprint.h"
-
+#include "../../../common/gba_ipc.h"
+#include "../../../common/cpuglobal.h"
 
 
 extern "C" u32 savedsp;
@@ -370,6 +371,8 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 	//while(1);
 }
 
+
+
 __attribute__((section(".itcm")))
 void BIOScall(int op,  u32 *R)
 {
@@ -406,7 +409,11 @@ void BIOScall(int op,  u32 *R)
 			//holdType = -1;
 			//stopState = true;
 			//cpuNextEvent = cpuTotalTicks;
-			ichflyswiIntrWait(1,(IE & 0x6080));
+			
+			//coto: raise sleepmode swi 0x3 gba
+			enterGBASleepMode();
+			
+			//ichflyswiIntrWait(1,(IE & 0x6080));
 		  break;
 	  case 0x04:
 

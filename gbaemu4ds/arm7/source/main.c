@@ -197,10 +197,56 @@ void dmaBtimerinter()
 }
 bool autodetectdetect = false;
 
+u32 power = 0;
+u32 ie_save = 0;
+void lid_closing_handler(u32 WAKEUP_IRQS){
+	ie_save = REG_IE;
+	// Turn the speaker down.
+	if (REG_POWERCNT & 1) swiChangeSoundBias(0,0x400);
+	// Save current power state.
+	power = readPowerManagement(PM_CONTROL_REG);
+	// Set sleep LED.
+	writePowerManagement(PM_CONTROL_REG, PM_LED_CONTROL(1));
+	
+	// Enable IRQ_LID on interrupt vectors
+	REG_IE = WAKEUP_IRQS;
+	
+	// Power down till we get our interrupt.
+	swiIntrWait(1,WAKEUP_IRQS); //waits for PM lid open irq (WAKEUP_IRQS)
+}
+
+//ok
+void lid_open_irq_handler(){	
+	//100ms
+	swiDelay(838000);
+	// Restore the interrupt state.
+	REG_IE = ie_save;
+	// Restore power state.
+	writePowerManagement(PM_CONTROL_REG, power);
+	// Turn the speaker up.
+	if (REG_POWERCNT & 1) swiChangeSoundBias(1,0x400);
+    
+	REG_IF = IRQ_LID; //is it hw toggled? (physical lid)
+}
+
+
 void newvalwrite(u32 addr,u32 val)
 {
 			switch(addr)
 			{
+				//arm9 wants to enter gba->nds sleep mode
+				case(FIFO_SWI_SLEEPMODE):{
+					//sleepmode bouncer (ARM9 is caller, ARM7 is callee)
+					SendArm9Command((u32)FIFO_SWI_SLEEPMODE,0x0,0x0,0x0);
+				}
+				break;
+				
+				//raise sleepmode from arm9 with custom IRQs
+				case(ARM9_REQ_SWI_TO_ARM7):{
+					lid_closing_handler(val);
+				}
+				break;
+				
 			  case 0xBC:
 				DMA1SAD_L = val;
 				break;
@@ -382,11 +428,12 @@ int main() {
 	REG_IPC_FIFO_CR = IPC_FIFO_SEND_CLEAR | IPC_FIFO_ENABLE | IPC_FIFO_ERROR;
 
 	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
-	
+	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//when opening the LID of DS time
 	REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ; //| (VCOUNT_LINE_INTERRUPT << 15);
 	
-	u32 curIRQ = REG_IE ;
-	irqEnable(REG_IE|IRQ_VCOUNT);
+	u32 curIRQ = REG_IE | IRQ_VCOUNT | IRQ_LID;
+	irqEnable(curIRQ);
+	
 	//soundbuffA = malloc(32);
 	//soundbuffB = malloc(32);
 
@@ -439,31 +486,13 @@ int main() {
 		{
 			ykeypp = false;
 		}
-		if(*(u16*)0x04000136 & 0x80) //close nds
+		
+		//Close nds lid @ ARM7
+		if(*(u16*)0x04000136 & 0x80)
 		{
-			u32 ie_save = REG_IE;
-			// Turn the speaker down.
-			if (REG_POWERCNT & 1) swiChangeSoundBias(0,0x400);
-			// Save current power state.
-			u32 power = readPowerManagement(PM_CONTROL_REG);
-			// Set sleep LED.
-			writePowerManagement(PM_CONTROL_REG, PM_LED_CONTROL(1));
-			// Register for the lid interrupt.
-			REG_IE = IRQ_LID;
-			// Power down till we get our interrupt.
-			swiSleep(); //waits for PM (lid open) interrupt
-			//100ms
-			swiDelay(838000);
-			// Restore the interrupt state.
-			REG_IE = ie_save;
-			// Restore power state.
-			writePowerManagement(PM_CONTROL_REG, power);
-			// Turn the speaker up.
-			if (REG_POWERCNT & 1) swiChangeSoundBias(1,0x400);
-			// update clock tracking
-			resyncClock(); 
+			enterGBASleepMode();
 		}
-
+		
 		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
 		{
 #ifndef noenterCriticalSection

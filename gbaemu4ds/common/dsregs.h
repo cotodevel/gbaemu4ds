@@ -168,10 +168,9 @@ SOFTWARE.
 // ARM9 specific registers
 #ifdef ARM9
 #define		POWERCNT	(*((u16 volatile *) 0x04000308))
-
-
-
 #endif
+
+
 // End of file!
 #endif
 

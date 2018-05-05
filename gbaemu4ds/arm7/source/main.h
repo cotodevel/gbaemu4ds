@@ -52,6 +52,12 @@ extern vu32 debugfr1;
 extern vu32 debugfr2;
 
 extern void vcount_handler();
+
+extern u32 power;
+extern u32 ie_save;
+extern void lid_open_irq_handler();
+extern void lid_closing_handler(u32 WAKEUP_IRQS);
+
 #ifdef __cplusplus
 }
 #endif

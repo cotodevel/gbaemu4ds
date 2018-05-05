@@ -48,7 +48,7 @@ void HandleFifo() {
 				command4 = (uint32)REG_IPC_FIFO_RX;
 			}
 			
-			
+			//gbaemu4ds SOUND driver
 	#ifdef unsecamr7com
 			if(command1 < 0x10000000)		
 	#else
@@ -91,8 +91,48 @@ void HandleFifo() {
 			}
 			else
 			{
-				switch (command1) {
-					//gbaemu4ds SOUND driver
+				switch (command1) {				
+					
+					//coto: raise sleepmode swi 0x3 gba (from lid close irq @ arm7)
+					case(ARM7_REQ_SWI_TO_ARM9):{
+						enterGBASleepMode();
+					}
+					break;
+					
+					//sleepmode
+					case(FIFO_SWI_SLEEPMODE):{
+						//coto: sleep mode from GBA request SWI
+						backup_mpu_setprot();
+						
+						//call arm7 sleep with one of IRQs to wake up from
+						SendArm7Command(ARM9_REQ_SWI_TO_ARM7,IRQ_LID,0,0);
+						
+						ichflyswiHalt();
+						
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+					
+						restore_mpu_setprot();
+							
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						asm("nop");
+						
+						pu_Enable(); //activate MPU regardless 
+					}
+					break;
+					
 					case(0x3F00BEEF):{
 						VblankHandler();
 					}

@@ -50,6 +50,12 @@ extern __attribute__((section(".dtcm")))	u32  exRegs[];
 extern __attribute__((section(".dtcm")))	u32 BIOSDBG_SPSR;
 
 extern void DrainWriteBuffer();
+
+//GBA SWI sleep mode (swi 0x3)
+extern void backup_mpu_setprot();
+extern void restore_mpu_setprot();
+extern u32 MPUPERMBACKUPSET_SWI;	//MPUd/itcmmemorypermissionsfromcaller
+
 #ifdef __cplusplus
 }
 #endif

@@ -481,7 +481,11 @@ exHandlerswi:
 	.global exPuProtection
 exPuProtection:
 	.word 0
-	
+
+.global MPUPERMBACKUPSET_SWI	@swi mpu save sleep mode
+MPUPERMBACKUPSET_SWI:
+	.word 0x00000000
+
 	.global exRegs
 exRegs:
 	.word	0
