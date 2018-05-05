@@ -1,6 +1,6 @@
-.section	.itcm,"ax",%progbits
 .align 4
 .arm
+.section	.itcm,"ax",%progbits
 
 .equ REG_BASE,	0x04000000
 .equ REG_IME,	0x04000208
@@ -9,10 +9,13 @@
 #include "../ichflysettings.h"
 
 @========== Exception code ====================
+.pool
 	
-	.section	.vectors,"ax",%progbits
+.align 4
+.arm
+.section	.vectors,"ax",%progbits
 	
-		.global irqhandler2
+.global irqhandler2
 irqhandler2:
 b	inter_Reset + 0x01FF8000
 b	inter_undefined + 0x01FF8000
@@ -190,10 +193,6 @@ noIME:
 	
 got_over_gba_handler:
 
-	@nop @test
-	@nop
-	@nop
-
 	ldr	r1, =0x06300033
 	
 	mcr	p15, 0, r1, c5, c0, 2
@@ -202,19 +201,6 @@ got_over_gba_handler:
 	str sp,[pc, #-0xA8]  @ichfly sizechange
 	ldr sp,[pc, #-0xA8]  @ichfly sizechange
 
-
-nop @need this nops
-nop
-nop
-nop
-nop
-nop
-nop
-nop
-nop
-nop
-nop
-nop
 
 
 	@original from gba
@@ -454,12 +440,11 @@ exitdirectcpu:
 	@my speedup code
 	ldr	lr, [lr, #(15 * 4)] 
 	
-	subs    pc, lr, #4
-	
+	subs    pc, lr, #4	
 	
 	.section	.dtcm,"ax",%progbits
 
-		.global BIOSDBG_SPSR
+.global BIOSDBG_SPSR
 BIOSDBG_SPSR:
 	.word 0
 
