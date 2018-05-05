@@ -38,7 +38,7 @@
 //#define printsaveread
 //#define printsavewrite
 
-#define directcpu //rename anothercpu.cpp to anothercpu.h
+#define directcpu //use anothercpu.arm.c for data abort handling
 
 //#define print_uppern_read_emulation
 //#define ichflyDebugdumpon
