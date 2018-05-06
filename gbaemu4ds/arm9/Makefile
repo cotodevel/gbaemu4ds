@@ -21,7 +21,8 @@ BUILD		:=	build
 
 SOURCES		:=	source \
 				../common	\
-                source/cpu_misc \
+                source/dswifi_arm9	\
+				source/cpu_misc \
 				source/disk_fs/ \
 				source/ipc/	\
 				source/libnds_extends	\
@@ -30,7 +31,8 @@ SOURCES		:=	source \
 
 INCLUDES	:=	include	\
 				../common	\
-                source/cpu_misc \
+                source/dswifi_arm9	\
+				source/cpu_misc \
 				source/disk_fs/ \
 				source/ipc/	\
 				source/libnds_extends	\
@@ -54,8 +56,8 @@ export GLOBAL_SHARED_FLAGS_9 = -march=armv5te	-mthumb-interwork
 
 #CPU code builder settings
 export GLOBAL_AS_COMPILER_FLAGS =	-defsym	readvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-defsym		NDS='1'
-export GLOBAL_CC_COMPILER_FLAGS =	-w 	-g	-marm	-mapcs-frame	-O -fno-common -Dreadvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
-export GLOBAL_CXX_COMPILER_FLAGS =	-g	-marm	-O	-fno-exceptions	-fno-common	-MMD	-MP	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
+export GLOBAL_CC_COMPILER_FLAGS =	-w 	-g	-marm	-mapcs-frame	-Os -fno-common -Dreadvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
+export GLOBAL_CXX_COMPILER_FLAGS =	-g	-marm	-Os	-fno-exceptions	-fno-common	-MMD	-MP	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=8
 
 #CPU code builder settings TGDS project specific
 export SPECIFIC_AS_COMPILER_FLAGS_7		= -defsym	ARM7='1'	-defsym	appver='$(EXECUTABLE_VERSION)'

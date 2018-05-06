@@ -17,8 +17,10 @@ include $(DEVKITARM)/ds_rules
 BUILD		:=	build
 SOURCES		:=	source	\
 				source/ipc	\
+				source/wireless	\
 				../common
 INCLUDES	:=	include	\
+				source/wireless	\
 				../common	\
 				build
 DATA		:=
