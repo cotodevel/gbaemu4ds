@@ -56,7 +56,7 @@ extern void vcount_handler();
 extern u32 power;
 extern u32 ie_save;
 extern void lid_open_irq_handler();
-extern void lid_closing_handler(u32 WAKEUP_IRQS);
+extern void lid_closing_handler();
 
 #ifdef __cplusplus
 }

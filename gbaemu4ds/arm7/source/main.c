@@ -199,7 +199,8 @@ bool autodetectdetect = false;
 
 u32 power = 0;
 u32 ie_save = 0;
-void lid_closing_handler(u32 WAKEUP_IRQS){
+void lid_closing_handler(){
+	
 	ie_save = REG_IE;
 	// Turn the speaker down.
 	if (REG_POWERCNT & 1) swiChangeSoundBias(0,0x400);
@@ -209,14 +210,16 @@ void lid_closing_handler(u32 WAKEUP_IRQS){
 	writePowerManagement(PM_CONTROL_REG, PM_LED_CONTROL(1));
 	
 	// Enable IRQ_LID on interrupt vectors
-	REG_IE = WAKEUP_IRQS;
+	REG_IE = IRQ_LID;
+	
+	SendArm9Command(FIFO_SWI_SLEEPMODE_PHASE2,0,0,0);
 	
 	// Power down till we get our interrupt.
-	swiIntrWait(1,WAKEUP_IRQS); //waits for PM lid open irq (WAKEUP_IRQS)
+	swiIntrWait(1,IRQ_LID); //waits for PM lid open irq
 }
 
 //ok
-void lid_open_irq_handler(){	
+void lid_open_irq_handler(){
 	//100ms
 	swiDelay(838000);
 	// Restore the interrupt state.
@@ -225,8 +228,9 @@ void lid_open_irq_handler(){
 	writePowerManagement(PM_CONTROL_REG, power);
 	// Turn the speaker up.
 	if (REG_POWERCNT & 1) swiChangeSoundBias(1,0x400);
-    
-	REG_IF = IRQ_LID; //is it hw toggled? (physical lid)
+	
+	//REG_IF = IRQ_LID; //is it hw toggled? (physical lid)
+	Setarm7Sleep(false);	//toggle switch for ARM9 resume
 }
 
 
@@ -234,16 +238,9 @@ void newvalwrite(u32 addr,u32 val)
 {
 			switch(addr)
 			{
-				//arm9 wants to enter gba->nds sleep mode
-				case(FIFO_SWI_SLEEPMODE):{
-					//sleepmode bouncer (ARM9 is caller, ARM7 is callee)
-					SendArm9Command((u32)FIFO_SWI_SLEEPMODE,0x0,0x0,0x0);
-				}
-				break;
-				
 				//raise sleepmode from arm9 with custom IRQs
-				case(ARM9_REQ_SWI_TO_ARM7):{
-					lid_closing_handler(val);
+				case(FIFO_SWI_SLEEPMODE_PHASE1):{
+					lid_closing_handler();
 				}
 				break;
 				
@@ -490,7 +487,7 @@ int main() {
 		//Close nds lid @ ARM7
 		if(*(u16*)0x04000136 & 0x80)
 		{
-			enterGBASleepMode();
+			SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
 		}
 		
 		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))

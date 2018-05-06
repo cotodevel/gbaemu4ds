@@ -8,9 +8,9 @@
 #define SHAREDIPC_MAX_ARGS 4
 #define ARM7ARM9SLOTCMDS 16
 
-#define FIFO_SWI_SLEEPMODE (u32)(0xff1100aa 	& ~0xC0000000)
-#define ARM9_REQ_SWI_TO_ARM7 (u32)(0xff1100ab	& ~0xC0000000)
-#define ARM7_REQ_SWI_TO_ARM9 (u32)(0xff1100ac	& ~0xC0000000)
+#define FIFO_SWI_SLEEPMODE_PHASE1 (u32)(0xff1100aa 	& ~0xC0000000)
+#define FIFO_SWI_SLEEPMODE_PHASE2 (u32)(0xff1100ab 	& ~0xC0000000)
+#define FIFO_SWIGBA_FROM_ARM7 	(u32)(0xff1100ac 	& ~0xC0000000)
 
 
 typedef struct
@@ -87,7 +87,7 @@ struct sIPCSharedGBA{
     u8 status; //see processor ipc read/writes flags
     u32 buf_queue[0x10];
   
-	
+	bool arm7asleep;
 	//not yet!
 	/*
     //GBA IRQS
@@ -248,6 +248,8 @@ extern u8 gba_get_secrtc();
 
 //sleepmode
 extern void enterGBASleepMode();
+extern void Setarm7Sleep(bool value);
+extern bool Getarm7Sleep();
 
 //IPC
 extern struct sIPCSharedGBA* GetsIPCSharedGBA();

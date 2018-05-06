@@ -91,23 +91,21 @@ void HandleFifo() {
 			}
 			else
 			{
-				switch (command1) {				
-					
-					//coto: raise sleepmode swi 0x3 gba (from lid close irq @ arm7)
-					case(ARM7_REQ_SWI_TO_ARM9):{
+				switch (command1) {					
+					//swi 0x3 gba call from arm7
+					case(FIFO_SWIGBA_FROM_ARM7):{
 						enterGBASleepMode();
 					}
 					break;
 					
-					//sleepmode
-					case(FIFO_SWI_SLEEPMODE):{
+					//sleepmode: swi 0x3 gba
+					case(FIFO_SWI_SLEEPMODE_PHASE2):{
 						//coto: sleep mode from GBA request SWI
 						backup_mpu_setprot();
 						
-						//call arm7 sleep with one of IRQs to wake up from
-						SendArm7Command(ARM9_REQ_SWI_TO_ARM7,IRQ_LID,0,0);
-						
-						ichflyswiHalt();
+						while(Getarm7Sleep() == true){
+							ichflyswiHalt();
+						}
 						
 						asm("nop");
 						asm("nop");
@@ -129,7 +127,6 @@ void HandleFifo() {
 						asm("nop");
 						asm("nop");
 						
-						pu_Enable(); //activate MPU regardless 
 					}
 					break;
 					

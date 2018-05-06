@@ -52,18 +52,15 @@ u8 gba_get_secrtc(){
 	return (u8)GetsIPCSharedGBA()->clockdata[6];
 }
 
+
 //coto: new GBA SWI sleepmode
 #ifdef ARM9
 __attribute__((section(".itcm")))
-#endif
 void enterGBASleepMode(){
-	#ifdef ARM7
-	SendArm9Command((u32)ARM7_REQ_SWI_TO_ARM9,0x0,0x0,0x0);
-	#endif
-	#ifdef ARM9
-	SendArm7Command(FIFO_SWI_SLEEPMODE,0x0,0x0,0x0);
-	#endif
+	Setarm7Sleep(true);
+	SendArm7Command(FIFO_SWI_SLEEPMODE_PHASE1,0x0,0x0,0x0);
 }
+#endif
 
 //Shared Work     027FF000h 4KB    -     -    -    R/W
 //Hardware IPC struct packed 
@@ -73,4 +70,13 @@ __attribute__((section(".itcm")))
 struct sIPCSharedGBA* GetsIPCSharedGBA(){
 	struct sIPCSharedGBA* sIPCSharedGBAInst = (__attribute__((aligned (4))) struct sIPCSharedGBA*)(0x027FF000);
 	return sIPCSharedGBAInst;
+}
+
+
+void Setarm7Sleep(bool value){
+	GetsIPCSharedGBA()->arm7asleep = value;
+}
+
+bool Getarm7Sleep(){
+	return (bool)GetsIPCSharedGBA()->arm7asleep;
 }
