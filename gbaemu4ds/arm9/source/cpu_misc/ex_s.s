@@ -60,175 +60,44 @@ spirq:
 SPtemp: @lol not realy
 	.word 0
 
-#ifdef gba_handel_IRQ_correct
-
+@irq handler start
 inter_irq:
-	stmfd  SP!, {R0-R3,R12,LR}     @save registers to SP_irq
+	stmfd  SP!, {R0-R3,R12,LR}		@save registers to SP_irq
 	
-	mrc	p15, 0, r2, c5, c0, 2      @set pu
-	ldr	r1,=0x36333333
+	ldr	r1,=0x36333333		@MPU is set free to write everything except this area (vectors)
 	mcr	p15, 0, r1, c5, c0, 2
-
-
-	@ldr	r1, =_exMain_tmpPuplain
-	@str	r2, [r1]
-thisi1:	
-	str r2, [pc,#(_exMain_tmpPuplain - thisi1 -8)]
 	
-	BL IntrMain
+	bl IntrMain				@serve IFs that are enabled on IE (NDS IO), r1 alternatively has the remaining IFs from vector table
+							@BL is faster than BLX and IntrMain is ARM code (otherwise this would crash inmediately)
+							
 	
-	mov	r0, #0x4000000		@ REG_BASE @ptr+4 to 03FFFFFC (mirror of 03007FFC) from gbabios
+	mov	r0, #0x04000000		@03FFFFFC || 03007FFC(mirror) is user handler
 	ldr	r1, [r0, #0x214]	@get IF
 	
-		
-
-	
 	ldr	r2, =anytimejmpfilter
 	ldr r2, [r2]
-@thisi2:	
-	@ldr r2, [pc,#(anytimejmpfilter - thisi2 -8)]
+	ands r1,r1,r2 			@bankedIE (NDS enabled hardware) & IF
 	
-	ands r1,r1,r2 @ anytimejmpfilter und IF
-	BEQ	irqexitdirect
-	
+	BEQ	irqexitdirect		@ IF > 0 ? continue serving interrupts
 	
 gba_handler:
-
-	ldr	r1, =0x06300033          @set pu
+	ldr	r1, =0x06300033        @prepare for GBA IRQ handler
 	mcr	p15, 0, r1, c5, c0, 2
 
-#ifdef checkclearaddr
-
-	ldr    R1,=0x03008000
-	@mov    R0,#0x4000000       @ptr+4 to 03FFFFFC (mirror of 03007FFC)
-	add    LR,PC,#0            @retadr for USER handler
-	ldr    PC,[R1, #-0x4]      @jump to [03FFFFFC] USER handler
-
-#else
-
-	@mov    R0,#0x4000000	   @ REG_BASE @ptr+4 to 03FFFFFC (mirror of 03007FFC) already done
+@acquire and jump to usr irq handler and go back right after
 	add    LR,PC,#0            @retadr for USER handler
 	ldr    PC,[R0, #-0x4]      @jump to [03FFFFFC] USER handler
-#endif
-
-irqexitdirect:
+	b irqexit
 	
-	@ldr	r1, =_exMain_tmpPuplain @set pu back @ichfly einschub
-	@ldr	r2, [r1] @ichfly
-thisi3:	
-	ldr r2, [pc,#(_exMain_tmpPuplain - thisi3 -8)]
-	
-	mcr	p15, 0, r2, c5, c0, 2	
+irqexitdirect:	
+	ldr	r1, =0x06300033        @prepare for GBA IRQ handler
+	mcr	p15, 0, r1, c5, c0, 2
 
+irqexit:
 	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
 	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
-	
-	
 
-#else
-inter_irq:
-
-	str sp,[pc, #-0xC] @ichfly sizechange
-	ldr sp,=spirq
-	ldr sp,[sp]
-	STMDB SP!, {R0-R4,R12,LR}
-	ldr r0,=spirq
-	sub r1,sp,#0x3E4@ ichfly irq stack size 0x400
-	str r1,[r0]
-
-	MRC P15, 0 ,r0, c9,c1,0
-	Mov r0, r0, LSR #0xC
-	Mov r0, r0, LSL #0xC
-	ADD r0,r0, #0x4000
-	
-	mrc	p15, 0, r2, c5, c0, 2 @ ichfly
-	ldr	r1,=0x36333333
-	mcr	p15, 0, r1, c5, c0, 2
-	ldr	r1, =_exMain_tmpPuplain
-	str	r2, [r1] @ichfly
-		
-	@BL IntrMain
-	
-	mov	r12, #0x4000000		@ REG_BASE
-	ldr	r4, [r12, #0x214]		
-	
-	ADD lr,pc,#0
-	LDR pc, [r0, #-0x4]
-	
-	ldr	r1, =_exMain_tmpPuplain
-	ldr	r2, [r1] @ichfly
-	
-
-	
-
-	mcr	p15, 0, r2, c5, c0, 2
-	
-	
-	ldr	r2, =IME
-	ldrh r2, [r2]
-	cmp r2,#1
-	BNE	noIME
-		
-
-	
-	ldr	r2, =anytimejmpfilter
-	ldr r2, [r2]
-	ands r4,r4,r2 @ anytimejmpfilter und IF
-	@ldr    R0,[pc,#-0x400]
-	@cmp r4,#0 @the s flag in and
-	BNE	got_over_gba_handler
-
-
-noIME:
-
-	LDMIA SP!, {R0-R4,R12,LR} @exit
-	
-	@ichfly marker todoooooooooooooooooooooooooo!
-	str sp,[pc, #-0x90]  @ichfly sizechange
-	
-	
-	
-	ldr sp,[pc, #-0x90]  @ichfly sizechange
-	SUBS pc, lr, #0x4
-	
-got_over_gba_handler:
-
-	ldr	r1, =0x06300033
-	
-	mcr	p15, 0, r1, c5, c0, 2
-	
-	LDMIA SP!, {R0-R4,R12,LR} @exit
-	str sp,[pc, #-0xA8]  @ichfly sizechange
-	ldr sp,[pc, #-0xA8]  @ichfly sizechange
-
-
-
-	@original from gba
-	stmfd  SP!, {R0-R3,R12,LR} @save registers to SP_irq
-#ifdef checkclearaddr
-
-	ldr    R1,=0x03008000
-	mov    R0,#0x4000000       @ptr+4 to 03FFFFFC (mirror of 03007FFC)
-	add    LR,PC,#0            @retadr for USER handler
-	ldr    PC,[R1, #-0x4]      @jump to [03FFFFFC] USER handler
-
-#else
-
-	mov    R0,#0x4000000       @ptr+4 to 03FFFFFC (mirror of 03007FFC)
-	add    LR,PC,#0            @retadr for USER handler
-	ldr    PC,[R0, #-0x4]      @jump to [03FFFFFC] USER handler
-#endif
-	
-	ldr	r1, =_exMain_tmpPuplain @ichfly einschub
-	ldr	r2, [r1] @ichfly
-	
-	
-	mcr	p15, 0, r2, c5, c0, 2	
-
-	  
-	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
-	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
-#endif
+@irq handler end
 
 
 .global spsvc
