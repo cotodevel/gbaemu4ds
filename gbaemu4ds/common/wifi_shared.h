@@ -289,6 +289,7 @@ typedef struct WIFI_MAINSTRUCT {
 } Wifi_MainStruct;
 
 
+extern void DeInitWIFI();
 
 #endif
 

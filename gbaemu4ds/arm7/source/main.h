@@ -52,6 +52,8 @@ extern vu32 debugfr1;
 extern vu32 debugfr2;
 
 extern void vcount_handler();
+extern void hblank_handler();
+extern void vblank_handler();
 
 extern u32 power;
 extern u32 ie_save;

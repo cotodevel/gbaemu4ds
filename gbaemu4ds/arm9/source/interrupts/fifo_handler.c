@@ -158,6 +158,11 @@ void HandleFifo() {
 					}
 					break;
 					
+					//arm7 wants to WifiSync
+					case(WIFI_SYNC_GBAEMU4DS):{
+						Wifi_Sync();
+					}
+					break;
 				}
 			}
 		}

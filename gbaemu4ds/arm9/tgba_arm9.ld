@@ -16,6 +16,9 @@ MEMORY {
 
 __vectors_start	=	ORIGIN(vectors);
 __itcm_start	=	ORIGIN(itcm);
+__itcm_end	=	ORIGIN(itcm) + LENGTH(itcm);
+
+__ewram_start	=	ORIGIN(ewram);
 __ewram_end	=	ORIGIN(ewram) + LENGTH(ewram);
 __eheap_end	=	ORIGIN(ewram) + LENGTH(ewram);
 __dtcm_start	=	ORIGIN(dtcm);

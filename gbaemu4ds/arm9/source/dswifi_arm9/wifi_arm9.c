@@ -31,6 +31,7 @@ SOFTWARE.
 
 #include "wifi_arm9.h"
 #include "wifi_shared.h"
+#include "../main.h"
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -1030,12 +1031,7 @@ void Timer_50ms(void) {
 void arm9_synctoarm7() { 
 //---------------------------------------------------------------------------------
 	//fifoSendValue32(FIFO_DSWIFI, WIFI_SYNC);
-	//SendArm7Command(WIFI_SYNC,0x0,0x0,0x0);
-	
-	if(SendMultipleWordACK(WIFI_SYNC, 0, 0, 0) == true){
-		
-	}
-	
+	SendArm7Command(WIFI_SYNC_GBAEMU4DS,0x0,0x0,0x0);
 }
 
 /*
@@ -1061,10 +1057,10 @@ bool Wifi_InitDefault(bool useFirmwareSettings) {
 	u32 wifi_pass = Wifi_Init(WIFIINIT_OPTION_USELED);
 	
 	if(!wifi_pass) return false;
-
-	irqSet(IRQ_TIMER3, Timer_50ms); // setup timer IRQ
+	
+	__irqSet(IRQ_TIMER3,Timer_50ms,irqTable);	// setup timer IRQ
 	irqEnable(IRQ_TIMER3);
-
+	
 	Wifi_SetSyncHandler(arm9_synctoarm7); // tell wifi lib to use our handler to notify arm7
 
 	// set timer3
@@ -1072,8 +1068,7 @@ bool Wifi_InitDefault(bool useFirmwareSettings) {
 	TIMER3_CR = 0x00C2; // enable, irq, 1/256 clock
 
 	//fifoSendAddress(FIFO_DSWIFI, (void *)wifi_pass);
-	//SendArm7Command(0xc1710101,(u32)wifi_pass,0x0,0x0);
-	SendMultipleWordACK(0xc1710101,(u32)wifi_pass,0x0,0x0);
+	SendArm7Command(WIFI9_SETUP_GBAEMU4DS,(u32)wifi_pass,0x0,0x0);
 	
 	while(Wifi_CheckInit()==0) {
 		swiWaitForVBlank();
@@ -1105,3 +1100,32 @@ void SGIP_INTR_REPROTECT(){
 void SGIP_INTR_UNPROTECT(){
 }
 */
+
+//coto: this function allows to completely re-initialize DSWIFI library so you can reconnect to same AP as many times possible even if connection was dropped from DS.
+//or go between offline mode -> localhost, or even localhost -> wifi directly.
+//can be called recursively
+
+//useFirmwareSettings == true: use DS AP settings to connect to AP
+//useWIFI == true: use WIFI connection. useWIFI == false: use NIFI connection.
+bool WNifi_InitSafeDefault(bool useFirmwareSettings,bool useWIFI){
+	DeInitWIFI();	//disable wifi card always
+	if(useWIFI == true){
+		//WIFI: now connect
+		if(getWIFISetup() == false){
+			if(Wifi_InitDefault(useFirmwareSettings) == true)
+			{
+				//printf("Connected: IP: %s",(char*)print_ip((uint32)Wifi_GetIP()));
+				return true;
+			}
+			else{
+				//printf("Wifi connection error. Retry later.");
+				return false;
+			}
+		}
+	}
+	else if(useWIFI == false){
+		initNiFi();
+		return true;
+	}
+	return false;
+}

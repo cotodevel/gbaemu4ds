@@ -1,5 +1,6 @@
 #include "main.h"
 #include "ipc/touch_ipc.h"
+#include "wireless/wifi_arm7.h"
 
 #include <nds.h>
 #include <nds/arm7/audio.h>
@@ -244,6 +245,25 @@ void newvalwrite(u32 addr,u32 val)
 				}
 				break;
 				
+				// Deinit WIFI
+				case((uint32)DSWIFI_DEINIT_WIFI):{
+					DeInitWIFI();
+				}
+				break;
+				
+				//arm9 wants to WifiSync
+				case(WIFI_SYNC_GBAEMU4DS):{
+					Wifi_Sync();
+				}
+				break;
+				
+				//arm9 wants to send a WIFI context block address / userdata is always zero here
+				case(WIFI9_SETUP_GBAEMU4DS):{
+					//	wifiAddressHandler( void * address, void * userdata )
+					wifiAddressHandler((Wifi_MainStruct *)(u32)val, 0);
+				}
+				break;
+				
 			  case 0xBC:
 				DMA1SAD_L = val;
 				break;
@@ -415,6 +435,10 @@ int main() {
 	readUserSettings();
 	
 	irqInit();
+	//fifoInit();
+	
+	installWifiFIFO();
+	
 	// Start the RTC tracking IRQ
 	initClockIRQ();
 
@@ -423,13 +447,20 @@ int main() {
 	REG_IPC_SYNC = 0;
 	REG_IPC_FIFO_CR = IPC_FIFO_ENABLE;
 	REG_IPC_FIFO_CR = IPC_FIFO_SEND_CLEAR | IPC_FIFO_ENABLE | IPC_FIFO_ERROR;
-
+	
+	//irqSet(IRQ_HBLANK,			(void*)hblank_handler);
+	//irqSet(IRQ_VBLANK, 			(void*)vblank_handler);
 	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
 	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//when opening the LID of DS time
-	REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ; //| (VCOUNT_LINE_INTERRUPT << 15);
+	
+	//set up ppu: do irq on hblank/vblank/vcount/and vcount line is 159
+    REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ;	//REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
 	
 	u32 curIRQ = REG_IE | IRQ_VCOUNT | IRQ_LID;
 	irqEnable(curIRQ);
+	
+	REG_IF = ~0;
+    REG_IME = 1;
 	
 	//soundbuffA = malloc(32);
 	//soundbuffB = malloc(32);
@@ -1054,4 +1085,11 @@ void checkstart()
 void vcount_handler(){
 	//IPC ARM7/ARM9 process: handles touchscreen,time,etc
 	gbaemu4ds_ipc();
+}
+
+void hblank_handler(){
+}
+
+void vblank_handler(){
+	Wifi_Update();
 }

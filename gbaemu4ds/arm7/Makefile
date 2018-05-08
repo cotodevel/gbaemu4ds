@@ -20,6 +20,10 @@ SOURCES		:=	source	\
 				source/wireless	\
 				../common
 INCLUDES	:=	include	\
+				../include	\
+				../include/arpa	\
+				../include/netinet	\
+				../include/sys	\
 				source/wireless	\
 				../common	\
 				build
