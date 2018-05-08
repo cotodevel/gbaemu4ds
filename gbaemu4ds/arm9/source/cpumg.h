@@ -56,6 +56,8 @@ extern void backup_mpu_setprot();
 extern void restore_mpu_setprot();
 extern u32 MPUPERMBACKUPSET_SWI;	//MPUd/itcmmemorypermissionsfromcaller
 
+extern int arm9VCOUNTsyncline;
+
 #ifdef __cplusplus
 }
 #endif

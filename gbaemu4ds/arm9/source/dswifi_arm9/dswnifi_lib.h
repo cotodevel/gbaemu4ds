@@ -27,15 +27,12 @@ typedef int sint32;
 typedef char sint8;
 
 #include <nds.h>
-#include "dsregs.h"
 #include "wifi_shared.h"
 #include "netdb.h"
 
 
 #ifdef ARM9
 
-//#include "wifi_arm9.h"
-//#include "dswifi9.h"
 #include "wifi_shared.h"
 #include <netdb.h>
 #include <ctype.h>

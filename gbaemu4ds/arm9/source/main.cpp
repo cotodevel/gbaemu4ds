@@ -276,7 +276,7 @@ int myflashsize = 0x10000;
 
 u32 manual_save_type = (u32)strtol(argv[6],NULL,16);
 frameskip = (u32)strtol(argv[7],NULL,16);
-int syncline =(u32)strtol(argv[9],NULL,16);
+arm9VCOUNTsyncline =(int)strtol(argv[9],NULL,16);
 bool slow;
 if(argv[10][0] == '1')slow = true;
 else slow = false;
@@ -380,7 +380,7 @@ if(save_decider()==0){
 	iprintf("arm7init\n");
 	VblankHandler();
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
-	REG_IPC_FIFO_TX = syncline;
+	REG_IPC_FIFO_TX = (u32)arm9VCOUNTsyncline;
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
 		u32 src = REG_IPC_FIFO_RX;
 	}

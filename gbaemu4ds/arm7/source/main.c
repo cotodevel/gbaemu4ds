@@ -8,7 +8,7 @@
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
 
-u16 callline = 0xFFFF;
+u16 arm7VCOUNTsyncline = 0xFFFF;
 
 #ifdef anyarmcom
 u32* amr7sendcom = 0;
@@ -245,12 +245,6 @@ void newvalwrite(u32 addr,u32 val)
 				}
 				break;
 				
-				// Deinit WIFI
-				case((uint32)DSWIFI_DEINIT_WIFI):{
-					DeInitWIFI();
-				}
-				break;
-				
 				//arm9 wants to WifiSync
 				case(WIFI_SYNC_GBAEMU4DS):{
 					Wifi_Sync();
@@ -261,6 +255,12 @@ void newvalwrite(u32 addr,u32 val)
 				case(WIFI9_SETUP_GBAEMU4DS):{
 					//	wifiAddressHandler( void * address, void * userdata )
 					wifiAddressHandler((Wifi_MainStruct *)(u32)val, 0);
+				}
+				break;
+				
+				// Deinit WIFI
+				case((uint32)DSWIFI_DEINIT_WIFI):{
+					DeInitWIFI();
 				}
 				break;
 				
@@ -412,7 +412,7 @@ void newvalwrite(u32 addr,u32 val)
 				}
 				break;
 			case set_callline: //set callline
-				callline = val;
+				arm7VCOUNTsyncline = val;
 				break;
 			default:
 #ifdef anyarmcom
@@ -479,7 +479,7 @@ int main() {
 		//4-5 FIFO
 		//ledBlink(1);
 		//swiWaitForVBlank();
-		if((REG_VCOUNT == callline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
+		if((REG_VCOUNT == arm7VCOUNTsyncline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
 		{
 			if(!isincallline)
 			{	

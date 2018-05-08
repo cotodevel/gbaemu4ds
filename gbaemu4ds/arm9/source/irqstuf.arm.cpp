@@ -47,6 +47,8 @@ extern char szFile[MAXPATHLEN * 2];
 #include <nds/arm9/sassert.h>
 #include <stdarg.h>
 #include <string.h>
+#include "../../common/dswnifi.h"
+#include "dswifi_arm9/dswnifi_lib.h"
 
 
 
@@ -111,7 +113,7 @@ int ignorenextY = 0;
 
 
 
-
+int arm9VCOUNTsyncline = 0;
 
 
 /*
@@ -368,7 +370,10 @@ u8 counterenters = 0;
 __attribute__((section(".itcm")))
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
-
+	
+	//handles DS-DS Comms
+	sint32 currentDSWNIFIMode = doMULTIDaemonStage1();
+		
 	DISPSTAT |= (REG_DISPSTAT & 0x3);
 	DISPSTAT |= 0x1;	//vblank
 	DISPSTAT &= 0xFFFd; //remove hblank

@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-extern u16 callline;
+extern u16 arm7VCOUNTsyncline;
 
 extern u8* soundbuffA;
 extern u8* soundbuffB;
