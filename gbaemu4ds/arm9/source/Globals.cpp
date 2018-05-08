@@ -112,25 +112,65 @@ u16 MOSAIC   = 0x0000;
 u16 BLDMOD   = 0x0000;
 u16 COLEV    = 0x0000;
 u16 COLY     = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2SAD_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2SAD_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2DAD_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2DAD_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2CNT_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM2CNT_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3SAD_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3SAD_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3DAD_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3DAD_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3CNT_L = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 DM3CNT_H = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM0D     = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM0CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM1D     = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM1CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM2D     = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM2CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM3D     = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 TM3CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
