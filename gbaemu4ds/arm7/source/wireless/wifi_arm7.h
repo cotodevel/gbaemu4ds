@@ -37,31 +37,31 @@ SOFTWARE.
 #define WIFI_KEEPALIVE_COUNT		(60*60*2)
 
 
-#define WIFI_REG(ofs) (*((volatile u16 *)(0x04800000+(ofs))))
+#define WIFI_REG(ofs) (*((volatile uint16 *)(0x04800000+(ofs))))
 // Wifi regs
-#define W_WEPKEY0		(((volatile u16 *)(0x04805F80)))
-#define W_WEPKEY1		(((volatile u16 *)(0x04805FA0)))
-#define W_WEPKEY2		(((volatile u16 *)(0x04805FC0)))
-#define W_WEPKEY3		(((volatile u16 *)(0x04805FE0)))
+#define W_WEPKEY0		(((volatile uint16 *)(0x04805F80)))
+#define W_WEPKEY1		(((volatile uint16 *)(0x04805FA0)))
+#define W_WEPKEY2		(((volatile uint16 *)(0x04805FC0)))
+#define W_WEPKEY3		(((volatile uint16 *)(0x04805FE0)))
 
-#define W_MODE_RST		(*((volatile u16 *)(0x04800004)))
-#define W_MODE_WEP		(*((volatile u16 *)(0x04800006)))
-#define W_IF			(*((volatile u16 *)(0x04800010)))
-#define W_IE			(*((volatile u16 *)(0x04800012)))
-#define W_MACADDR		(((volatile u16 *)(0x04800018)))
-#define W_BSSID			(((volatile u16 *)(0x04800020)))
-#define W_AIDS			(*((volatile u16 *)(0x04800028)))
-#define W_RETRLIMIT		(*((volatile u16 *)(0x0480002C)))
-#define W_POWERSTATE	(*((volatile u16 *)(0x0480003C)))
-#define W_RANDOM		(*((volatile u16 *)(0x04800044)))
+#define W_MODE_RST		(*((volatile uint16 *)(0x04800004)))
+#define W_MODE_WEP		(*((volatile uint16 *)(0x04800006)))
+#define W_IF			(*((volatile uint16 *)(0x04800010)))
+#define W_IE			(*((volatile uint16 *)(0x04800012)))
+#define W_MACADDR		(((volatile uint16 *)(0x04800018)))
+#define W_BSSID			(((volatile uint16 *)(0x04800020)))
+#define W_AIDS			(*((volatile uint16 *)(0x04800028)))
+#define W_RETRLIMIT		(*((volatile uint16 *)(0x0480002C)))
+#define W_POWERSTATE	(*((volatile uint16 *)(0x0480003C)))
+#define W_RANDOM		(*((volatile uint16 *)(0x04800044)))
 
-#define W_BBSIOCNT		(*((volatile u16 *)(0x04800158)))
-#define W_BBSIOWRITE	(*((volatile u16 *)(0x0480015A)))
-#define W_BBSIOREAD		(*((volatile u16 *)(0x0480015C)))
-#define W_BBSIOBUSY		(*((volatile u16 *)(0x0480015E)))
-#define W_RFSIODATA2	(*((volatile u16 *)(0x0480017C)))
-#define W_RFSIODATA1	(*((volatile u16 *)(0x0480017E)))
-#define W_RFSIOBUSY		(*((volatile u16 *)(0x04800180)))
+#define W_BBSIOCNT		(*((volatile uint16 *)(0x04800158)))
+#define W_BBSIOWRITE	(*((volatile uint16 *)(0x0480015A)))
+#define W_BBSIOREAD		(*((volatile uint16 *)(0x0480015C)))
+#define W_BBSIOBUSY		(*((volatile uint16 *)(0x0480015E)))
+#define W_RFSIODATA2	(*((volatile uint16 *)(0x0480017C)))
+#define W_RFSIODATA1	(*((volatile uint16 *)(0x0480017E)))
+#define W_RFSIOBUSY		(*((volatile uint16 *)(0x04800180)))
 
 
 
@@ -82,9 +82,11 @@ extern "C" {
 #endif
 
 
-
+extern uint16 arm7q[1024];
 extern void Read_Flash(int address, char * destination, int length);
+extern char FlashData[512];
 extern void InitFlashData();
+extern void DeInitFlashData();
 extern int ReadFlashByte(int address);
 extern int ReadFlashHWord(int address);
 extern int ReadFlashBytes(int address, int numbytes);
@@ -128,8 +130,14 @@ extern void Wifi_Sync();
 extern void Wifi_SetSyncHandler(WifiSyncHandler sh);
 extern void wifiAddressHandler( void * address, void * userdata );
 extern void arm7_synctoarm9();
+
+extern void installWifiFIFO();
+extern int crc16_slow(u8 * data, int length);
+extern void GetWfcSettings();
+extern uint16 Wifi_MACRead(u32 MAC_Base, u32 MAC_Offset);
+	
 #ifdef __cplusplus
-};
+}
 #endif
 
 

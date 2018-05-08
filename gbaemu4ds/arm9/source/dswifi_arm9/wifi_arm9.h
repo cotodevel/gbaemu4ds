@@ -28,10 +28,10 @@ SOFTWARE.
 #ifndef WIFI_ARM9_H
 #define WIFI_ARM9_H
 
-
 #include <nds/ndstypes.h>
 
 #include "wifi_shared.h"
+#include "sgIP_Hub.h"
 
 // default option is to use 128k heap
 #define WIFIINIT_OPTION_USEHEAP_128    0x0000
@@ -51,7 +51,6 @@ enum WIFIGETDATA {
 	MAX_WIFIGETDATA
 };
 
-
 // Wifi Packet Handler function: (int packetID, int packetlength) - packetID is only valid while the called function is executing.
 // call Wifi_RxRawReadPacket while in the packet handler function, to retreive the data to a local buffer.
 typedef void (*WifiPacketHandler)(int, int);
@@ -66,8 +65,9 @@ typedef void (*WifiSyncHandler)();
 extern "C" {
 #endif
 
-
+extern Wifi_MainStruct Wifi_Data_Struct;
 extern volatile Wifi_MainStruct * WifiData;
+
 extern WifiSyncHandler synchandler;
 
 extern void Wifi_CopyMacAddr(volatile void * dest, volatile void * src);
@@ -96,7 +96,7 @@ extern void Wifi_AutoConnect();
 
 extern int Wifi_AssocStatus();
 extern int Wifi_DisconnectAP();
-extern int Wifi_GetData(int datatype, int bufferlen, unsigned char * buffer);
+extern int Wifi_GetData(int datatype, int bufferlen, u8 * buffer);
 
 
 extern void Wifi_Update();
@@ -109,15 +109,15 @@ extern void Wifi_SetIP(u32 IPaddr, u32 gateway, u32 subnetmask, u32 dns1, u32 dn
 extern u32 Wifi_GetIP();
 #endif
 
+extern u32 Wifi_TxBufferWordsAvailable();
+extern void Wifi_TxBufferWrite(s32 start, s32 len, u16 * data);
+
 extern void Timer_50ms(void);
+extern sgIP_Hub_HWInterface * wifi_hw;
 
-
-//extern void SGIP_INTR_PROTECT();
-//extern void SGIP_INTR_REPROTECT();
-//extern void SGIP_INTR_UNPROTECT();
-
-extern bool WNifi_InitSafeDefault(bool useFirmwareSettings,bool useWIFI);
-
+//useFirmwareSettings == true: use DS AP settings to connect to AP
+//useWIFI == true: use WIFI connection. useWIFI == false: use NIFI connection.
+extern bool WNifi_InitSafeDefault(bool useFirmwareSettings, bool useWIFI);
 #ifdef __cplusplus
 }
 #endif

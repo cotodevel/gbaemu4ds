@@ -32,6 +32,7 @@ SOFTWARE.
 #include "spinlock.h" // .h file with code for spinlocking in it.
 #include "gba_ipc.h" 
 #include "../main.h"
+#include <string.h>
 
 volatile Wifi_MainStruct * WifiData = 0;
 WifiSyncHandler synchandler = 0;
@@ -47,6 +48,11 @@ char FlashData[512];
 void InitFlashData() {
 	readFirmware(0,FlashData,512);
 }
+
+void DeInitFlashData() {
+	memset ((u8*)&FlashData[0], 0, sizeof(FlashData));
+}
+
 
 int ReadFlashByte(int address) {
 	if(address<0 || address>511) return 0;
@@ -385,7 +391,7 @@ int Wifi_CmpMacAddr(volatile void * mac1,volatile  void * mac2) {
 //  MAC Copy functions
 //
 
-u16 inline Wifi_MACRead(u32 MAC_Base, u32 MAC_Offset) {
+u16 Wifi_MACRead(u32 MAC_Base, u32 MAC_Offset) {
 	MAC_Base += MAC_Offset;
 	if(MAC_Base>=(WIFI_REG(0x52)&0x1FFE)) MAC_Base -= ((WIFI_REG(0x52)&0x1FFE)-(WIFI_REG(0x50)&0x1FFE));
 	return WIFI_REG(0x4000+MAC_Base);
@@ -841,7 +847,7 @@ void Wifi_Init(u32 wifidata) {
 	*((volatile u16 *)0x04000206) = 0x30; // ???
 
 	InitFlashData();
-
+	
 	// reset/shutdown wifi:
 	WIFI_REG(0x4)=0xffff;
 	Wifi_Stop();
@@ -898,6 +904,7 @@ void Wifi_Init(u32 wifidata) {
 void Wifi_Deinit() {
 	Wifi_Stop();
 	POWERCNT7 &= ~2;
+	DeInitFlashData();
 }
 
 void Wifi_Start() {
@@ -1705,7 +1712,6 @@ void arm7_synctoarm9() {
 
 
 void installWifiFIFO() {
-	//interrupts_to_wait_arm7 |= IRQ_WIFI;
 	irqSet(IRQ_WIFI, Wifi_Interrupt); // set up wifi interrupt
 	Wifi_SetSyncHandler(arm7_synctoarm9); // allow wifi lib to notify arm9
 	//fifoSetValue32Handler(FIFO_DSWIFI, wifiValue32Handler, 0);
