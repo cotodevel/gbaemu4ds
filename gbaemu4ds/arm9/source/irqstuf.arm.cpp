@@ -27,6 +27,7 @@
 #include "arm7sound.h"
 
 #include "main.h"
+#include "wifi_arm9.h"
 
 
 extern char savePath[MAXPATHLEN * 2];
@@ -348,7 +349,8 @@ void initspeedupfelder()
 __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
-
+	Wifi_Sync();
+	
     DISPSTAT |= (REG_DISPSTAT & 0x3);
     DISPSTAT |= 0x2;	//hblank
     DISPSTAT &= 0xFFFe; //remove vblank

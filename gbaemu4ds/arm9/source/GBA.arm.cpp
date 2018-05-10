@@ -2252,8 +2252,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	}
 	else*/
 	{	
-		*(u16 *)(0x4000100) = timer1Reload << 1;
-		*(u16 *)(0x4000102) = value;
+		//*(u16 *)(0x4000100) = timer1Reload << 1;
+		//*(u16 *)(0x4000102) = value;
 	}
     break;
   case 0x104:
@@ -2307,8 +2307,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	}
 	else*/
 	{	
-		*(u16 *)(0x4000104) = timer1Reload << 1;
-		*(u16 *)(0x4000106) = value;
+		//*(u16 *)(0x4000104) = timer1Reload << 1;
+		//*(u16 *)(0x4000106) = value;
 	}
 	  break;
   case 0x108:
@@ -2347,8 +2347,8 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	}
 	else*/
 	{	
-		*(u16 *)(0x4000108) = timer2Reload << 1;
-		*(u16 *)(0x400010A) = value;
+		//*(u16 *)(0x4000108) = timer2Reload << 1;
+		//*(u16 *)(0x400010A) = value;
 	}
 	  break;
   case 0x10C:

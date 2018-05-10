@@ -26,6 +26,7 @@
 #include "arm7sound.h"
 #include "main.h"
 #include "ipc/touch_ipc.h"
+#include "dswifi_arm9/dswnifi_lib.h"
 
 
 char biosPath[MAXPATHLEN * 2];
@@ -285,6 +286,7 @@ if(argv[8][0] == '1')
 	REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
 	REG_IPC_FIFO_TX = 0;
 }
+	
 	bool extraram =false; 
 #ifdef usebuffedVcout
 initspeedupfelder();
@@ -294,6 +296,7 @@ initspeedupfelder();
   parseDebug = true;
     bool failed = false;
  
+
 	iprintf("CPULoadRom...");
 
       failed = !CPULoadRom(szFile,extraram);
@@ -321,7 +324,7 @@ if(save_decider()==0){
 	//iprintf("Hello World2!");
 	iprintf("CPUInit\n");
 	CPUInit(biosPath, useBios,extraram);
-
+	
 	iprintf("CPUReset\n");
 	CPUReset();
 
@@ -372,9 +375,29 @@ if(save_decider()==0){
 		fclose(frh);
 	}
 	
+	REG_IME = IME_ENABLE;
+	
 	iprintf("BIOS_RegisterRamReset\n");
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
 	BIOS_RegisterRamReset(0xFF);
+	
+	
+	printf("Press A for Nifi");
+	printf("Press B for Idle");
+	while(1) {
+		scanKeys();
+		if (keysDown()&KEY_A){ 
+			switch_dswnifi_mode(dswifi_localnifimode);
+			break;
+		}
+		if (keysDown()&KEY_B){ 
+			switch_dswnifi_mode(dswifi_idlemode);
+			break;
+		}
+		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+	}
+	
 	iprintf("dmaCopy\n");
 	dmaCopy( (void*)rom,(void*)0x2000000, 0x40000);
 	iprintf("arm7init\n");
@@ -405,14 +428,14 @@ if(save_decider()==0){
 	bgUpdate();
 #endif
 	
-	REG_IME = IME_ENABLE;
+	
 	gbaInit(slow);
 #ifndef capture_and_pars
 	iprintf("gbaMode2\n");
 #endif
 	gbaMode2();
 #ifndef capture_and_pars
-	iprintf("jump to (%08X):",rom);
+	iprintf("jump to (%08X):%x",rom,*rom);
 #endif
   
 	while(true){

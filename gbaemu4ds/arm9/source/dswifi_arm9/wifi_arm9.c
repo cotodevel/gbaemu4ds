@@ -873,7 +873,7 @@ int Wifi_CheckInit() {
 	return ((WifiData->flags7 & WFLAG_ARM7_ACTIVE) && (WifiData->flags9 & WFLAG_ARM9_ARM7READY));
 }
 
-
+__attribute__((section(".itcm")))
 void Wifi_Update() {
 	int cnt;
 	int base, base2, len, fulllen;
@@ -950,11 +950,15 @@ void Wifi_Update() {
 
 #endif
 
-		// check if we have a handler
-		if(packethandler) {
-			base2=base+6;
-			if(base2>=(WIFI_RXBUFFER_SIZE/2)) base2-=(WIFI_RXBUFFER_SIZE/2);
-			(*packethandler)(base2,len);
+		if(REG_DISPSTAT & DISP_IN_VBLANK){
+			// check if we have a handler
+			if(packethandler) {			
+				base2=base+6;
+				if(base2>=(WIFI_RXBUFFER_SIZE/2)) base2-=(WIFI_RXBUFFER_SIZE/2);
+				(*packethandler)(base2,len);
+				while((REG_DISPSTAT & DISP_IN_VBLANK));
+				//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+			}
 		}
 
 		base+=fulllen/2;
@@ -1099,12 +1103,20 @@ bool Wifi_InitDefault(bool useFirmwareSettings) {
 	TIMER3_CR = 0x00C2; // enable, irq, 1/256 clock
 
 	//fifoSendAddress(FIFO_DSWIFI, (void *)wifi_pass);
-	SendArm7Command(WIFI9_SETUP_GBAEMU4DS,(u32)wifi_pass,0x0,0x0);
 	
-	while(Wifi_CheckInit()==0) {
-		swiWaitForVBlank();
+	//WifiData->flags7 |= WFLAG_ARM7_ACTIVE; //must be set by the ARM7, enable here just for debug
+	WifiData->flags9 |= WFLAG_ARM9_ARM7READY; //ARM9 is done
+   SendArm7Command(WIFI9_SETUP_GBAEMU4DS,(u32)wifi_pass,0x0,0x0);
+   
+  
+	if(Wifi_CheckInit()==0) {
+		//printf("during Wifi_CheckInit()");
+		SendArm7Command(WIFI_SYNC_GBAEMU4DS,0,0,0);
+		while((REG_DISPSTAT & DISP_IN_VBLANK)); 
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 	}
-
+	
+	
 	if(useFirmwareSettings) {  
 		int wifiStatus = ASSOCSTATUS_DISCONNECTED;
 
@@ -1114,7 +1126,7 @@ bool Wifi_InitDefault(bool useFirmwareSettings) {
 			wifiStatus = Wifi_AssocStatus(); // check status
 
 			if(wifiStatus == ASSOCSTATUS_CANNOTCONNECT) return false;
-			swiWaitForVBlank();
+			//swiWaitForVBlank();
 
 		}  
 	}

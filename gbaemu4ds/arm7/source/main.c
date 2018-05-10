@@ -491,6 +491,7 @@ int main() {
 			}
 			isincallline = true;
 			//while(REG_VCOUNT == callline); //don't send 2 or more
+			Wifi_Update();
 		}
 		else
 		{
@@ -1087,9 +1088,11 @@ void vcount_handler(){
 	gbaemu4ds_ipc();
 }
 
+//disabled
 void hblank_handler(){
 }
 
+//disabled
 void vblank_handler(){
-	Wifi_Update();
+	
 }
