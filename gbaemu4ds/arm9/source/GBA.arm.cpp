@@ -59,7 +59,7 @@ bool ichflytest = false;
 #ifdef PROFILING
 #include "prof/prof.h"
 #endif
-
+#include "../../common/gba_ipc.h"
 
 __attribute__((section(".dtcm")))
 int SWITicks = 0;
@@ -1128,8 +1128,9 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
   }
 }
 
+__attribute__ ((hot))
 __attribute__((section(".itcm")))
-void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
+void CPUUpdateRegister(u32 address, u16 value)
 {
   	/*if(0x60 > address && address > 0x7)
 	{

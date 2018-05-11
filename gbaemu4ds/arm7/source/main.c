@@ -235,195 +235,206 @@ void lid_open_irq_handler(){
 }
 
 
-void newvalwrite(u32 addr,u32 val)
+void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part kept
 {
-			switch(addr)
+	bool NDSCmd = false;
+	switch(cmd0){
+		case(FIFO_DEBUG):{
+			SendArm9Command(FIFO_DEBUG,0x0,0x0,0x0);
+			NDSCmd = true;
+		}
+		//raise sleepmode from arm9 with custom IRQs
+		case(FIFO_SWI_SLEEPMODE_PHASE1):{
+			lid_closing_handler();
+			NDSCmd = true;
+		}
+		break;
+		//arm9 wants to WifiSync
+		case(WIFI_SYNC_GBAEMU4DS):{
+			Wifi_Sync();
+			NDSCmd = true;
+		}
+		break;
+		//arm9 wants to send a WIFI context block address / userdata is always zero here
+		case(WIFI9_SETUP_GBAEMU4DS):{
+			//	wifiAddressHandler( void * address, void * userdata )
+			wifiAddressHandler((Wifi_MainStruct *)(u32)val, 0);
+			NDSCmd = true;
+		}
+		break;
+		// Deinit WIFI
+		case((uint32)DSWIFI_DEINIT_WIFI):{
+			DeInitWIFI();
+			NDSCmd = true;
+		}
+		break;
+	}
+	
+	if(NDSCmd == false){
+		switch(addr)
+		{
+		  case 0xBC:
+			DMA1SAD_L = val;
+			break;
+		  case 0xBE:
+			DMA1SAD_H = val & 0x0FFF;
+			break;
+		  case 0xC0:
+			DMA1DAD_L = val;
+			checkstart();
+			break;
+		  case 0xC2:
+			DMA1DAD_H = val & 0x07FF;
+			checkstart();
+			break;
+		  case 0xC4:
+			//DMA1CNT_L = val & 0x3FFF;
+			break;
+		  case 0xC6:
+			DMA1CNT_H = val;
+			checkstart();
+			break;
+		  case 0xC8:
+			DMA2SAD_L = val;
+			break;
+		  case 0xCA:
+			DMA2SAD_H = val & 0x0FFF;
+			break;
+		  case 0xCC:
+			DMA2DAD_L = val;
+			checkstart();
+			break;
+		  case 0xCE:
+			DMA2DAD_H = val & 0x07FF;
+			checkstart();
+		  case 0xD0:
+			//DMA2CNT_L = val & 0x3FFF;
+			break;
+		  case 0xD2:
+			DMA2CNT_H = val;
+			checkstart();
+			break;
+
+
+
+
+
+		case 0x100:
+			TM0CNT_L = val;
+			updatetakt();
+		case 0x102:
+			TM0CNT_H = val;
+			updatetakt();
+			checkstart();
+		case 0x104:
+			TM1CNT_L = val;
+			updatetakt();
+		case 0x106:
+			TM1CNT_H = val;
+			updatetakt();
+			checkstart();
+		case 0x80:
+			SOUNDCNT_L = val;
+			updatevol();
+			break;
+		case 0x82:
+			SOUNDCNT_H = val; //Reset FIFO is not needed because we don't have direct streaming yet so don't need that
+			updatevol();
+
+			if(val & BIT(10))
 			{
-				//raise sleepmode from arm9 with custom IRQs
-				case(FIFO_SWI_SLEEPMODE_PHASE1):{
-					lid_closing_handler();
-				}
-				break;
-				
-				//arm9 wants to WifiSync
-				case(WIFI_SYNC_GBAEMU4DS):{
-					Wifi_Sync();
-				}
-				break;
-				
-				//arm9 wants to send a WIFI context block address / userdata is always zero here
-				case(WIFI9_SETUP_GBAEMU4DS):{
-					//	wifiAddressHandler( void * address, void * userdata )
-					wifiAddressHandler((Wifi_MainStruct *)(u32)val, 0);
-				}
-				break;
-				
-				// Deinit WIFI
-				case((uint32)DSWIFI_DEINIT_WIFI):{
-					DeInitWIFI();
-				}
-				break;
-				
-			  case 0xBC:
-				DMA1SAD_L = val;
-				break;
-			  case 0xBE:
-				DMA1SAD_H = val & 0x0FFF;
-				break;
-			  case 0xC0:
-				DMA1DAD_L = val;
-				checkstart();
-				break;
-			  case 0xC2:
-				DMA1DAD_H = val & 0x07FF;
-				checkstart();
-				break;
-			  case 0xC4:
-				//DMA1CNT_L = val & 0x3FFF;
-				break;
-			  case 0xC6:
-				DMA1CNT_H = val;
-				checkstart();
-				break;
-			  case 0xC8:
-				DMA2SAD_L = val;
-				break;
-			  case 0xCA:
-				DMA2SAD_H = val & 0x0FFF;
-				break;
-			  case 0xCC:
-				DMA2DAD_L = val;
-				checkstart();
-				break;
-			  case 0xCE:
-				DMA2DAD_H = val & 0x07FF;
-				checkstart();
-			  case 0xD0:
-				//DMA2CNT_L = val & 0x3FFF;
-				break;
-			  case 0xD2:
-				DMA2CNT_H = val;
-				checkstart();
-				break;
-
-
-
-
-
-			case 0x100:
-				TM0CNT_L = val;
-				updatetakt();
-			case 0x102:
-				TM0CNT_H = val;
-				updatetakt();
-				checkstart();
-			case 0x104:
-				TM1CNT_L = val;
-				updatetakt();
-			case 0x106:
-				TM1CNT_H = val;
-				updatetakt();
-				checkstart();
-			case 0x80:
-				SOUNDCNT_L = val;
-				updatevol();
-				break;
-			case 0x82:
-				SOUNDCNT_H = val; //Reset FIFO is not needed because we don't have direct streaming yet so don't need that
-				updatevol();
-
-				if(val & BIT(10))
-				{
-					tacktgeber_sound_FIFO_DMA_A = 1;
-				}
-				else
-				{
-					tacktgeber_sound_FIFO_DMA_A = 0;
-				}
-				if(val & BIT(14))
-				{
-					tacktgeber_sound_FIFO_DMA_B = 1;
-				}
-				else
-				{
-					tacktgeber_sound_FIFO_DMA_B = 0;
-				}
-				updatetakt();
-				checkstart();
-				break;
-			case 0x84:
-				if(val & 0x80)REG_SOUNDCNT |= 0x8000;
-				else
-				{
-					REG_SOUNDCNT &= ~0x8000;
-				}
-				break;
-			case 0x88:
-					  //Amplitude Resolution/Sampling Cycle is not supported so only Bias
-					  //it is better on the DS any way
-				  REG_SOUNDBIAS = val;
-				  break;
-
-			  case setdmasoundbuff:
-
-				  dmabuffer = val;
-#ifdef anyarmcom
-				amr7sendcom =  (u32*)(*(u32*)(dmabuffer));
-				amr7senddma1 = (u32*)(*(u32*)(dmabuffer + 4));
-				amr7senddma2 = (u32*)(*(u32*)(dmabuffer + 8));
-				amr7recmuell = (u32*)(*(u32*)(dmabuffer + 12));
-				amr7directrec = (u32*)(*(u32*)(dmabuffer + 16));
-				amr7indirectrec = (u32*)(*(u32*)(dmabuffer + 20));
-				amr7fehlerfeld = (u32*)(*(u32*)(dmabuffer + 24));
-#endif
-				soundbuffA = (u32*)(dmabuffer);
-					SCHANNEL_SOURCE(4) = soundbuffA;
-				  soundbuffB = (u32*)(dmabuffer + 0x50);
-					SCHANNEL_SOURCE(5) = soundbuffB;
-					break;
-			case WaitforVblancarmcmd: //wait
-				if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
-				{
-					//REG_IPC_FIFO_TX = 0x4100BEEF; //send cmd 0x4100BEEF
-					SendArm9Command(0x4100BEEF,0x0,0x0,0x0);
-#ifdef anyarmcom
-					*amr7sendcom = *amr7sendcom + 1;
-#endif
-				}
-				break;
-			case enableWaitforVblancarmcmdirq: //setauto
-				autodetectdetect = true;
-				break;
-			case getarm7keys: //getkeys
-				{
-					touchPosition tempPos = {0};
-					u16 keys= REG_KEYXY;
-					if(!touchPenDown()) {
-						keys |= KEY_TOUCH;
-  					} else {
-						keys &= ~KEY_TOUCH;
-					}
-					touchReadXY(&tempPos);	
-					//REG_IPC_FIFO_TX = 1; //send cmd 1
-					//REG_IPC_FIFO_TX = keys;
-					//REG_IPC_FIFO_TX = tempPos.px;
-					//REG_IPC_FIFO_TX = tempPos.py;
-					SendArm9Command((u32)1,(u32)keys,(u32)tempPos.px,(u32)tempPos.py);
-				}
-				break;
-			case set_callline: //set callline
-				arm7VCOUNTsyncline = val;
-				break;
-			default:
-#ifdef anyarmcom
-	*amr7recmuell = *amr7recmuell + 1;
-	amr7fehlerfeld[currfehler] = addr;
-	amr7fehlerfeld[currfehler + 1] = val;
-	currfehler+= 2;
-	if(currfehler == maxfehler)currfehler = 0;
-#endif
-				break;
+				tacktgeber_sound_FIFO_DMA_A = 1;
 			}
+			else
+			{
+				tacktgeber_sound_FIFO_DMA_A = 0;
+			}
+			if(val & BIT(14))
+			{
+				tacktgeber_sound_FIFO_DMA_B = 1;
+			}
+			else
+			{
+				tacktgeber_sound_FIFO_DMA_B = 0;
+			}
+			updatetakt();
+			checkstart();
+			break;
+		case 0x84:
+			if(val & 0x80)REG_SOUNDCNT |= 0x8000;
+			else
+			{
+				REG_SOUNDCNT &= ~0x8000;
+			}
+			break;
+		case 0x88:
+				  //Amplitude Resolution/Sampling Cycle is not supported so only Bias
+				  //it is better on the DS any way
+			  REG_SOUNDBIAS = val;
+			  break;
+
+		  case setdmasoundbuff:
+
+			  dmabuffer = val;
+#ifdef anyarmcom
+			amr7sendcom =  (u32*)(*(u32*)(dmabuffer));
+			amr7senddma1 = (u32*)(*(u32*)(dmabuffer + 4));
+			amr7senddma2 = (u32*)(*(u32*)(dmabuffer + 8));
+			amr7recmuell = (u32*)(*(u32*)(dmabuffer + 12));
+			amr7directrec = (u32*)(*(u32*)(dmabuffer + 16));
+			amr7indirectrec = (u32*)(*(u32*)(dmabuffer + 20));
+			amr7fehlerfeld = (u32*)(*(u32*)(dmabuffer + 24));
+#endif
+			soundbuffA = (u32*)(dmabuffer);
+				SCHANNEL_SOURCE(4) = soundbuffA;
+			  soundbuffB = (u32*)(dmabuffer + 0x50);
+				SCHANNEL_SOURCE(5) = soundbuffB;
+				break;
+		case WaitforVblancarmcmd: //wait
+			if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
+			{
+				//REG_IPC_FIFO_TX = 0x4100BEEF; //send cmd 0x4100BEEF
+				SendArm9Command(0x4100BEEF,0x0,0x0,0x0);
+#ifdef anyarmcom
+				*amr7sendcom = *amr7sendcom + 1;
+#endif
+			}
+			break;
+		case enableWaitforVblancarmcmdirq: //setauto
+			autodetectdetect = true;
+			break;
+		case getarm7keys: //getkeys
+			{
+				touchPosition tempPos = {0};
+				u16 keys= REG_KEYXY;
+				if(!touchPenDown()) {
+					keys |= KEY_TOUCH;
+				} else {
+					keys &= ~KEY_TOUCH;
+				}
+				touchReadXY(&tempPos);	
+				//REG_IPC_FIFO_TX = 1; //send cmd 1
+				//REG_IPC_FIFO_TX = keys;
+				//REG_IPC_FIFO_TX = tempPos.px;
+				//REG_IPC_FIFO_TX = tempPos.py;
+				SendArm9Command((u32)1,(u32)keys,(u32)tempPos.px,(u32)tempPos.py);
+			}
+			break;
+		case set_callline: //set callline
+			arm7VCOUNTsyncline = val;
+			break;
+		default:{
+				#ifdef anyarmcom
+					*amr7recmuell = *amr7recmuell + 1;
+					amr7fehlerfeld[currfehler] = addr;
+					amr7fehlerfeld[currfehler + 1] = val;
+					currfehler+= 2;
+					if(currfehler == maxfehler)currfehler = 0;
+				#endif
+		}
+		break;
+		}
+	}
 }
 
 
@@ -534,9 +545,10 @@ int main() {
 				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 			}
 #endif
-			u32 addr = (REG_IPC_FIFO_RX & ~0xC0000000/*todo*/); //addr + flags //flags 2 most upperen Bits dma = 0 u8 = 1 u16 = 2 u32 = 3
+			u32 cmd0 = (u32)(REG_IPC_FIFO_RX);
+			u32 addr = (u32)(cmd0 & ~0xC0000000);
 			while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
-			u32 val = REG_IPC_FIFO_RX; //Value skip add for speedup
+			u32 val = (u32)(REG_IPC_FIFO_RX); //Value skip add for speedup
 #ifdef checkforerror
 			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
 			{
@@ -544,8 +556,8 @@ int main() {
 				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 			}
 #endif
-
-			newvalwrite(addr,val);
+			newvalwrite(addr,val,cmd0);
+			
 #ifdef anyarmcom
 			*amr7directrec = *amr7directrec + 1;
 			if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))*amr7indirectrec = *amr7indirectrec + 1;

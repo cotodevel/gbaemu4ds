@@ -91,7 +91,12 @@ void HandleFifo() {
 			}
 			else
 			{
-				switch (command1) {					
+				switch (command1) {
+					case(FIFO_DEBUG):{
+						//printf("FIFO ok");	//test the FIFO if NDS cmds and GBA cmds work .. ok they work
+					}
+					break;
+					
 					//swi 0x3 gba call from arm7
 					case(FIFO_SWIGBA_FROM_ARM7):{
 						enterGBASleepMode();

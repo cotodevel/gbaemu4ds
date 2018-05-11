@@ -286,6 +286,10 @@ if(argv[8][0] == '1')
 	REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
 	REG_IPC_FIFO_TX = 0;
 }
+
+	//test the FIFO if NDS cmds and GBA cmds work .. ok they work
+	//REG_IPC_FIFO_TX = FIFO_DEBUG;
+	//REG_IPC_FIFO_TX = 0;
 	
 	bool extraram =false; 
 #ifdef usebuffedVcout
