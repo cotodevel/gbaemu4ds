@@ -61,6 +61,8 @@ extern void lid_open_irq_handler();
 extern void lid_closing_handler();
 
 extern void newvalwrite(u32 addr, u32 val, u32 cmd0);
+extern void fifo_handler();
+extern void timer0_handler();
 
 #ifdef __cplusplus
 }

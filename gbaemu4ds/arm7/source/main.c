@@ -4,9 +4,29 @@
 
 #include <nds.h>
 #include <nds/arm7/audio.h>
+#include <nds/interrupts.h>
 
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
+
+#define 	REG_FIFOA   *(vu32*)(0x04000000+0x00A0)
+#define 	REG_FIFOB   *(vu32*)(0x04000000+0x00A4)
+#define 	REG_DMA0CNT_L   *(vu16*)(0x04000000+0x00B8)
+#define 	REG_DMA0CNT_H   *(vu16*)(0x04000000+0x00BA)
+#define 	REG_DMA1CNT_L   *(vu16*)(0x04000000+0x00C4)
+#define 	REG_DMA1CNT_H   *(vu16*)(0x04000000+0x00C6)
+#define 	REG_DMA2CNT_L   *(vu16*)(0x04000000+0x00D0)
+#define 	REG_DMA2CNT_H   *(vu16*)(0x04000000+0x00D2)
+#define 	REG_DMA3CNT_L   *(vu16*)(0x04000000+0x00DC)
+#define 	REG_DMA3CNT_H   *(vu16*)(0x04000000+0x00DE)
+#define 	REG_TM0CNT_L   *(vu16*)(0x04000000+0x0100)
+#define 	REG_TM0CNT_H   *(vu16*)(0x04000000+0x0102)
+#define 	REG_TM1CNT_L   *(vu16*)(0x04000000+0x0104)
+#define 	REG_TM1CNT_H   *(vu16*)(0x04000000+0x0106)
+#define 	REG_TM2CNT_L   *(vu16*)(0x04000000+0x0108)
+#define 	REG_TM2CNT_H   *(vu16*)(0x04000000+0x010a)
+#define 	REG_TM3CNT_L   *(vu16*)(0x04000000+0x010c)
+#define 	REG_TM3CNT_H   *(vu16*)(0x04000000+0x010e)
 
 u16 arm7VCOUNTsyncline = 0xFFFF;
 
@@ -322,8 +342,11 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 		case 0x100:
 			TM0CNT_L = val;
 			updatetakt();
+			REG_TM0CNT_L = TM0CNT_L;
+			
 		case 0x102:
 			TM0CNT_H = val;
+			REG_TM0CNT_H = TM0CNT_H;
 			updatetakt();
 			checkstart();
 		case 0x104:
@@ -442,32 +465,34 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 //---------------------------------------------------------------------------------
 int main() {
 //---------------------------------------------------------------------------------
+	REG_IE = 0;
+	
 	ledBlink(0);
 	readUserSettings();
 	
+	u32 curIRQ = IRQ_TIMER0 |IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ();
+	
 	irqInit();
-	//fifoInit();
+	fifoInit();
 	
 	installWifiFIFO();
 	
-	// Start the RTC tracking IRQ
-	initClockIRQ();
-
-	enableSound();
-
-	REG_IPC_SYNC = 0;
-	REG_IPC_FIFO_CR = IPC_FIFO_ENABLE;
-	REG_IPC_FIFO_CR = IPC_FIFO_SEND_CLEAR | IPC_FIFO_ENABLE | IPC_FIFO_ERROR;
+	irqSet(IRQ_HBLANK,			(void*)hblank_handler);
+	irqSet(IRQ_VBLANK, 			(void*)vblank_handler);
+	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//irq when VCOUNTER time
+	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//irq when opening the LID of DS time
+	irqSet(IRQ_FIFO_NOT_EMPTY, 			(void*)fifo_handler);			//irq when receiving fifo msg from arm9
+	irqSet(IRQ_TIMER0, 			(void*)timer0_handler);					//run the sound freq per sample(s)
 	
-	//irqSet(IRQ_HBLANK,			(void*)hblank_handler);
-	//irqSet(IRQ_VBLANK, 			(void*)vblank_handler);
-	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
-	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//when opening the LID of DS time
+	REG_IPC_SYNC = 0;
+    REG_IPC_FIFO_CR = IPC_FIFO_RECV_IRQ | IPC_FIFO_SEND_IRQ | IPC_FIFO_ERROR | IPC_FIFO_ENABLE;
 	
 	//set up ppu: do irq on hblank/vblank/vcount/and vcount line is 159
-    REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ;	//REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
+    REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
 	
-	u32 curIRQ = REG_IE | IRQ_VCOUNT | IRQ_LID;
+	// Start the RTC tracking IRQ
+	initClockIRQ();
+	enableSound();
 	irqEnable(curIRQ);
 	
 	REG_IF = ~0;
@@ -493,16 +518,13 @@ int main() {
 		if((REG_VCOUNT == arm7VCOUNTsyncline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
 		{
 			if(!isincallline)
-			{	
-				//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
-				SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
+			{
 #ifdef anyarmcom
 				*amr7sendcom = *amr7sendcom + 1;
 #endif
 			}
 			isincallline = true;
 			//while(REG_VCOUNT == callline); //don't send 2 or more
-			Wifi_Update();
 		}
 		else
 		{
@@ -533,46 +555,7 @@ int main() {
 			SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
 		}
 		
-		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
-		{
-#ifndef noenterCriticalSection
-			int oldIME = enterCriticalSection();
-#endif
-#ifdef checkforerror
-			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-			{
-				senddebug32(0x7FFFFFF0);
-				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
-			}
-#endif
-			u32 cmd0 = (u32)(REG_IPC_FIFO_RX);
-			u32 addr = (u32)(cmd0 & ~0xC0000000);
-			while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
-			u32 val = (u32)(REG_IPC_FIFO_RX); //Value skip add for speedup
-#ifdef checkforerror
-			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-			{
-				senddebug32(0x7FFFFFF1);
-				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
-			}
-#endif
-			newvalwrite(addr,val,cmd0);
-			
-#ifdef anyarmcom
-			*amr7directrec = *amr7directrec + 1;
-			if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))*amr7indirectrec = *amr7indirectrec + 1;
-#endif
-#ifdef checkforerror
-			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-			{
-				senddebug32(0x7FFFFFF2);
-				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
-			}
-#endif
-#ifndef noenterCriticalSection
-			leaveCriticalSection(oldIME);
-#endif
-		}
+		//swiWaitForVBlank();
 	}
 	return 0;
 }
@@ -1100,11 +1083,52 @@ void vcount_handler(){
 	gbaemu4ds_ipc();
 }
 
-//disabled
 void hblank_handler(){
+	
 }
 
-//disabled
 void vblank_handler(){
-	
+	//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
+	SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
+	Wifi_Update();
+}
+
+
+
+void fifo_handler(){
+	if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
+	{
+		//clear fifo inmediately
+		REG_IPC_FIFO_CR |= (1<<3);
+		REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
+	}
+	volatile uint32 command1 = 0, command2 = 0, command3 = 0, command4 = 0;
+	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+			command1 = (uint32)REG_IPC_FIFO_RX;
+		}
+		
+		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+			command2 = (uint32)REG_IPC_FIFO_RX;
+		}
+		
+		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+			command3 = (uint32)REG_IPC_FIFO_RX;
+		}
+		
+		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+			command4 = (uint32)REG_IPC_FIFO_RX;
+		}
+		
+		u32 cmd0 = (u32)(command1);
+		u32 addr = (u32)(cmd0 & ~0xC0000000);
+		u32 val = (u32)(command2); //Value skip add for speedup
+		newvalwrite(addr,val,cmd0);		
+	}
+	REG_IF = IRQ_FIFO_NOT_EMPTY;
+}
+
+void timer0_handler(){
+	updatetakt();
+	checkstart();
 }

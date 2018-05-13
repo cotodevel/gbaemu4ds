@@ -257,6 +257,8 @@ extern bool Getarm7Sleep();
 //IPC
 extern struct sIPCSharedGBA* GetsIPCSharedGBA();
 
+extern void FIFO_DRAINWRITE();
+
 #ifdef __cplusplus
 }
 #endif

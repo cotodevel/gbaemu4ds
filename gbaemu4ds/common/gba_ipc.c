@@ -1,12 +1,20 @@
 #include <nds.h>
 #include "gba_ipc.h"
 
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void FIFO_DRAINWRITE(){
+	while (!(REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)){}
+}
+
 #ifdef ARM7
 void SendArm9Command(u32 command1, u32 command2, u32 command3, u32 command4){
     REG_IPC_FIFO_TX = (u32)command1;
     REG_IPC_FIFO_TX = (u32)command2;
     REG_IPC_FIFO_TX = (u32)command3;
     REG_IPC_FIFO_TX = (u32)command4;
+	//FIFO_DRAINWRITE();
 }
 #endif
 
@@ -18,6 +26,7 @@ void SendArm7Command(u32 command1, u32 command2, u32 command3, u32 command4){
     REG_IPC_FIFO_TX = (u32)command2;
     REG_IPC_FIFO_TX = (u32)command3;
     REG_IPC_FIFO_TX = (u32)command4;
+	//FIFO_DRAINWRITE();
 }
 #endif
 
