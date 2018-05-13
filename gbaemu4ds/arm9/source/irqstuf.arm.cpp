@@ -383,7 +383,7 @@ void VblankHandler(void) {
 
 	CPUCheckDMA(1, 0x0f); //V-Blank
 
-
+	
 #ifdef showdebug
 	iprintf("\x1b[2J");
 	iprintf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
@@ -453,65 +453,21 @@ void VblankHandler(void) {
 lasttime[lastdebugcurrent] = 0x0000000;
 lastdebugcurrent++;
 if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
-#endif
-
-
-	if(framewtf == frameskip)
-	{
-		framewtf = 0;
-		if((DISPCNT & 7) < 3)
-		{
-			dmaCopyWords(3,(void*)0x06010000,(void*)0x06400000,0x8000);
-		}
-		else
-		{
-			dmaCopyWords(3,(void*)0x06014000,(void*)0x06404000,0x4000);
-		
-			if((DISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
-			{
-				u8 *pointertobild = (u8 *)(0x6000000);
-				for(int iy = 0; iy <160; iy++){
-					dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
-					pointertobild+=480;
-				}
-			}
-			else
-			{
-				if((DISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
-				{
-					u8 *pointertobild = (u8 *)(0x6000000);
-					if(BIT(4) & DISPCNT)pointertobild+=0xA000;
-					for(int iy = 0; iy <160; iy++){
-						dmaCopyWords(3, (void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+256*(iy), 240);
-						pointertobild+=240;
-						//pointertobild+=120;
-					}
-				}
-				else
-				{
-					//if((DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
-					{
-						u8 *pointertobild = (u8 *)(0x6000000);
-						if(BIT(4) & DISPCNT)pointertobild+=0xA000;
-						for(int iy = 0; iy <128; iy++){
-							dmaCopyWords(3,(void*)pointertobild, (void*)0x6020000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 320);
-							pointertobild+=320;
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		framewtf++;
-	}
-	
-
-	
+#endif	
   
     P1 = REG_KEYINPUT&0x3ff;
 #ifdef ichflytestkeypossibillity  
+  
+	//copy only sprites since 0x06000000 is already mapped to gba vram
+	if((DISPCNT & 7) < 3)
+	{
+		dmaCopyWords(3,(void*)0x06010000,(void*)0x06400000,0x8000);
+	}
+	else
+	{
+		dmaCopyWords(3,(void*)0x06014000,(void*)0x06404000,0x4000);
+	}
+		
   
   // disallow Left+Right or Up+Down of being pressed at the same time
   if((P1 & 0x30) == 0)

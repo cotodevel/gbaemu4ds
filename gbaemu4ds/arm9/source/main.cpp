@@ -183,15 +183,14 @@ int main( int argc, char **argv) {
 
 //coto: fixed mode1 (partially)
 vramSetPrimaryBanks(	
-VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode
-VRAM_B_MAIN_BG_0x06020000,      //Mode 1/2/3/4 special bitmap/rotscale modes (engine A bg0,1,2,3 needs them)
+VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode	//Mode 1/2/3/4 special bitmap/rotscale modes
+VRAM_B_LCD, //6820000h-683FFFFh
 VRAM_C_LCD,	//6840000h-685FFFFh
 VRAM_D_LCD	//6860000h-687FFFFh
-); //needed for main emulator
-
+);
 
 vramSetBanks_EFG(
-VRAM_E_MAIN_SPRITE,        //GBA -> NDS Sprites (same PPU format!)
+VRAM_E_MAIN_SPRITE,        //E       64K   2    -     6400000h
 VRAM_F_LCD,                	//F       16K   0    -     6890000h-6893FFFh
 VRAM_G_LCD
 );
