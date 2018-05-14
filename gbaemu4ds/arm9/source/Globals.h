@@ -86,7 +86,7 @@ extern u8 *rom;
 #define paletteRAM ((u8*)0x05000000)
 #define vram ((u8*)0x06000000)
 #define emultoroam ((u8*)0x07000000)
-extern u8 ioMem[0x400];
+extern u8 * ioMem;//extern u8 ioMem[0x400];
 
 #define DISPCAPCNT (*(vu32*)0x4000064)
 

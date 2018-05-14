@@ -42,6 +42,7 @@
 #include "bit_ops.h"
 #include "filetime.h"
 #include "lock.h"
+#include "../Util.h"
 
 #include "../ichflysettings.h"
 
@@ -1225,7 +1226,7 @@ FN_MEDIUM_READSECTORS	readSectorslocked;
 __attribute__((section(".dtcm")))
 u32 current_pointer = 0;
 
-u32* allocedfild = (u32*)0x06890000;	//relocate to vram: //u32 allocedfild[buffslots]
+u32* allocedfild = NULL;	//relocate to vram: //u32 allocedfild[buffslots]
 
 __attribute__((section(".dtcm")))
 u8* greatownfilebuffer;
@@ -1235,22 +1236,24 @@ void generatefilemap(int size)
 	FILE_STRUCT* file = (FILE_STRUCT*)(lastopen);
 	lastopenlocked = lastopen; //copy
 	PARTITION* partition;
-	uint32_t cluster;
-	int clusCount;
+	uint32_t cluster= 0;
+	int clusCount = 0;
 	partition = file->partition;
 	partitionlocked = partition;
-
+	int sectortableSize = (int)(((size/chucksize) + 1)*8);
 	readSectorslocked = file->partition->disc->readSectors;
-	iprintf("generating file map (size %d Byte)",((size/chucksize) + 1)*8);
+	iprintf("generating file map (size %d Byte)",sectortableSize);
 	
 	//use vram to prevent waitstates in ewram if file is 16M or less
-	if( (((size/chucksize) + 1)*8) > 262160 ){
-		sectortabel =(u8*)malloc(((size/chucksize) + 1)*8); //alloc for size every Sector has one u32
+	int sectortableSize16Morless = 262160;
+	if( sectortableSize > sectortableSize16Morless ){
+		sectortabel =(u8*)malloc(sectortableSize); //alloc for size every Sector has one u32
 	}
 	else{
-		sectortabel =(u8*)0x06840000;
+		sectortabel =(u8*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),sectortableSize16Morless);
 	}
 	
+	allocedfild = (u32*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),buffslots * sizeof(u32));	//relocate to vram: //u32 allocedfild[buffslots]
 	greatownfilebuffer =(u8*)malloc(chucksize * buffslots);
 
 	clusCount = size/partition->bytesPerCluster;

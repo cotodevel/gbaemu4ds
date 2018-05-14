@@ -184,7 +184,7 @@ int main( int argc, char **argv) {
 //coto: fixed mode1 (partially)
 vramSetPrimaryBanks(	
 VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode	//Mode 1/2/3/4 special bitmap/rotscale modes
-VRAM_B_LCD, //6820000h-683FFFFh
+VRAM_B_LCD, //6820000h-683FFFFh	getVRAMHeapStart(); here
 VRAM_C_LCD,	//6840000h-685FFFFh
 VRAM_D_LCD	//6860000h-687FFFFh
 );

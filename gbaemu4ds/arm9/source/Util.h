@@ -39,6 +39,18 @@ typedef struct {
   int size;
 } variable_desc;
 
+
+//heap/vram alloc defs
+typedef int sint32;
+#define vramSize (sint32)(128*1024*3)	//3 128K VRAM blocks free currently
+#define vramBlockA (uint32)(0xa)
+#define vramBlockB (uint32)(0xb)
+#define vramBlockC (uint32)(0xc)
+#define vramBlockD (uint32)(0xd)
+
+#define HeapSize (uint32)(128*1024)
+#define HeapBlock (uint32)(0xe)
+
 #endif
 
 
@@ -117,16 +129,18 @@ extern char* strtolower(char* s);
 extern int save_decider();
 
 //static global instance of actual ARM core volatile registers.
-//ori: extern reg_pair* myregs;
 extern reg_pair * myregs;
 
-extern u32 STMW_myregs(u32 opcode, u32 temp, u32 address,u32 val,u32 num,u32 base);
-extern u32 STM_myregs(u32 opcode, u32 address,u32 val,u32 num);
-extern u32 LDM_myregs(u32 opcode, u32 address,u32 val,u32 num);
-extern u32 THUMB_STM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r,u32 b);
-extern u32 THUMB_LDM_myregs(u32 opcode,u32 temp,u32 address,u32 val,u32 r);
-extern u32 PUSH_myregs(u32 opcode, u32 address,u32 val, u32 r);
-extern u32 POP_myregs(u32 opcode, u32 address,u32 val, u32 r);
+//heap/vram alloc parts
+extern uint32 getVRAMHeapStart();
+extern sint32 vramABlockOfst;	//offset pointer to free memory, user alloced memory is (baseAddr + (sizeAlloced - vramBlockPtr))
+extern sint32 vramBBlockOfst;
+extern sint32 vramCBlockOfst;
+extern sint32 vramDBlockOfst;
+extern sint32 HeapBlockOfst;
+
+extern uint32 * vramHeapAlloc(uint32 vramBlock,uint32 StartAddr,int size);
+extern uint32 * vramHeapFree(uint32 vramBlock,uint32 StartAddr,int size);
 
 
 #ifdef __cplusplus

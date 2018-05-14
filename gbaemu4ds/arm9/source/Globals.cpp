@@ -40,13 +40,27 @@ u8 currentVRAMcapblock = 1;
 #endif
 reg_pair reg[45];
 memoryMap map[256];
+
 bool ioReadable[0x400];
+
+__attribute__((section(".dtcm")))
 bool N_FLAG = 0;
+
+__attribute__((section(".dtcm")))
 bool C_FLAG = 0;
+
+__attribute__((section(".dtcm")))
 bool Z_FLAG = 0;
+
+__attribute__((section(".dtcm")))
 bool V_FLAG = 0;
+
+__attribute__((section(".dtcm")))
 bool armState = true;
+
+__attribute__((section(".dtcm")))
 bool armIrqEnable = true;
+
 u32 armNextPC = 0x00000000;
 int armMode = 0x1f;
 u32 stop = 0x08000568;
@@ -66,7 +80,10 @@ int cpuSaveType = 0;
 bool cheatsEnabled = true;
 bool mirroringEnable = false;
 
+__attribute__((section(".dtcm")))
 u8 *bios = NULL; //calloc
+
+__attribute__((section(".dtcm")))
 u8 *rom = NULL; //calc
 
 /*static u8 *internalRAM = (u8*)0x03000000; 
@@ -227,5 +244,5 @@ u16 DM1CNT_L = 0x0000;
 __attribute__((section(".dtcm")))
 u16 DM1CNT_H = 0x0000;
 
-//__attribute__((section(".dtcm")))
-u8 ioMem[0x400];
+__attribute__((section(".dtcm")))
+u8 * ioMem = NULL;	//vram [0x400];

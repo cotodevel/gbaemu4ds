@@ -2526,6 +2526,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   eepromInUse = 0;
   saveType = 0;
   useBios = false;
+  ioMem=(u8 *)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),0x400);	//map (gba) ioMem
   
   if(useBiosFile) {
     int size = 0x4000;
