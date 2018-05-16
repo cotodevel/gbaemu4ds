@@ -507,17 +507,21 @@ void BIOScall(int op,  u32 *R)
 		BIOS_Diff16bitUnFilter();
 		break;
 	  case 0x19:
+		{
 	//#ifdef DEV_VERSION
-		  Log("SoundBiasSet: 0x%08x \n",
-			  R[0]);      
+		  Log("SoundBiasSet: 0x%08x \n",R[0]);      
 	//#endif    
+	/*
 		if(reg[0].I) //ichfly sound todo
 		{
 		  UPDATE_REG(0x88, 0x200);
 		}
 		else //ichfly sound todo
 		{
-		  UPDATE_REG(0x88, 0);
+		   UPDATE_REG(0x88, 0);
+		}
+	*/
+		SOUNDBIAS = (R[0]&0xffff);
 		}
 		break;
 	  case 0x1F:

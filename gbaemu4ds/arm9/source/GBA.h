@@ -247,6 +247,9 @@ extern void frameasyncsync();
 extern void pausemenue();
 
 extern void BIOScall(int op,  u32 *R);
+extern void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32);
+
+extern void CPUCheckDMA(int reason, int dmamask);
 
 #ifdef __cplusplus
 }

@@ -18,30 +18,30 @@ extern u8 dmaBpart;
 
 extern u32 dmabuffer;
 
-extern u16 SOUNDCNT_L;
-extern u16 SOUNDCNT_H;
+//extern u16 SOUNDCNT_L;
+//extern u16 SOUNDCNT_H;
 
 extern u8 tacktgeber_sound_FIFO_DMA_A;
 extern u8 tacktgeber_sound_FIFO_DMA_B;
-extern u16 TM0CNT_L;
-extern u16 TM1CNT_L;
+//extern u16 TM0CNT_L;
+//extern u16 TM1CNT_L;
 
-extern u16 TM0CNT_H;
-extern u16 TM1CNT_H;
+//extern u16 TM0CNT_H;
+//extern u16 TM1CNT_H;
 
-extern u16 DMA1CNT_H;
-extern u16 DMA2CNT_H;
+//extern u16 DMA1CNT_H;
+//extern u16 DMA2CNT_H;
 
 
-extern u16 DMA1SAD_L;
-extern u16 DMA1SAD_H;
-extern u16 DMA1DAD_L;
-extern u16 DMA1DAD_H;
+//extern u16 DMA1SAD_L;
+//extern u16 DMA1SAD_H;
+//extern u16 DMA1DAD_L;
+//extern u16 DMA1DAD_H;
 
-extern u16 DMA2SAD_L;
-extern u16 DMA2SAD_H;
-extern u16 DMA2DAD_L;
-extern u16 DMA2DAD_H;
+//extern u16 DMA2SAD_L;
+//extern u16 DMA2SAD_H;
+//extern u16 DMA2DAD_L;
+//extern u16 DMA2DAD_H;
 
 
 //debug stuff
@@ -60,9 +60,20 @@ extern u32 ie_save;
 extern void lid_open_irq_handler();
 extern void lid_closing_handler();
 
-extern void newvalwrite(u32 addr, u32 val, u32 cmd0);
+extern void newvalwrite(u32 addr, u32 val, u32 cmd0, u32 command3, u32 command4);
 extern void fifo_handler();
-extern void timer0_handler();
+
+
+//there are updated automatically by timers
+extern u8 dmasa_buffer[0x4];
+extern u8 dmasb_buffer[0x4];
+
+extern bool dmasa_play;
+extern bool dmasb_play;
+
+extern void playdmafifo();
+extern void timer0interrupt_thread();
+extern void timer1interrupt_thread();
 
 #ifdef __cplusplus
 }

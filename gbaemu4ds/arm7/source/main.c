@@ -9,6 +9,8 @@
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
 
+#include "sound.h"
+
 #define 	REG_FIFOA   *(vu32*)(0x04000000+0x00A0)
 #define 	REG_FIFOB   *(vu32*)(0x04000000+0x00A4)
 #define 	REG_DMA0CNT_L   *(vu16*)(0x04000000+0x00B8)
@@ -56,34 +58,42 @@ u8 dmaBpart = 0;
 
 u32 dmabuffer = 0;
 
-u16 SOUNDCNT_L = 0;
-u16 SOUNDCNT_H = 0;
 
 u8 tacktgeber_sound_FIFO_DMA_A = 0;
 u8 tacktgeber_sound_FIFO_DMA_B = 0;
-u16 TM0CNT_L = 0;
-u16 TM1CNT_L = 0;
 
-u16 TM0CNT_H = 0;
-u16 TM1CNT_H = 0;
+//move these to IPC
+//u16 sIPCSharedGBAInst->SOUNDCNT_L = 0;
+//u16 sIPCSharedGBAInst->SOUNDCNT_H = 0;
 
-u16 DMA1CNT_H = 0;
-u16 DMA2CNT_H = 0;
+//u16 TM0CNT_L = 0;
+//u16 sIPCSharedGBAInst->TM1CNT_L = 0;
 
+//u16 TM0CNT_H = 0;
+//u16 sIPCSharedGBAInst->TM1CNT_H = 0;
 
-u16 DMA1SAD_L = 0;
-u16 DMA1SAD_H  = 0;
-u16 DMA1DAD_L = 0;
-u16 DMA1DAD_H  = 0;
-
-u16 DMA2SAD_L = 0;
-u16 DMA2SAD_H  = 0;
-u16 DMA2DAD_L = 0;
-u16 DMA2DAD_H  = 0;
+//u16 sIPCSharedGBAInst->DM1CNT_H = 0;
+//u16 sIPCSharedGBAInst->DM2CNT_H = 0;
 
 
+//u16 sIPCSharedGBAInst->DM1SAD_L = 0;
+//u16 sIPCSharedGBAInst->DM1SAD_H  = 0;
+//u16 sIPCSharedGBAInst->DM1DAD_L = 0;
+//u16 sIPCSharedGBAInst->DM1DAD_H  = 0;
+
+//u16 sIPCSharedGBAInst->DM2SAD_L = 0;
+//u16 sIPCSharedGBAInst->DM2SAD_H  = 0;
+//u16 sIPCSharedGBAInst->DM2DAD_L = 0;
+//u16 sIPCSharedGBAInst->DM2DAD_H  = 0;
+
+
+//(mirrored) GBA IRQS    . The DS is too slow for using the IPC as a shared IO GBA Map memory. So these registers "shadow copy" the current IE/IF/IME from the emu.
+u16 IE;
+u16 IF;
+u16 IME;
+
+	
 //debug stuff
-
 vu32 debugsrc1 = 0;
 vu32 debugsrc2  = 0;
 vu32 debugfr1 = 0;
@@ -255,7 +265,7 @@ void lid_open_irq_handler(){
 }
 
 
-void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part kept
+void newvalwrite(u32 addr, u32 val, u32 cmd0, u32 command3, u32 command4)	//cmd0 == addr but 0xc0000000 part kept
 {
 	bool NDSCmd = false;
 	switch(cmd0){
@@ -288,116 +298,239 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 			NDSCmd = true;
 		}
 		break;
+		
+		//emulator DMA fifo write (do update internal counter) (not gamecode)
+		case(WRITEWORD_DMAFIFO_A):{
+			bool channelA = true;
+			updateInternalDMAFIFO(channelA, val, 0xa0, command4);	//newvalwrite(command1 & ~0xc0000000, command2, command1, command3, command4)
+		}
+		break;
+		
+		//emulator DMA fifo write (do update internal counter) (not gamecode)
+		case(WRITEWORD_DMAFIFO_B):{
+			bool channelA = false;
+			updateInternalDMAFIFO(channelA, val, 0xa0, command4);	//newvalwrite(command1 & ~0xc0000000, command2, command1, command3, command4)
+		}
+		break;
+		
 	}
 	
 	if(NDSCmd == false){
+		struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
 		switch(addr)
 		{
+			//(NR50, NR51) - Channel L/R Volume/Enable (R/W)
+			case 0x80:
+				sIPCSharedGBAInst->SOUNDCNT_L = (val&0xffff);
+				updatevol();
+			break;
+			
+			//4000082h - sIPCSharedGBAInst->SOUNDCNT_H (GBA only) - DMA Sound Control/Mixing (R/W)
+			case 0x82:{
+				if(!(val & (1<<10)))
+				{
+					DMA_A_TIMERSEL = 0;
+					tacktgeber_sound_FIFO_DMA_A = 1;	//same as above
+				}
+				else
+				{
+					DMA_A_TIMERSEL = 1;
+					tacktgeber_sound_FIFO_DMA_A = 0;	//same as above
+				}
+				
+				if(!(val & (1<<14)))
+				{
+					DMA_B_TIMERSEL = 0;
+					tacktgeber_sound_FIFO_DMA_B = 1;	//same as above
+				}
+				else
+				{
+					DMA_B_TIMERSEL = 1;
+					tacktgeber_sound_FIFO_DMA_B = 0;	//same as above
+				}
+				
+				//Reset FIFO
+				if(val & (1<<11))
+				{
+					//void * memset ( void * ptr, int value, size_t num );
+					memset((u8*)&sIPCSharedGBAInst->fifodmasA[0],0,(int)INTERNAL_FIFO_SIZE);
+					sIPCSharedGBAInst->fifoA_offset=0;
+					sIPCSharedGBAInst->FIFO_A_L[0] = 0;
+					sIPCSharedGBAInst->FIFO_A_L[1] = 0;
+					sIPCSharedGBAInst->FIFO_A_H[0] = 0;
+					sIPCSharedGBAInst->FIFO_A_H[1] = 0;
+				}
+				
+				if(val & (1<<15))
+				{
+					memset((u8*)&sIPCSharedGBAInst->fifodmasB[0],0,(int)INTERNAL_FIFO_SIZE);
+					sIPCSharedGBAInst->fifoB_offset=0;
+					sIPCSharedGBAInst->FIFO_B_L[0] = 0;
+					sIPCSharedGBAInst->FIFO_B_L[1] = 0;
+					sIPCSharedGBAInst->FIFO_B_H[0] = 0;
+					sIPCSharedGBAInst->FIFO_B_H[1] = 0;
+				}
+				
+				sIPCSharedGBAInst->SOUNDCNT_H = val;
+			}
+			break;
+			//SOUNDCNT_X (NR52) - Sound on/off (R/W)
+			case 0x84:{
+				if(val & 0x80)
+					REG_SOUNDCNT |= 0x8000;
+				else
+					REG_SOUNDCNT &= ~0x8000;
+					
+				if(val & 0x80)REG_SOUNDCNT |= 0x8000;
+				else
+				{
+					REG_SOUNDCNT &= ~0x8000;
+				}
+				sIPCSharedGBAInst->SOUNDCNT_X = (val&0x8f);
+			}
+			break;
+			case 0x88:
+				//Amplitude Resolution/Sampling Cycle is not supported so only Bias
+				//it is better on the DS any way
+				REG_SOUNDBIAS = val;
+			break;
+			
+			//gamecode DMA fifo write (do update internal counter)
+			//SOUND FIFO IO (8bit writes only?? check u16 case)
+			//FIFO_A_L - Sound A FIFO, Data 0 and Data 1 (W) / plain fifo write (no update internal counter)
+			case 0xa0:
+			case 0xa1:
+			//FIFO_A_H - Sound A FIFO, Data 2 and Data 3 (W) / plain fifo write (no update internal counter)
+			case 0xa2:
+			case 0xa3:
+			{
+				bool channelA = true;
+				updateInternalDMAFIFO(channelA, val, (u32)(addr),command3);	//WRITEWORD_PLAINDMAFIFO_8 / WRITEWORD_PLAINDMAFIFO_16 / WRITEWORD_PLAINDMAFIFO_32
+			}
+			break;
+			
+			//FIFO_B_L - Sound B FIFO, Data 0 and Data 1 (W) / plain fifo write (no update internal counter)
+			case 0xa4:
+			case 0xa5:
+			//FIFO_B_H - Sound B FIFO, Data 2 and Data 3 (W) / plain fifo write (no update internal counter)
+			case 0xa6:
+			case 0xa7:
+			{
+				bool channelA = false;
+				updateInternalDMAFIFO(channelA, val, (u32)(addr),command3);	//WRITEWORD_PLAINDMAFIFO_8 / WRITEWORD_PLAINDMAFIFO_16 / WRITEWORD_PLAINDMAFIFO_32
+			}
+			break;
+			
+			//Timers
+			case 0x100:{
+				//Reload/Counter val
+				sIPCSharedGBAInst->TM0CNT_L = (u16)val;
+				if(DMA_A_TIMERSEL==0)
+					SCHANNEL_TIMER(4) = sIPCSharedGBAInst->TM0CNT_L;
+				if(DMA_B_TIMERSEL==0)
+					SCHANNEL_TIMER(5) = sIPCSharedGBAInst->TM0CNT_L;
+			}
+			break;
+			case 0x102:{
+				//Timer Controller
+				sIPCSharedGBAInst->TM0CNT_H = (u16)val;
+				if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
+				{
+					if(!(TIMER0_CR & TIMER_ENABLE)){
+						timerStart(0, ClockDivider_1,sIPCSharedGBAInst->TM0CNT_H << 5, timer0interrupt_thread);
+					}
+				}
+				//timerOnOffDelay|=1;
+				//cpuNextEvent = cpuTotalTicks;            
+			}
+			break;
+			case 0x104:{
+				//Reload/Counter val
+				sIPCSharedGBAInst->TM1CNT_L = (u16)val;
+				if(DMA_A_TIMERSEL==1)
+					SCHANNEL_TIMER(4) = sIPCSharedGBAInst->TM1CNT_L;
+				if(DMA_B_TIMERSEL==1)
+					SCHANNEL_TIMER(5) = sIPCSharedGBAInst->TM1CNT_L;
+			}
+			break;
+			case 0x106:
+			{   
+				//Timer Controller
+				sIPCSharedGBAInst->TM1CNT_H = (u16)val;
+				//sIPCSharedGBAInst->timer1Value = value;
+				//timerOnOffDelay|=2;
+				//cpuNextEvent = cpuTotalTicks;
+			}    
+			break;
+			case 0x108:
+			{
+				//Reload/Counter val
+				//*(u16*)0x04000108 = (u16)val;
+			}    
+			break;
+			case 0x10A:
+			{
+				//Timer Controller
+				//*(u16*)0x0400010A = (u16)val;
+				//sIPCSharedGBAInst->TM2CNT = (u16)val;
+				
+				//timerOnOffDelay|=4;
+				//cpuNextEvent = cpuTotalTicks;
+			}
+			break;
+			case 0x10C:
+			{
+				//Reload/Counter val
+				//*(u16*)0x0400010C = (u16)val;
+			}
+			break;
+			case 0x10E:
+			{
+				//Timer Controller
+				//*(u16*)0x0400010E = (u16)val;
+				//sIPCSharedGBAInst->TM3CNT = (u16)val;
+				
+				//sIPCSharedGBAInst->timer3Value = value;
+				//timerOnOffDelay|=8;
+				//cpuNextEvent = cpuTotalTicks;
+			}
+			break;
 		  case 0xBC:
-			DMA1SAD_L = val;
+			sIPCSharedGBAInst->DM1SAD_L = val;
 			break;
 		  case 0xBE:
-			DMA1SAD_H = val & 0x0FFF;
+			sIPCSharedGBAInst->DM1SAD_H = val & 0x0FFF;
 			break;
 		  case 0xC0:
-			DMA1DAD_L = val;
-			checkstart();
+			sIPCSharedGBAInst->DM1DAD_L = val;
 			break;
 		  case 0xC2:
-			DMA1DAD_H = val & 0x07FF;
-			checkstart();
+			sIPCSharedGBAInst->DM1DAD_H = val & 0x07FF;
 			break;
 		  case 0xC4:
-			//DMA1CNT_L = val & 0x3FFF;
+			sIPCSharedGBAInst->DM1CNT_L = val & 0x3FFF;
 			break;
 		  case 0xC6:
-			DMA1CNT_H = val;
-			checkstart();
+			sIPCSharedGBAInst->DM1CNT_H = val;
 			break;
 		  case 0xC8:
-			DMA2SAD_L = val;
+			sIPCSharedGBAInst->DM2SAD_L = val;
 			break;
 		  case 0xCA:
-			DMA2SAD_H = val & 0x0FFF;
+			sIPCSharedGBAInst->DM2SAD_H = val & 0x0FFF;
 			break;
 		  case 0xCC:
-			DMA2DAD_L = val;
-			checkstart();
+			sIPCSharedGBAInst->DM2DAD_L = val;
 			break;
 		  case 0xCE:
-			DMA2DAD_H = val & 0x07FF;
-			checkstart();
+			sIPCSharedGBAInst->DM2DAD_H = val & 0x07FF;
 		  case 0xD0:
-			//DMA2CNT_L = val & 0x3FFF;
+			sIPCSharedGBAInst->DM2CNT_L = val & 0x3FFF;
 			break;
 		  case 0xD2:
-			DMA2CNT_H = val;
-			checkstart();
+			sIPCSharedGBAInst->DM2CNT_H = val;
 			break;
-
-
-
-
-
-		case 0x100:
-			TM0CNT_L = val;
-			updatetakt();
-			REG_TM0CNT_L = TM0CNT_L;
-			
-		case 0x102:
-			TM0CNT_H = val;
-			REG_TM0CNT_H = TM0CNT_H;
-			updatetakt();
-			checkstart();
-		case 0x104:
-			TM1CNT_L = val;
-			updatetakt();
-		case 0x106:
-			TM1CNT_H = val;
-			updatetakt();
-			checkstart();
-		case 0x80:
-			SOUNDCNT_L = val;
-			updatevol();
-			break;
-		case 0x82:
-			SOUNDCNT_H = val; //Reset FIFO is not needed because we don't have direct streaming yet so don't need that
-			updatevol();
-
-			if(val & BIT(10))
-			{
-				tacktgeber_sound_FIFO_DMA_A = 1;
-			}
-			else
-			{
-				tacktgeber_sound_FIFO_DMA_A = 0;
-			}
-			if(val & BIT(14))
-			{
-				tacktgeber_sound_FIFO_DMA_B = 1;
-			}
-			else
-			{
-				tacktgeber_sound_FIFO_DMA_B = 0;
-			}
-			updatetakt();
-			checkstart();
-			break;
-		case 0x84:
-			if(val & 0x80)REG_SOUNDCNT |= 0x8000;
-			else
-			{
-				REG_SOUNDCNT &= ~0x8000;
-			}
-			break;
-		case 0x88:
-				  //Amplitude Resolution/Sampling Cycle is not supported so only Bias
-				  //it is better on the DS any way
-			  REG_SOUNDBIAS = val;
-			  break;
-
 		  case setdmasoundbuff:
-
 			  dmabuffer = val;
 #ifdef anyarmcom
 			amr7sendcom =  (u32*)(*(u32*)(dmabuffer));
@@ -470,7 +603,7 @@ int main() {
 	ledBlink(0);
 	readUserSettings();
 	
-	u32 curIRQ = IRQ_TIMER0 |IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ();
+	u32 curIRQ = IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ();
 	
 	irqInit();
 	fifoInit();
@@ -482,8 +615,8 @@ int main() {
 	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//irq when VCOUNTER time
 	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//irq when opening the LID of DS time
 	irqSet(IRQ_FIFO_NOT_EMPTY, 			(void*)fifo_handler);			//irq when receiving fifo msg from arm9
-	irqSet(IRQ_TIMER0, 			(void*)timer0_handler);					//run the sound freq per sample(s)
-	
+	irqSet(IRQ_TIMER0, 			(void*)timer0interrupt_thread);	    
+    
 	REG_IPC_SYNC = 0;
     REG_IPC_FIFO_CR = IPC_FIFO_RECV_IRQ | IPC_FIFO_SEND_IRQ | IPC_FIFO_ERROR | IPC_FIFO_ENABLE;
 	
@@ -566,13 +699,12 @@ void updatevol()
 	/*****************************************************/
 	/*                  Update Voll                      */
 	/*****************************************************/
-
-
+	struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
 	//Sound_chan = (Volume_Right * enabeled + Volume_Left * enabeled) * (Soundcnt(1,2,4))*static_for_max
 	//DMA = (Soundcnt(1,2) * enabeled + Soundcnt(1,2) * enabeled) * sataic_for_max
-	SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF) | ((( 1 + ((SOUNDCNT_H & 0x4) >> 2))*((SOUNDCNT_H & BIT(8)) >> 8) + ( 1 + ((SOUNDCNT_H & 0x4) >> 2))*((SOUNDCNT_H & BIT(9)) >> 9))*31);     //max:124
-	SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF) | ((( 1 + ((SOUNDCNT_H & 0x8) >> 3))*((SOUNDCNT_H & BIT(12)) >> 12) + ( 1 + ((SOUNDCNT_H & 0x8) >> 3))*((SOUNDCNT_H & BIT(13)) >> 13))*31); //max:124
-	int Vol = SOUNDCNT_H & 0x3;
+	SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF) | ((( 1 + ((sIPCSharedGBAInst->SOUNDCNT_H & 0x4) >> 2))*((sIPCSharedGBAInst->SOUNDCNT_H & BIT(8)) >> 8) + ( 1 + ((sIPCSharedGBAInst->SOUNDCNT_H & 0x4) >> 2))*((sIPCSharedGBAInst->SOUNDCNT_H & BIT(9)) >> 9))*31);     //max:124
+	SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF) | ((( 1 + ((sIPCSharedGBAInst->SOUNDCNT_H & 0x8) >> 3))*((sIPCSharedGBAInst->SOUNDCNT_H & BIT(12)) >> 12) + ( 1 + ((sIPCSharedGBAInst->SOUNDCNT_H & 0x8) >> 3))*((sIPCSharedGBAInst->SOUNDCNT_H & BIT(13)) >> 13))*31); //max:124
+	int Vol = sIPCSharedGBAInst->SOUNDCNT_H & 0x3;
 	switch(Vol)
 	{
 	case 3:
@@ -586,12 +718,12 @@ void updatevol()
 		Vol = 4;
 		break;
 	}
-	int Masterright = SOUNDCNT_L & 0x7;
-	int Masterleft =  (SOUNDCNT_L << 4) & 0x7;
-	SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF) | ((Masterright * ((SOUNDCNT_L & BIT(8)) >> 8) + Masterleft * ((SOUNDCNT_L & BIT(12)) >> 12) ) * Vol *2);  //max:112
-	SCHANNEL_CR(1) = (SCHANNEL_CR(1) & ~0xFF) | ((Masterright * ((SOUNDCNT_L & BIT(9)) >> 9) + Masterleft * ((SOUNDCNT_L & BIT(13)) >> 13) ) * Vol *2);  //max:112
-	SCHANNEL_CR(2) = (SCHANNEL_CR(2) & ~0xFF) | ((Masterright * ((SOUNDCNT_L & BIT(10)) >> 10) + Masterleft * ((SOUNDCNT_L & BIT(14)) >> 14) ) * Vol *2);//max:112
-	SCHANNEL_CR(3) = (SCHANNEL_CR(3) & ~0xFF) | ((Masterright * ((SOUNDCNT_L & BIT(11)) >> 11) + Masterleft * ((SOUNDCNT_L & BIT(15)) >> 15) ) * Vol *2);//max:112
+	int Masterright = sIPCSharedGBAInst->SOUNDCNT_L & 0x7;
+	int Masterleft =  (sIPCSharedGBAInst->SOUNDCNT_L << 4) & 0x7;
+	SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF) | ((Masterright * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(8)) >> 8) + Masterleft * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(12)) >> 12) ) * Vol *2);  //max:112
+	SCHANNEL_CR(1) = (SCHANNEL_CR(1) & ~0xFF) | ((Masterright * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(9)) >> 9) + Masterleft * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(13)) >> 13) ) * Vol *2);  //max:112
+	SCHANNEL_CR(2) = (SCHANNEL_CR(2) & ~0xFF) | ((Masterright * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(10)) >> 10) + Masterleft * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(14)) >> 14) ) * Vol *2);//max:112
+	SCHANNEL_CR(3) = (SCHANNEL_CR(3) & ~0xFF) | ((Masterright * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(11)) >> 11) + Masterleft * ((sIPCSharedGBAInst->SOUNDCNT_L & BIT(15)) >> 15) ) * Vol *2);//max:112
 
 
     /*****************************************************/
@@ -599,43 +731,44 @@ void updatevol()
 	/*****************************************************/
 	
 
-	if(SOUNDCNT_H & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000);
-	if(SOUNDCNT_H & BIT(8)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_H & BIT(8) && SOUNDCNT_H & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000) | 0x400000; //same on both
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(8)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(8) && sIPCSharedGBAInst->SOUNDCNT_H & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(4) & ~0xFF0000) | 0x400000; //same on both
 
-	if(SOUNDCNT_H & BIT(13)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000);
-	if(SOUNDCNT_H & BIT(12)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_H & BIT(12) && SOUNDCNT_H & BIT(13)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000) | 0x400000; //same on both
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(13)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(12)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_H & BIT(12) && sIPCSharedGBAInst->SOUNDCNT_H & BIT(13)) SCHANNEL_CR(5) = (SCHANNEL_CR(5) & ~0xFF0000) | 0x400000; //same on both
 
-	int right = SOUNDCNT_L & 7;
-	int left = (SOUNDCNT_L << 4) & 7;
+	int right = sIPCSharedGBAInst->SOUNDCNT_L & 7;
+	int left = (sIPCSharedGBAInst->SOUNDCNT_L << 4) & 7;
 	int tempmixedvol1_4 = 0;
 	if((left + right) != 0) //don't work
 	{
 		tempmixedvol1_4 = ((right*0x7F0000)/(right + left) & 0x7F0000);
 	}
 	
-	if(SOUNDCNT_L & BIT(12)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000);
-	if(SOUNDCNT_L & BIT(8)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_L & BIT(8) && SOUNDCNT_L & BIT(12)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000) | tempmixedvol1_4;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(12)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(8)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(8) && sIPCSharedGBAInst->SOUNDCNT_L & BIT(12)) SCHANNEL_CR(0) = (SCHANNEL_CR(0) & ~0xFF0000) | tempmixedvol1_4;
 
-	if(SOUNDCNT_L & BIT(13)) SCHANNEL_CR(4) = (SCHANNEL_CR(1) & ~0xFF0000);
-	if(SOUNDCNT_L & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(1) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_L & BIT(9) && SOUNDCNT_L & BIT(13)) SCHANNEL_CR(1) = (SCHANNEL_CR(1) & ~0xFF0000) | tempmixedvol1_4; 
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(13)) SCHANNEL_CR(4) = (SCHANNEL_CR(1) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(9)) SCHANNEL_CR(4) = (SCHANNEL_CR(1) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(9) && sIPCSharedGBAInst->SOUNDCNT_L & BIT(13)) SCHANNEL_CR(1) = (SCHANNEL_CR(1) & ~0xFF0000) | tempmixedvol1_4; 
 
-	if(SOUNDCNT_L & BIT(14)) SCHANNEL_CR(4) = (SCHANNEL_CR(2) & ~0xFF0000);
-	if(SOUNDCNT_L & BIT(10)) SCHANNEL_CR(4) = (SCHANNEL_CR(2) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_L & BIT(10) && SOUNDCNT_L & BIT(14)) SCHANNEL_CR(2) = (SCHANNEL_CR(2) & ~0xFF0000) | tempmixedvol1_4;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(14)) SCHANNEL_CR(4) = (SCHANNEL_CR(2) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(10)) SCHANNEL_CR(4) = (SCHANNEL_CR(2) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(10) && sIPCSharedGBAInst->SOUNDCNT_L & BIT(14)) SCHANNEL_CR(2) = (SCHANNEL_CR(2) & ~0xFF0000) | tempmixedvol1_4;
 
-	if(SOUNDCNT_L & BIT(15)) SCHANNEL_CR(4) = (SCHANNEL_CR(3) & ~0xFF0000);
-	if(SOUNDCNT_L & BIT(11)) SCHANNEL_CR(4) = (SCHANNEL_CR(3) & ~0xFF0000) | 0x7F0000;
-	if(SOUNDCNT_L & BIT(11) && SOUNDCNT_L & BIT(15)) SCHANNEL_CR(3) = (SCHANNEL_CR(3) & ~0xFF0000) | tempmixedvol1_4;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(15)) SCHANNEL_CR(4) = (SCHANNEL_CR(3) & ~0xFF0000);
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(11)) SCHANNEL_CR(4) = (SCHANNEL_CR(3) & ~0xFF0000) | 0x7F0000;
+	if(sIPCSharedGBAInst->SOUNDCNT_L & BIT(11) && sIPCSharedGBAInst->SOUNDCNT_L & BIT(15)) SCHANNEL_CR(3) = (SCHANNEL_CR(3) & ~0xFF0000) | tempmixedvol1_4;
 
 }
 
 
 void updatetakt()
 {
+	struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
 	//FIFO A
 	if(tacktgeber_sound_FIFO_DMA_A == 0)
 	{
@@ -656,12 +789,12 @@ void updatetakt()
 				break;
 		}*/
 		//SCHANNEL_TIMER(4) = debugfr1 = (((-TM0CNT_L) << seek) & 0xFFFF) << 1;
-		SCHANNEL_TIMER(4) = debugfr1 = TM0CNT_L;
+		SCHANNEL_TIMER(4) = debugfr1 = sIPCSharedGBAInst->TM0CNT_L;
 	}
 	else
 	{
 		/*int seek;
-		switch(TM1CNT_H & 0x3)
+		switch(sIPCSharedGBAInst->TM1CNT_H & 0x3)
 		{
 			case 0:
 				seek = 0;
@@ -676,8 +809,8 @@ void updatetakt()
 				seek = 10;
 				break;
 		}*/
-		//SCHANNEL_TIMER(4) = debugfr1 = (((-TM1CNT_L) & 0xFFFF) << seek) << 1;
-		SCHANNEL_TIMER(4) = debugfr1 = TM1CNT_L;
+		//SCHANNEL_TIMER(4) = debugfr1 = (((-sIPCSharedGBAInst->TM1CNT_L) & 0xFFFF) << seek) << 1;
+		SCHANNEL_TIMER(4) = debugfr1 = sIPCSharedGBAInst->TM1CNT_L;
 	}
 	//FIFO B
 	if(tacktgeber_sound_FIFO_DMA_B == 0)
@@ -699,12 +832,12 @@ void updatetakt()
 				break;
 		}*/
 		//SCHANNEL_TIMER(5) = debugfr2 = (((-TM0CNT_L) << seek) & 0xFFFF) << 1;
-		SCHANNEL_TIMER(5) = debugfr2 = TM0CNT_L;
+		SCHANNEL_TIMER(5) = debugfr2 = sIPCSharedGBAInst->TM0CNT_L;
 	}
 	else
 	{
 		/*int seek;
-		switch(TM1CNT_H & 0x3)
+		switch(sIPCSharedGBAInst->TM1CNT_H & 0x3)
 		{
 			case 0:
 				seek = 0;
@@ -719,23 +852,24 @@ void updatetakt()
 				seek = 10;
 				break;
 		}*/
-		//SCHANNEL_TIMER(5) = debugfr2 = (((-TM1CNT_L) << seek) & 0xFFFF) << 1; //everything is 2 times faster than on ther gba here
-		SCHANNEL_TIMER(5) = debugfr2 = TM1CNT_L; //everything is 2 times faster than on ther gba here
+		//SCHANNEL_TIMER(5) = debugfr2 = (((-sIPCSharedGBAInst->TM1CNT_L) << seek) & 0xFFFF) << 1; //everything is 2 times faster than on ther gba here
+		SCHANNEL_TIMER(5) = debugfr2 = sIPCSharedGBAInst->TM1CNT_L; //everything is 2 times faster than on ther gba here
 	}
 }
 
 void checkstart()
 {
+	struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
 	//DMA 1
-	if(DMA1DAD_L == 0x00A0 && DMA1DAD_H == 0x0400 && (DMA1CNT_H & 0x8000))
+	if(sIPCSharedGBAInst->DM1DAD_L == 0x00A0 && sIPCSharedGBAInst->DM1DAD_H == 0x0400 && (sIPCSharedGBAInst->DM1CNT_H & 0x8000))
 	{
 		//FIFO A
 		if(tacktgeber_sound_FIFO_DMA_A == 0)
 		{
-			if(TM0CNT_H & 0x80) //started timer
+			if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA1SAD_L | (DMA1SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 				//senddebug32(debugsrc1);
 				if(!(SCHANNEL_CR(4) & 0x80000000))SCHANNEL_CR(4) |= 0x80000000 |SOUND_REPEAT; //start now if not already started
 				if(!(TIMER0_CR & TIMER_ENABLE))timerStart(0, ClockDivider_1,debugfr1 << 5, dmaAtimerinter);
@@ -744,10 +878,10 @@ void checkstart()
 		}
 		else
 		{
-			if(TM1CNT_H & 0x80)
+			if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA1SAD_L | (DMA1SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 				//senddebug32(debugsrc1);
 				if(!(SCHANNEL_CR(4) & 0x80000000))SCHANNEL_CR(4) |= 0x80000000 |SOUND_REPEAT; //start now
 				if(!(TIMER0_CR & TIMER_ENABLE))timerStart(0, ClockDivider_1,debugfr1 << 5, dmaAtimerinter);
@@ -757,15 +891,15 @@ void checkstart()
 	}
 	else
 	{
-		if(DMA1DAD_L == 0x00A4 && DMA1DAD_H == 0x0400 && (DMA1CNT_H & 0x8000))
+		if(sIPCSharedGBAInst->DM1DAD_L == 0x00A4 && sIPCSharedGBAInst->DM1DAD_H == 0x0400 && (sIPCSharedGBAInst->DM1CNT_H & 0x8000))
 		{
 			//FIFO B
 			if(tacktgeber_sound_FIFO_DMA_B == 0)
 			{
-				if(TM0CNT_H & 0x80) //started timer
+				if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA1SAD_L | (DMA1SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 					//senddebug32(debugsrc2);
 					if(!(SCHANNEL_CR(5) & 0x80000000))SCHANNEL_CR(5) |= 0x80000000 |SOUND_REPEAT; //start now
 					if(!(TIMER1_CR & TIMER_ENABLE))timerStart(1, ClockDivider_1,debugfr2 << 5, dmaBtimerinter);
@@ -774,10 +908,10 @@ void checkstart()
 			}
 			else
 			{
-				if(TM1CNT_H & 0x80)
+				if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA1SAD_L | (DMA1SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 					//senddebug32(debugsrc2);
 					if(!(SCHANNEL_CR(5) & 0x80000000))SCHANNEL_CR(5) |= 0x80000000 |SOUND_REPEAT; //start now
 					if(!(TIMER1_CR & TIMER_ENABLE))timerStart(1, ClockDivider_1,debugfr2 << 5, dmaBtimerinter);
@@ -790,15 +924,15 @@ void checkstart()
 
 
 	//DMA 2
-	if(DMA2DAD_L == 0x00A0 && DMA2DAD_H == 0x0400 && (DMA2CNT_H & 0x8000))
+	if(sIPCSharedGBAInst->DM2DAD_L == 0x00A0 && sIPCSharedGBAInst->DM2DAD_H == 0x0400 && (sIPCSharedGBAInst->DM2CNT_H & 0x8000))
 	{
 		//FIFO A
 		if(tacktgeber_sound_FIFO_DMA_A == 0)
 		{
-			if(TM0CNT_H & 0x80) //started timer
+			if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA2SAD_L | (DMA2SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 				//senddebug32(debugsrc1);
 				if(!(SCHANNEL_CR(4) & 0x80000000))SCHANNEL_CR(4) |= 0x80000000 |SOUND_REPEAT; //start now
 				if(!(TIMER0_CR & TIMER_ENABLE))timerStart(0, ClockDivider_1,debugfr1 << 5, dmaAtimerinter);
@@ -807,10 +941,10 @@ void checkstart()
 		}
 		else
 		{
-			if(TM1CNT_H & 0x80)
+			if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA2SAD_L | (DMA2SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 				//senddebug32(debugsrc1);
 				if(!(SCHANNEL_CR(4) & 0x80000000))SCHANNEL_CR(4) |= 0x80000000 |SOUND_REPEAT; //start now
 				if(!(TIMER0_CR & TIMER_ENABLE))timerStart(0, ClockDivider_1,debugfr1 << 5, dmaAtimerinter);
@@ -820,15 +954,15 @@ void checkstart()
 	}
 	else
 	{
-		if(DMA2DAD_L == 0x00A4 && DMA2DAD_H == 0x0400 && (DMA2CNT_H & 0x8000))
+		if(sIPCSharedGBAInst->DM2DAD_L == 0x00A4 && sIPCSharedGBAInst->DM2DAD_H == 0x0400 && (sIPCSharedGBAInst->DM2CNT_H & 0x8000))
 		{
 			//FIFO B
 			if(tacktgeber_sound_FIFO_DMA_B == 0)
 			{
-				if(TM0CNT_H & 0x80) //started timer
+				if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA2SAD_L | (DMA2SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 					//senddebug32(debugsrc2);
 					if(!(SCHANNEL_CR(5) & 0x80000000))SCHANNEL_CR(5) |= 0x80000000 |SOUND_REPEAT; //start now
 					if(!(TIMER1_CR & TIMER_ENABLE))timerStart(1, ClockDivider_1,debugfr2 << 5, dmaBtimerinter);
@@ -837,37 +971,34 @@ void checkstart()
 			}
 			else
 			{
-				if(TM1CNT_H & 0x80)
+				if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA2SAD_L | (DMA2SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 					//senddebug32(debugsrc2);
 					if(!(SCHANNEL_CR(5) & 0x80000000))SCHANNEL_CR(5) |= 0x80000000 |SOUND_REPEAT; //start now
 					if(!(TIMER1_CR & TIMER_ENABLE))timerStart(1, ClockDivider_1,debugfr2 << 5, dmaBtimerinter);
 				}
 			}
 		}
-
 	}
-
-
-
 }
 
 
 #ifdef nichtdef
 void checkstart()
 {
+	sIPCSharedGBAInst
 	//DMA 1
-	if(DMA1DAD_L == 0x00A0 && DMA1DAD_H == 0x0400 && (DMA1CNT_H & 0x8000))
+	if(sIPCSharedGBAInst->DM1DAD_L == 0x00A0 && sIPCSharedGBAInst->DM1DAD_H == 0x0400 && (sIPCSharedGBAInst->DM1CNT_H & 0x8000))
 	{
 		//FIFO A
 		if(tacktgeber_sound_FIFO_DMA_A == 0)
 		{
-			if(TM0CNT_H & 0x80) //started timer
+			if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA1SAD_L | (DMA1SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 				//senddebug32(debugsrc1);
 				dmaAtimerinter();
 				dmaAtimerinter();
@@ -886,10 +1017,10 @@ void checkstart()
 		}
 		else
 		{
-			if(TM1CNT_H & 0x80)
+			if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA1SAD_L | (DMA1SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 				//senddebug32(debugsrc1);
 				dmaAtimerinter();
 				dmaAtimerinter();
@@ -910,15 +1041,15 @@ void checkstart()
 	}
 	else
 	{
-		if(DMA1DAD_L == 0x00A4 && DMA1DAD_H == 0x0400 && (DMA1CNT_H & 0x8000))
+		if(sIPCSharedGBAInst->DM1DAD_L == 0x00A4 && sIPCSharedGBAInst->DM1DAD_H == 0x0400 && (sIPCSharedGBAInst->DM1CNT_H & 0x8000))
 		{
 			//FIFO B
 			if(tacktgeber_sound_FIFO_DMA_B == 0)
 			{
-				if(TM0CNT_H & 0x80) //started timer
+				if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA1SAD_L | (DMA1SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 					//senddebug32(debugsrc2);
 					dmaBtimerinter();
 					dmaBtimerinter();
@@ -938,10 +1069,10 @@ void checkstart()
 			}
 			else
 			{
-				if(TM1CNT_H & 0x80)
+				if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA1SAD_L | (DMA1SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM1SAD_L | (sIPCSharedGBAInst->DM1SAD_H << 16);
 					//senddebug32(debugsrc2);
 					dmaBtimerinter();
 					dmaBtimerinter();
@@ -965,15 +1096,15 @@ void checkstart()
 
 
 	//DMA 2
-	if(DMA2DAD_L == 0x00A0 && DMA2DAD_H == 0x0400 && (DMA2CNT_H & 0x8000))
+	if(sIPCSharedGBAInst->DM2DAD_L == 0x00A0 && sIPCSharedGBAInst->DM2DAD_H == 0x0400 && (sIPCSharedGBAInst->DM2CNT_H & 0x8000))
 	{
 		//FIFO A
 		if(tacktgeber_sound_FIFO_DMA_A == 0)
 		{
-			if(TM0CNT_H & 0x80) //started timer
+			if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA2SAD_L | (DMA2SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 				//senddebug32(debugsrc1);
 				dmaAtimerinter();
 				dmaAtimerinter();
@@ -993,10 +1124,10 @@ void checkstart()
 		}
 		else
 		{
-			if(TM1CNT_H & 0x80)
+			if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 			{
 				//SCHANNEL_LENGTH(4) = 0xFFFFFFFF;
-				debugsrc1 = DMA2SAD_L | (DMA2SAD_H << 16);
+				debugsrc1 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 				//senddebug32(debugsrc1);
 				dmaAtimerinter();
 				dmaAtimerinter();
@@ -1017,15 +1148,15 @@ void checkstart()
 	}
 	else
 	{
-		if(DMA2DAD_L == 0x00A4 && DMA2DAD_H == 0x0400 && (DMA2CNT_H & 0x8000))
+		if(sIPCSharedGBAInst->DM2DAD_L == 0x00A4 && sIPCSharedGBAInst->DM2DAD_H == 0x0400 && (sIPCSharedGBAInst->DM2CNT_H & 0x8000))
 		{
 			//FIFO B
 			if(tacktgeber_sound_FIFO_DMA_B == 0)
 			{
-				if(TM0CNT_H & 0x80) //started timer
+				if(sIPCSharedGBAInst->TM0CNT_H & 0x80) //started timer
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA2SAD_L | (DMA2SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 					//senddebug32(debugsrc2);
 					dmaBtimerinter();
 					dmaBtimerinter();
@@ -1045,10 +1176,10 @@ void checkstart()
 			}
 			else
 			{
-				if(TM1CNT_H & 0x80)
+				if(sIPCSharedGBAInst->TM1CNT_H & 0x80)
 				{
 					//SCHANNEL_LENGTH(5) = 0xFFFFFFFF;
-					debugsrc2 = DMA2SAD_L | (DMA2SAD_H << 16);
+					debugsrc2 = sIPCSharedGBAInst->DM2SAD_L | (sIPCSharedGBAInst->DM2SAD_H << 16);
 					//senddebug32(debugsrc2);
 					dmaBtimerinter();
 					dmaBtimerinter();
@@ -1074,27 +1205,20 @@ void checkstart()
 
 }
 #endif
-
-
-
 //ok
 void vcount_handler(){
 	//IPC ARM7/ARM9 process: handles touchscreen,time,etc
 	gbaemu4ds_ipc();
 }
-
 void hblank_handler(){
 	
 }
-
 void vblank_handler(){
 	//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
 	SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
 	Wifi_Update();
+	doFIFOUpdate();
 }
-
-
-
 void fifo_handler(){
 	if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
 	{
@@ -1102,6 +1226,8 @@ void fifo_handler(){
 		REG_IPC_FIFO_CR |= (1<<3);
 		REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 	}
+	
+	REG_IF = IRQ_FIFO_NOT_EMPTY;
 	volatile uint32 command1 = 0, command2 = 0, command3 = 0, command4 = 0;
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
 		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
@@ -1123,12 +1249,6 @@ void fifo_handler(){
 		u32 cmd0 = (u32)(command1);
 		u32 addr = (u32)(cmd0 & ~0xC0000000);
 		u32 val = (u32)(command2); //Value skip add for speedup
-		newvalwrite(addr,val,cmd0);		
-	}
-	REG_IF = IRQ_FIFO_NOT_EMPTY;
-}
-
-void timer0_handler(){
-	updatetakt();
-	checkstart();
+		newvalwrite(addr,val,cmd0,command3,command4);		//args: command1 & ~0xc0000000, command2, command1, command3, command4
+	}	
 }

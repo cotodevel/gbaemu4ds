@@ -3,6 +3,14 @@
 
 #ifdef ARM9
 __attribute__((section(".itcm")))
+void shadowCopyGBAInterrupts(){
+	//ARM7 triggers and ARM9 updates the current interrupts to ARM7 
+	
+}
+#endif
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
 #endif
 void FIFO_DRAINWRITE(){
 	while (!(REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)){}
@@ -88,4 +96,19 @@ void Setarm7Sleep(bool value){
 
 bool Getarm7Sleep(){
 	return (bool)GetsIPCSharedGBA()->arm7asleep;
+}
+
+//Shadow Copy part
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+bool getShadowCopyStatus(){
+	return (bool)GetsIPCSharedGBA()->ShadowCopyStatus;
+}
+
+#ifdef ARM9
+__attribute__((section(".itcm")))
+#endif
+void setShadowCopyStatus(bool value){
+	GetsIPCSharedGBA()->ShadowCopyStatus = value;
 }

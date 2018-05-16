@@ -74,6 +74,9 @@ static u8 *workRAM = (u8*)0x02000000;
 static u8 *paletteRAM = (u8*)0x05000000;
 static u8 *vram = (u8*)0x06000000;
 static u8 *oam = (u8*)0x07000000;*/
+
+u16 SOUNDBIAS = 0x0000; //GBA -- ARM7 only
+
 u16 BG0CNT   = 0x0000;
 u16 BG1CNT   = 0x0000;
 u16 BG2CNT   = 0x0000;
@@ -150,28 +153,28 @@ __attribute__((section(".dtcm")))
 u16 DM3CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM0D     = 0x0000;
+u16 TM0CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM0CNT   = 0x0000;
+u16 TM1CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM1D     = 0x0000;
+u16 TM2CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM1CNT   = 0x0000;
+u16 TM3CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM2D     = 0x0000;
+u16 TM0CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM2CNT   = 0x0000;
+u16 TM1CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM3D     = 0x0000;
+u16 TM2CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM3CNT   = 0x0000;
+u16 TM3CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
 u16 P1       = 0xFFFF;

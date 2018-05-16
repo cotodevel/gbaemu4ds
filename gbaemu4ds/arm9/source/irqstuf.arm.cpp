@@ -614,10 +614,10 @@ void pausemenue()
 					videoBgEnableSub(3);
 #endif
 					while(REG_VCOUNT != tempvcount); //wait for VCOUNT
-					TIMER0_CR = timer0Value; //timer on
-					TIMER1_CR = timer1Value;
-					TIMER2_CR = timer2Value;
-					TIMER3_CR = timer3Value;
+					TIMER0_CR = TM0CNT_H; //timer on
+					TIMER1_CR = TM1CNT_H;
+					TIMER2_CR = TM2CNT_H;
+					TIMER3_CR = TM3CNT_H;
 					REG_IE = IE | IRQ_FIFO_NOT_EMPTY; //irq on
 					while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX; //get sync irqs back
 					return; //and return

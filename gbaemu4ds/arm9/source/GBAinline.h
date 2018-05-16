@@ -35,30 +35,4 @@
 
 #include <nds/interrupts.h>
 
-/*
-extern u32  objTilesAddress [3];
-
-extern bool cpuSramEnabled;
-extern bool cpuFlashEnabled;
-extern bool cpuEEPROMEnabled;
-extern bool cpuEEPROMSensorEnabled;
-extern bool cpuDmaHack;
-extern u32 cpuDmaLast;
-extern bool timer0On;
-extern int timer0Ticks;
-extern int timer0ClockReload;
-extern bool timer1On;
-extern int timer1Ticks;
-extern int timer1ClockReload;
-extern bool timer2On;
-extern int timer2Ticks;
-extern int timer2ClockReload;
-extern bool timer3On;
-extern int timer3Ticks;
-extern int timer3ClockReload;
-extern int cpuTotalTicks;
-
-void Logsd(const char *defaultMsg,...);
-*/
-
 #endif //VBA_GBAinline_H

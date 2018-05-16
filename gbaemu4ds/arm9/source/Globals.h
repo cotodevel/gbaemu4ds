@@ -157,23 +157,20 @@ extern u16 DM3DAD_L;
 extern u16 DM3DAD_H;
 extern u16 DM3CNT_L;
 extern u16 DM3CNT_H;
-extern u16 TM0D;
-extern u16 TM0CNT;
-extern u16 TM1D;
-extern u16 TM1CNT;
-extern u16 TM2D;
-extern u16 TM2CNT;
-extern u16 TM3D;
-extern u16 TM3CNT;
+
+extern u16 TM0CNT_L;
+extern u16 TM1CNT_L;
+extern u16 TM2CNT_L;
+extern u16 TM3CNT_L;
+extern u16 TM0CNT_H;
+extern u16 TM1CNT_H;
+extern u16 TM2CNT_H;
+extern u16 TM3CNT_H;
+
 extern u16 P1;
 extern u16 IE;
 extern u16 IF;
 extern u16 IME;
-
-//ichfly
-extern u16 timer0Value;
-extern u16 timer1Value;
-extern u16 timer2Value;
-extern u16 timer3Value;
+extern u16 SOUNDBIAS; //GBA -- ARM7 only
 
 #endif // VBA_GLOBALS_H

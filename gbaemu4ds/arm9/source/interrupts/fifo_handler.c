@@ -83,6 +83,52 @@ void HandleFifo() {
 		else
 		{
 			switch (command1) {
+				case (ARM9_DOGBASHADOWCOPY):{
+					struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
+					sIPCSharedGBAInst->GBAIE = IE;
+					sIPCSharedGBAInst->GBAIF = IF;
+					sIPCSharedGBAInst->GBAIME = IME;
+					sIPCSharedGBAInst->DM0SAD_L = DM0SAD_L;
+					sIPCSharedGBAInst->DM0SAD_H = DM0SAD_H;
+					sIPCSharedGBAInst->DM0DAD_L = DM0DAD_L;
+					sIPCSharedGBAInst->DM0DAD_H = DM0DAD_H;
+					sIPCSharedGBAInst->DM0CNT_L = DM0CNT_L;
+					sIPCSharedGBAInst->DM0CNT_H = DM0CNT_H;
+					sIPCSharedGBAInst->DM1SAD_L = DM1SAD_L;
+					sIPCSharedGBAInst->DM1SAD_H = DM1SAD_H;
+					sIPCSharedGBAInst->DM1DAD_L = DM1DAD_L;
+					sIPCSharedGBAInst->DM1DAD_H = DM1DAD_H;
+					sIPCSharedGBAInst->DM1CNT_L = DM1CNT_L;
+					sIPCSharedGBAInst->DM1CNT_H = DM1CNT_H;
+					sIPCSharedGBAInst->DM2SAD_L = DM2SAD_L;
+					sIPCSharedGBAInst->DM2SAD_H = DM2SAD_H;
+					sIPCSharedGBAInst->DM2DAD_L = DM2DAD_L;
+					sIPCSharedGBAInst->DM2DAD_H = DM2DAD_H;
+					sIPCSharedGBAInst->DM2CNT_L = DM2CNT_L;
+					sIPCSharedGBAInst->DM2CNT_H = DM2CNT_H;
+					sIPCSharedGBAInst->DM3SAD_L = DM3SAD_L;
+					sIPCSharedGBAInst->DM3SAD_H = DM3SAD_H;
+					sIPCSharedGBAInst->DM3DAD_L = DM3DAD_L;
+					sIPCSharedGBAInst->DM3DAD_H = DM3DAD_H;
+					sIPCSharedGBAInst->DM3CNT_L = DM3CNT_L;
+					sIPCSharedGBAInst->DM3CNT_H = DM3CNT_H;
+					sIPCSharedGBAInst->TM0CNT_L = TM0CNT_L;
+					sIPCSharedGBAInst->TM1CNT_L = TM1CNT_L;
+					sIPCSharedGBAInst->TM2CNT_L = TM2CNT_L;
+					sIPCSharedGBAInst->TM3CNT_L = TM3CNT_L;
+					sIPCSharedGBAInst->TM0CNT_H = TM0CNT_H;
+					sIPCSharedGBAInst->TM1CNT_H = TM1CNT_H;
+					sIPCSharedGBAInst->TM2CNT_H = TM2CNT_H;
+					sIPCSharedGBAInst->TM3CNT_H = TM3CNT_H;
+					sIPCSharedGBAInst->SOUNDBIAS = SOUNDBIAS;
+					
+					setShadowCopyStatus(true);
+				}
+				break;
+				case(ARM7_DOGBASHADOWUPDATE):{
+					
+				}
+				break;
 				case(FIFO_DEBUG):{
 					//printf("FIFO ok");	//test the FIFO if NDS cmds and GBA cmds work .. ok they work
 				}

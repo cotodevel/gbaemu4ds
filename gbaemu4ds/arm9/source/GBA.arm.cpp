@@ -131,45 +131,15 @@ int lcdTicks = (useBios && !skipBios) ? 1008 : 208;
 __attribute__((section(".dtcm")))
 u8 timerOnOffDelay = 0;
 __attribute__((section(".dtcm")))
-u16 timer0Value = 0;
-__attribute__((section(".dtcm")))
 bool timer0On = false;
-__attribute__((section(".dtcm")))
-int timer0Ticks = 0;
-__attribute__((section(".dtcm")))
-int timer0Reload = 0;
-__attribute__((section(".dtcm")))
-int timer0ClockReload  = 0;
-__attribute__((section(".dtcm")))
-u16 timer1Value = 0;
 __attribute__((section(".dtcm")))
 bool timer1On = false;
 __attribute__((section(".dtcm")))
-int timer1Ticks = 0;
-__attribute__((section(".dtcm")))
-int timer1Reload = 0;
-__attribute__((section(".dtcm")))
 int timer1ClockReload  = 0;
-__attribute__((section(".dtcm")))
-u16 timer2Value = 0;
 __attribute__((section(".dtcm")))
 bool timer2On = false;
 __attribute__((section(".dtcm")))
-int timer2Ticks = 0;
-__attribute__((section(".dtcm")))
-int timer2Reload = 0;
-__attribute__((section(".dtcm")))
-int timer2ClockReload  = 0;
-__attribute__((section(".dtcm")))
-u16 timer3Value = 0;
-__attribute__((section(".dtcm")))
 bool timer3On = false;
-__attribute__((section(".dtcm")))
-int timer3Ticks = 0;
-__attribute__((section(".dtcm")))
-int timer3Reload = 0;
-__attribute__((section(".dtcm")))
-int timer3ClockReload  = 0;
 __attribute__((section(".dtcm")))
 u32 dma0Source = 0;
 __attribute__((section(".dtcm")))
@@ -502,14 +472,14 @@ variable_desc saveGameStruct[] = {
   { &DM3DAD_H , sizeof(u16) },
   { &DM3CNT_L , sizeof(u16) },
   { &DM3CNT_H , sizeof(u16) },
-  { &TM0D     , sizeof(u16) },
-  { &TM0CNT   , sizeof(u16) },
-  { &TM1D     , sizeof(u16) },
-  { &TM1CNT   , sizeof(u16) },
-  { &TM2D     , sizeof(u16) },
-  { &TM2CNT   , sizeof(u16) },
-  { &TM3D     , sizeof(u16) },
-  { &TM3CNT   , sizeof(u16) },
+  { &TM0CNT_L     , sizeof(u16) },
+  { &TM0CNT_H   , sizeof(u16) },
+  { &TM1CNT_L     , sizeof(u16) },
+  { &TM0CNT_H   , sizeof(u16) },
+  { &TM2CNT_L     , sizeof(u16) },
+  { &TM0CNT_H   , sizeof(u16) },
+  { &TM3CNT_L     , sizeof(u16) },
+  { &TM0CNT_H   , sizeof(u16) },
   { &P1       , sizeof(u16) },
   { &IE       , sizeof(u16) },
   { &IF       , sizeof(u16) },
@@ -518,21 +488,9 @@ variable_desc saveGameStruct[] = {
   { &holdType, sizeof(int) },
   { &lcdTicks, sizeof(int) },
   { &timer0On , sizeof(bool) },
-  { &timer0Ticks , sizeof(int) },
-  { &timer0Reload , sizeof(int) },
-  { &timer0ClockReload  , sizeof(int) },
   { &timer1On , sizeof(bool) },
-  { &timer1Ticks , sizeof(int) },
-  { &timer1Reload , sizeof(int) },
-  { &timer1ClockReload  , sizeof(int) },
   { &timer2On , sizeof(bool) },
-  { &timer2Ticks , sizeof(int) },
-  { &timer2Reload , sizeof(int) },
-  { &timer2ClockReload  , sizeof(int) },
   { &timer3On , sizeof(bool) },
-  { &timer3Ticks , sizeof(int) },
-  { &timer3Reload , sizeof(int) },
-  { &timer3ClockReload  , sizeof(int) },
   { &dma0Source , sizeof(u32) },
   { &dma0Dest , sizeof(u32) },
   { &dma1Source , sizeof(u32) },
@@ -873,8 +831,97 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 
 }
 
+
+//coto: FIFO / Direct Sound DMA
 __attribute__((section(".itcm")))
-void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
+void doDMAFIFO(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32){    
+	struct sIPCSharedGBA* sIPCSharedGBAInst = GetsIPCSharedGBA();
+	switch(s&0x0f000000){
+		//Direct Write?
+		case(0x02000000):
+        case(0x03000000):
+        case(0x05000000):
+        case(0x06000000):
+        case(0x07000000):
+        {
+            //FIFO select
+            switch(d&0x000000ff){
+                //FIFO_A (040000A0h)
+				//Upon DMA request from sound controller, 4 units of 32bits (16 bytes) are transferred (both Word Count register and DMA Transfer Type bit are ignored)
+                case 0xa0:{
+                    s &= 0xFFFFFFFC;
+					u32 fifo_fetch0 = *(u32*)(s+0);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch0,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch1 = *(u32*)(s+1);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch1,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch2 = *(u32*)(s+2);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch2,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch3 = *(u32*)(s+3);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch3,0,WRITEWORD_PLAINDMAFIFO_32);
+					//SendArm7Command(0xc1710004,0x0,0x0,0x0);
+                }
+                break;
+                //FIFO_B (040000A4h)
+                case(0xa4):{
+                    s &= 0xFFFFFFFC;
+					u32 fifo_fetch0 = *(u32*)(s+0);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch0,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch1 = *(u32*)(s+1);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch1,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch2 = *(u32*)(s+2);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch2,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch3 = *(u32*)(s+3);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch3,0,WRITEWORD_PLAINDMAFIFO_32);
+					//SendArm7Command(0xc1710005,0x0,0x0,0x0);
+				}
+                break;
+            }
+        }
+        break;
+        
+		//GBA -> NDS -> GBA Indirect Write
+        default:{
+			//FIFO select
+            switch(d&0x000000ff){
+                //FIFO_A (040000A0h)
+				//Upon DMA request from sound controller, 4 units of 32bits (16 bytes) are transferred (both Word Count register and DMA Transfer Type bit are ignored)
+                case 0xa0:{
+                    s &= 0xFFFFFFFC;
+					u32 fifo_fetch0 = CPUReadMemory(s+0);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch0,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch1 = CPUReadMemory(s+4);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch1,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch2 = CPUReadMemory(s+8);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch2,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch3 = CPUReadMemory(s+12);
+					SendArm7Command(WRITEWORD_DMAFIFO_A,fifo_fetch3,0,WRITEWORD_PLAINDMAFIFO_32);
+					//SendArm7Command(0xc1710004,0x0,0x0,0x0);
+                }
+                break;
+                //FIFO_B (040000A4h)
+                case(0xa4):{
+                    s &= 0xFFFFFFFC;
+					u32 fifo_fetch0 = CPUReadMemory(s+0);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch0,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch1 = CPUReadMemory(s+4);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch1,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch2 = CPUReadMemory(s+8);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch2,0,WRITEWORD_PLAINDMAFIFO_32);
+					u32 fifo_fetch3 = CPUReadMemory(s+12);
+					SendArm7Command(WRITEWORD_DMAFIFO_B,fifo_fetch3,0,WRITEWORD_PLAINDMAFIFO_32);
+					//SendArm7Command(0xc1710005,0x0,0x0,0x0);
+				}
+                break;   
+            }
+        }
+        break;
+    }
+}
+
+
+__attribute__((section(".itcm")))
+__attribute__ ((hot))
+void CPUCheckDMA(int reason, int dmamask)
 {
   // DMA 0
   if((DM0CNT_H & 0x8000) && (dmamask & 1)) {
@@ -957,39 +1004,45 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       case 2:
         destIncrement = 0;
         break;
-      }      
-      if(reason == 3) {
-#ifdef DEV_VERSION
-        if(systemVerbose & VERBOSE_DMA1) {
-          Log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
-              DM1CNT_H,
-              16);
-        }
-#endif  
-        doDMA(dma1Source, dma1Dest, sourceIncrement, 0, 4,
-              0x0400);
-      } else {
-#ifdef DEV_VERSION
-        if(systemVerbose & VERBOSE_DMA1) {
-          int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
-          if(DM1CNT_H & 0x0400)
-            count <<= 1;
-          iprintf("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
-              DM1CNT_H,
-              count);
-        }
-#endif          
-        doDMA(dma1Source, dma1Dest, sourceIncrement, destIncrement,
-              DM1CNT_L ? DM1CNT_L : 0x4000,
-              DM1CNT_H & 0x0400);
       }
+	  
+		//DMA 1: Sound FIFO DMA
+		if(reason == 3) {
+#ifdef DEV_VERSION
+			if(systemVerbose & VERBOSE_DMA1) {
+				Log("DMA1: s=%08x d=%08x c=%04x count=%08x ", dma1Source, dma1Dest, DM1CNT_H,16);
+			}
+#endif  
+		
+			//ori: doDMA(dma1Source, dma1Dest, sourceIncrement, 0, 4,0x0400);
+			  
+			//map redirect to FIFO
+			doDMAFIFO(dma1Source, dma1Dest, sourceIncrement, 0, 4,0x0400);
+			
+		} 
+		
+		else {
+#ifdef DEV_VERSION
+			if(systemVerbose & VERBOSE_DMA1) {
+				int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
+				if(DM1CNT_H & 0x0400)
+					count <<= 1;
+				printf("DMA1: s=%08x d=%08x c=%04x count=%08x ", dma1Source, dma1Dest, DM1CNT_H,count);
+			}
+#endif
+			doDMA(dma1Source, dma1Dest, sourceIncrement, destIncrement, DM1CNT_L ? DM1CNT_L : 0x4000, DM1CNT_H & 0x0400);
+		}
       cpuDmaHack = true;
 
-      /*if(DM1CNT_H & 0x4000) {
-        IF |= 0x0200;
+	//new 
+      //do DMA IRQ here
+      if(DM1CNT_H & 0x4000) {
+        IF |= 0x200;
         UPDATE_REG(0x202, IF);
-        cpuNextEvent = cpuTotalTicks;
-      }*/ //ichfly todo
+        //cpuNextEvent = cpuTotalTicks;
+      }
+	  
+	  //new end
       
       if(((DM1CNT_H >> 5) & 3) == 3) {
         dma1Dest = DM1DAD_L | (DM1DAD_H << 16);
@@ -1001,6 +1054,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       }
     }
   }
+  
   
   // DMA 2
   if((DM2CNT_H & 0x8000) && (dmamask & 4)) {
@@ -1027,40 +1081,41 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         destIncrement = 0;
         break;
       }      
-      if(reason == 3) {
+	  
+		//DMA2: Sound FIFO DMA
+		if(reason == 3) {
 #ifdef DEV_VERSION
-        if(systemVerbose & VERBOSE_DMA2) {
-          int count = (4) << 2;
-          Log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
-              DM2CNT_H,
-              count);
-        }
-#endif                  
-        doDMA(dma2Source, dma2Dest, sourceIncrement, 0, 4,
-              0x0400);
-      } else {
+			if(systemVerbose & VERBOSE_DMA2) {
+				int count = (4) << 2;
+				Log("DMA2: s=%08x d=%08x c=%04x count=%08x ", dma2Source, dma2Dest, DM2CNT_H,count);
+			}
+#endif             
+			//ori: doDMA(dma2Source, dma2Dest, sourceIncrement, 0, 4,0x0400);
+			  
+			//map redirect to FIFO
+			doDMAFIFO(dma2Source, dma2Dest, sourceIncrement, 0, 4,0x0400);
+		}
+		else {
 #ifdef DEV_VERSION
-        if(systemVerbose & VERBOSE_DMA2) {
-          int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
-          if(DM2CNT_H & 0x0400)
-            count <<= 1;
-          iprintf("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
-              DM2CNT_H,
-              count);
-        }
+			if(systemVerbose & VERBOSE_DMA2) {
+				int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
+				if(DM2CNT_H & 0x0400)
+					count <<= 1;
+				printf("DMA2: s=%08x d=%08x c=%04x count=%08x ", dma2Source, dma2Dest, DM2CNT_H,count);
+			}
 #endif                  
-        doDMA(dma2Source, dma2Dest, sourceIncrement, destIncrement,
-              DM2CNT_L ? DM2CNT_L : 0x4000,
-              DM2CNT_H & 0x0400);
-      }
+			doDMA(dma2Source, dma2Dest, sourceIncrement, destIncrement, DM2CNT_L ? DM2CNT_L : 0x4000, DM2CNT_H & 0x0400);
+		}
       cpuDmaHack = true;
-
-      /*if(DM2CNT_H & 0x4000) {
-        IF |= 0x0400;
-        UPDATE_REG(0x202, IF);
-        cpuNextEvent = cpuTotalTicks;
-      }*/ //ichfly todo
-
+		
+		//new
+		//do DMA IRQ here
+		if(DM2CNT_H & 0x4000) {
+			IF |= 0x400;
+			UPDATE_REG(0x202, IF);
+			//cpuNextEvent = cpuTotalTicks;
+		}
+	
       if(((DM2CNT_H >> 5) & 3) == 3) {
         dma2Dest = DM2DAD_L | (DM2DAD_H << 16);
       }
@@ -1071,6 +1126,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       }
     }
   }
+  
 
   // DMA 3
   if((DM3CNT_H & 0x8000) && (dmamask & 8)) {
@@ -1951,10 +2007,6 @@ void CPUUpdateRegister(u32 address, u16 value)
     break;*/ //ichfly disable sound
   case 0x82:
   case 0x88:
-  case 0xa0:
-  case 0xa2:
-  case 0xa4:
-  case 0xa6:
   case 0x90:
   case 0x92:
   case 0x94:
@@ -1973,6 +2025,22 @@ void CPUUpdateRegister(u32 address, u16 value)
 #endif
 	  UPDATE_REG(address,value);
     break;
+	
+  //gamecode DMA fifo write (do update internal counter) / truncated always as : DMA SA: 0xa0 = u8 u16 u32 / 0xa1 u8 / 0xa2 = u8 u16 / DMA SB: same as DMA SA
+  case 0xa0:
+  case 0xa2:
+  case 0xa4:
+  case 0xa6:{
+	
+	#ifdef arm9advsound
+	  REG_IPC_FIFO_TX = (address | 0x80000000);
+	  REG_IPC_FIFO_TX = value; //faster in case we send a 0
+	  REG_IPC_FIFO_TX = WRITEWORD_PLAINDMAFIFO_16;
+	#endif
+	  UPDATE_REG(address,value);
+  }
+  break;
+  
   case 0xB0:
     DM0SAD_L = value;
     UPDATE_REG(0xB0, DM0SAD_L);
@@ -2214,7 +2282,7 @@ void CPUUpdateRegister(u32 address, u16 value)
     }
     break;
  case 0x100:
-    timer0Reload = value;
+    TM0CNT_L = value;
 #ifdef printsoundtimer
 	iprintf("ur %04x to %08x\r\n",value,address);
 #endif
@@ -2226,7 +2294,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	UPDATE_REG(0x100, value);
     break;
   case 0x102:
-    timer0Value = value;
+    TM0CNT_H = value;
     //timerOnOffDelay|=1;
     //cpuNextEvent = cpuTotalTicks;
 	UPDATE_REG(0x102, value);
@@ -2237,37 +2305,9 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = (address | 0x80000000);
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
-	/*if(timer0Reload & 0x8000)
-	{
-		if((value & 0x3) == 0)
-		{
-			*(u16 *)(0x4000100) = timer0Reload >> 5;
-			*(u16 *)(0x4000102) = value + 1;
-			break;
-		}
-		if((value & 0x3) == 1)
-		{
-			*(u16 *)(0x4000100) = timer0Reload >> 1;
-			*(u16 *)(0x4000102) = value + 1;
-			break;
-		}
-		if((value & 3) == 2)
-		{
-			*(u16 *)(0x4000100) = timer0Reload >> 1;
-			*(u16 *)(0x4000102) = value + 1;
-			break;
-		}
-		*(u16 *)(0x4000102) = value;
-		iprintf("big reload0\r\n");//todo 
-	}
-	else*/
-	{	
-		//*(u16 *)(0x4000100) = timer1Reload << 1;
-		//*(u16 *)(0x4000102) = value;
-	}
-    break;
+	break;
   case 0x104:
-    timer1Reload = value;
+    TM1CNT_L = value;
 #ifdef printsoundtimer
 	iprintf("ur %04x to %08x\r\n",value,address);
 #endif
@@ -2287,118 +2327,31 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-    timer1Value = value;
+    TM1CNT_H = value;
     //timerOnOffDelay|=2;
     //cpuNextEvent = cpuTotalTicks;
 	UPDATE_REG(0x106, value);
-
-	/*if(timer1Reload & 0x8000)
-	{
-		if((value & 0x3) == 0)
-		{
-			*(u16 *)(0x4000104) = timer1Reload >> 5;
-			*(u16 *)(0x4000106) = value + 1;
-			break;
-		}
-		if((value & 0x3) == 1)
-		{
-			*(u16 *)(0x4000104) = timer1Reload >> 1;
-			*(u16 *)(0x4000106) = value + 1;
-			break;
-		}
-		if((value & 3) == 2)
-		{
-			*(u16 *)(0x4000104) = timer1Reload >> 1;
-			*(u16 *)(0x4000106) = value + 1;
-			break;
-		}
-		*(u16 *)(0x4000106) = value;
-		iprintf("big reload1\r\n");//todo 
-	}
-	else*/
-	{	
-		//*(u16 *)(0x4000104) = timer1Reload << 1;
-		//*(u16 *)(0x4000106) = value;
-	}
-	  break;
+	break;
   case 0x108:
-    timer2Reload = value;
+    TM2CNT_L = value;
 	UPDATE_REG(0x108, value);
 	*(u16 *)(0x4000108) = value;
     break;
   case 0x10A:
-    timer2Value = value;
+    TM2CNT_H = value;
     //timerOnOffDelay|=4;
     //cpuNextEvent = cpuTotalTicks;
 	UPDATE_REG(0x10A, value);
-
-	/*if(timer2Reload & 0x8000)
-	{
-		if((value & 0x3) == 0)
-		{
-			*(u16 *)(0x4000108) = timer2Reload >> 5;
-			*(u16 *)(0x400010A) = value + 1;
-			break;
-		}
-		if((value & 0x3) == 1)
-		{
-			*(u16 *)(0x4000108) = timer2Reload >> 1;
-			*(u16 *)(0x400010A) = value + 1;
-			break;
-		}
-		if((value & 3) == 2)
-		{
-			*(u16 *)(0x4000108) = timer2Reload >> 1;
-			*(u16 *)(0x400010A) = value + 1;
-			break;
-		}
-		iprintf("big reload2\r\n");//todo 
-		*(u16 *)(0x400010A) = value;
-	}
-	else*/
-	{	
-		//*(u16 *)(0x4000108) = timer2Reload << 1;
-		//*(u16 *)(0x400010A) = value;
-	}
-	  break;
+	break;
   case 0x10C:
-    timer3Reload = value;
+    TM3CNT_L = value;
 	UPDATE_REG(0x10C, value);
 	  break;
   case 0x10E:
-    timer3Value = value;
+    TM3CNT_H = value;
     //timerOnOffDelay|=8;
     //cpuNextEvent = cpuTotalTicks;
 	UPDATE_REG(0x10E, value);
-
-	/*if(timer3Reload & 0x8000)
-	{
-		if((value & 0x3) == 0)
-		{
-			*(u16 *)(0x400010C) = timer3Reload >> 5;
-			*(u16 *)(0x400010E) = value + 1;
-			break;
-		}
-		if((value & 0x3) == 1)
-		{
-			*(u16 *)(0x400010C) = timer3Reload >> 1;
-			*(u16 *)(0x400010E) = value + 1;
-			break;
-		}
-		if((value & 3) == 2)
-		{
-			*(u16 *)(0x400010C) = timer3Reload >> 1;
-			*(u16 *)(0x400010E) = value + 1;
-			break;
-		}
-		iprintf("big reload3\r\n");//todo 
-		*(u16 *)(0x400010E) = value;
-	}
-	else*/
-	{	
-		*(u16 *)(0x400010C) = timer3Reload << 1;
-		*(u16 *)(0x400010E) = value;
-	}
   break;
   case 0x128:
     if(value & 0x80) {
@@ -2709,14 +2662,10 @@ void CPUReset()
   DM3DAD_H = 0x0000;
   DM3CNT_L = 0x0000;
   DM3CNT_H = 0x0000;
-  TM0D     = 0x0000;
-  TM0CNT   = 0x0000;
-  TM1D     = 0x0000;
-  TM1CNT   = 0x0000;
-  TM2D     = 0x0000;
-  TM2CNT   = 0x0000;
-  TM3D     = 0x0000;
-  TM3CNT   = 0x0000;
+  TM0CNT_L     = 0x0000;
+  TM1CNT_L     = 0x0000;
+  TM2CNT_L     = 0x0000;
+  TM3CNT_L     = 0x0000;
   P1       = 0x03FF;
   IE       = 0x0000;
   IF       = 0x0000;
@@ -2776,21 +2725,9 @@ void CPUReset()
   
   lcdTicks = (useBios && !skipBios) ? 1008 : 208;
   timer0On = false;
-  timer0Ticks = 0;
-  timer0Reload = 0;
-  timer0ClockReload  = 0;
   timer1On = false;
-  timer1Ticks = 0;
-  timer1Reload = 0;
-  timer1ClockReload  = 0;
   timer2On = false;
-  timer2Ticks = 0;
-  timer2Reload = 0;
-  timer2ClockReload  = 0;
   timer3On = false;
-  timer3Ticks = 0;
-  timer3Reload = 0;
-  timer3ClockReload  = 0;
   dma0Source = 0;
   dma0Dest = 0;
   dma1Source = 0;
@@ -3347,7 +3284,18 @@ void CPUWriteByte(u32 address, u8 b)
       case 0x9c:
       case 0x9d:
       case 0x9e:
-      case 0x9f:      
+      case 0x9f:
+	  
+	  //gamecode DMA fifo write (do update internal counter) / truncated always as : DMA SA: 0xa0 = u8 u16 u32 / 0xa1 u8 / 0xa2 = u8 u16 / DMA SB: same as DMA SA
+	  case 0xa0:
+	  case 0xa1:
+	  case 0xa2:
+	  case 0xa3:
+	  case 0xa4:
+	  case 0xa5:
+	  case 0xa6:
+	  case 0xa7:
+	  
 	//soundEvent(address&0xFF, b);  //ichfly disable sound
 #ifdef printsoundwrites
 		  iprintf("b %02x to %08x\r\n",b,address);
@@ -3355,6 +3303,7 @@ void CPUWriteByte(u32 address, u8 b)
 	  #ifdef arm9advsound
 		  REG_IPC_FIFO_TX = ((address & 0x3FF) | 0x40000000);
 		  REG_IPC_FIFO_TX = b; //faster in case we send a 0
+		  REG_IPC_FIFO_TX = WRITEWORD_PLAINDMAFIFO_8;	//required, we need the fifo write datatype
 		#endif
 	break;
       default:
