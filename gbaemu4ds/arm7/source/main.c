@@ -535,6 +535,11 @@ int main() {
 		
 		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
 		{
+			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
+			{
+				break;
+			}	
+			
 #ifndef noenterCriticalSection
 			int oldIME = enterCriticalSection();
 #endif
@@ -572,6 +577,13 @@ int main() {
 #ifndef noenterCriticalSection
 			leaveCriticalSection(oldIME);
 #endif
+		}
+		//discard fifo if error
+		if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
+		{
+			//clear fifo inmediately
+			REG_IPC_FIFO_CR |= (1<<3);
+			REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 		}
 	}
 	return 0;
