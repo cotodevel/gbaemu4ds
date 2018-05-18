@@ -18,6 +18,7 @@ BUILD		:=	build
 SOURCES		:=	source	\
 				source/ipc	\
 				source/wireless	\
+				source/interrupts	\
 				../common
 INCLUDES	:=	include	\
 				../include	\
@@ -25,6 +26,7 @@ INCLUDES	:=	include	\
 				../include/netinet	\
 				../include/sys	\
 				source/wireless	\
+				source/interrupts	\
 				../common	\
 				build
 DATA		:=
