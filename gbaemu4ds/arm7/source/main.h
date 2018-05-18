@@ -75,6 +75,8 @@ extern void playdmafifo();
 extern void timer0interrupt_thread();
 extern void timer1interrupt_thread();
 
+extern bool ykeypp;
+
 #ifdef __cplusplus
 }
 #endif

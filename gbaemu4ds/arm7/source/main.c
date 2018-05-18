@@ -603,7 +603,7 @@ int main() {
 	ledBlink(0);
 	readUserSettings();
 	
-	u32 curIRQ = IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ();
+	u32 curIRQ = IRQ_TIMER0 | IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ(); / IRQ_WIFI is handled by libnds irq handler so excluded REG_IF in wifi_arm7.c
 	
 	irqInit();
 	fifoInit();
@@ -614,8 +614,8 @@ int main() {
 	irqSet(IRQ_VBLANK, 			(void*)vblank_handler);
 	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//irq when VCOUNTER time
 	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//irq when opening the LID of DS time
-	irqSet(IRQ_FIFO_NOT_EMPTY, 			(void*)fifo_handler);			//irq when receiving fifo msg from arm9
-	irqSet(IRQ_TIMER0, 			(void*)timer0interrupt_thread);	    
+	irqSet(IRQ_FIFO_NOT_EMPTY, 	(void*)fifo_handler);					//irq when receiving fifo msg from arm9
+	irqSet(IRQ_TIMER0, 			(void*)timer0interrupt_thread);	    	//timer0 irq
     
 	REG_IPC_SYNC = 0;
     REG_IPC_FIFO_CR = IPC_FIFO_RECV_IRQ | IPC_FIFO_SEND_IRQ | IPC_FIFO_ERROR | IPC_FIFO_ENABLE;
@@ -639,56 +639,14 @@ int main() {
 
 	SCHANNEL_REPEAT_POINT(5) = 0;
 	SCHANNEL_LENGTH(5) = 8;
-
-	bool ykeypp = false;
-	bool isincallline = false;
+	
 	while (true) {
 		//sound alloc
 		//0-3 matching gba
 		//4-5 FIFO
 		//ledBlink(1);
 		//swiWaitForVBlank();
-		if((REG_VCOUNT == arm7VCOUNTsyncline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
-		{
-			if(!isincallline)
-			{
-#ifdef anyarmcom
-				*amr7sendcom = *amr7sendcom + 1;
-#endif
-			}
-			isincallline = true;
-			//while(REG_VCOUNT == callline); //don't send 2 or more
-		}
-		else
-		{
-			isincallline = false;
-		}
-		if(!(REG_KEYXY & 0x2))
-		{
-			if(!ykeypp)
-			{
-				//REG_IPC_FIFO_TX = 0x4200BEEF;
-				SendArm9Command(0x4200BEEF,0x0,0x0,0x0);
-#ifdef anyarmcom
-				*amr7sendcom = *amr7sendcom + 1;
-#endif				//while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
-				//int val2 = REG_IPC_FIFO_RX; //Value skip
-				ykeypp = true;
-
-			}
-		}
-		else
-		{
-			ykeypp = false;
-		}
-		
-		//Close nds lid @ ARM7
-		if(*(u16*)0x04000136 & 0x80)
-		{
-			SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
-		}
-		
-		//swiWaitForVBlank();
+		swiWaitForVBlank();
 	}
 	return 0;
 }
@@ -1205,20 +1163,52 @@ void checkstart()
 
 }
 #endif
+
 //ok
 void vcount_handler(){
 	//IPC ARM7/ARM9 process: handles touchscreen,time,etc
 	gbaemu4ds_ipc();
 }
+
+//ok
 void hblank_handler(){
 	
 }
+
+//ok
+bool ykeypp = false;
 void vblank_handler(){
-	//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
-	SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
+	if(!(REG_KEYXY & 0x2))
+	{
+		if(!ykeypp)
+		{
+			//REG_IPC_FIFO_TX = 0x4200BEEF;
+			SendArm9Command(0x4200BEEF,0x0,0x0,0x0);
+#ifdef anyarmcom
+			*amr7sendcom = *amr7sendcom + 1;
+#endif				//while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
+			//int val2 = REG_IPC_FIFO_RX; //Value skip
+			ykeypp = true;
+
+		}
+	}
+	else
+	{
+		ykeypp = false;
+	}
+	
+	//Close nds lid @ ARM7
+	if(*(u16*)0x04000136 & 0x80)
+	{
+		SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
+	}
+	
+	SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);	//send cmd 0x3F00BEEF
 	Wifi_Update();
 	doFIFOUpdate();
 }
+
+
 void fifo_handler(){
 	if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
 	{
