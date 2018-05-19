@@ -1,4 +1,5 @@
-remove nops in ex_s.s
+todos:
+
 impr ex_s.s
 clean interruptDispatcher.s
 todo gbainline.h timeshift
@@ -6,18 +7,24 @@ swi some more asyncsync
 hwreg 0x301 in CPUWriteByte
 fix cpu pc rel reads/writes
 usermode reads firq and mode sw
-need extern volatile u16 DISPCNT;
 not alined ichfly_readdma_rom
 fix reads from unreadable mem (homebrews use this for sets)
-
+read current timer counter value from arm7 when gba arm9 code requests it : timer1 note
 
 CHEAT_PATCH_ROM_16BIT
 CHEAT_PATCH_ROM_32BIT
 GSA_SLOWDOWN
 int cheatsCheckKeys(u32 extended) extended
 
-
 patcher:
 str oldValue
 0x1DC0DE
 decrypter
+
+
+
+timer setup:
+timer0 (gba) -> arm7 timer0  timer0/1 are used by gba dma
+timer1 (gba) -> arm7 timer1  timer0/1 are used by gba dma
+timer2 (gba) -> arm9 timer2 dswifi use timer2
+timer3 (gba) -> arm9 timer3
