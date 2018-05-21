@@ -202,7 +202,7 @@ void HandleFifo() {
 				
 				//arm7 wants to WifiSync
 				case(WIFI_SYNC_GBAEMU4DS):{
-					//Wifi_Sync();	//can't, nifi frame is handled during hblank
+					Wifi_Sync();
 				}
 				break;
 			}

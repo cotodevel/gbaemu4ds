@@ -13,6 +13,7 @@
 #include "fifo_handler.h"
 
 u16 arm7VCOUNTsyncline = 0xFFFF;
+bool ykeypp = false;
 
 #ifdef anyarmcom
 u32* amr7sendcom = 0;
@@ -255,10 +256,10 @@ int main() {
 	ledBlink(0);
 	readUserSettings();
 	
-	u32 curIRQ = IRQ_TIMER0 | IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK | IRQ_WIFI;	//IRQ_NETWORK == initClockIRQ(); / IRQ_WIFI is handled by libnds irq handler so excluded REG_IF in wifi_arm7.c
+	u32 curIRQ = IRQ_TIMER0 | IRQ_HBLANK | IRQ_VBLANK | IRQ_VCOUNT | IRQ_LID | IRQ_FIFO_NOT_EMPTY | IRQ_NETWORK;	//IRQ_NETWORK == initClockIRQ(); / IRQ_WIFI is handled by libnds irq handler so excluded REG_IF in wifi_arm7.c
 	
 	irqInit();
-	fifoInit();
+	//fifoInit();
 	
 	installWifiFIFO();
 	
@@ -270,7 +271,7 @@ int main() {
 	irqSet(IRQ_TIMER0, 			(void*)timer0interrupt_thread);	    	//timer0 irq
     
 	REG_IPC_SYNC = 0;
-    REG_IPC_FIFO_CR = IPC_FIFO_RECV_IRQ | IPC_FIFO_SEND_IRQ | IPC_FIFO_ERROR | IPC_FIFO_ENABLE;
+    REG_IPC_FIFO_CR = IPC_FIFO_RECV_IRQ | IPC_FIFO_ENABLE;
 	
 	//set up ppu: do irq on hblank/vblank/vcount/and vcount line is 159
     REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
@@ -292,13 +293,57 @@ int main() {
 	SCHANNEL_REPEAT_POINT(5) = 0;
 	SCHANNEL_LENGTH(5) = 8;
 	
+	bool isincallline = false;
 	while (true) {
+		
 		//sound alloc
 		//0-3 matching gba
 		//4-5 FIFO
 		//ledBlink(1);
 		//swiWaitForVBlank();
-		swiWaitForVBlank();
+		if((REG_VCOUNT == arm7VCOUNTsyncline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
+		{
+			if(!isincallline)
+			{	
+				//REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
+				SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);
+#ifdef anyarmcom
+				*amr7sendcom = *amr7sendcom + 1;
+#endif
+			}
+			isincallline = true;
+			//while(REG_VCOUNT == callline); //don't send 2 or more
+			
+		}
+		else
+		{
+			isincallline = false;
+		}
+		if(!(REG_KEYXY & 0x2))
+		{
+			if(!ykeypp)
+			{
+				//REG_IPC_FIFO_TX = 0x4200BEEF;
+				SendArm9Command(0x4200BEEF,0x0,0x0,0x0);
+#ifdef anyarmcom
+				*amr7sendcom = *amr7sendcom + 1;
+#endif				//while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
+				//int val2 = REG_IPC_FIFO_RX; //Value skip
+				ykeypp = true;
+
+			}
+		}
+		else
+		{
+			ykeypp = false;
+		}
+		
+		//Close nds lid @ ARM7
+		if(*(u16*)0x04000136 & 0x80)
+		{
+			SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
+		}
+		
 	}
 	return 0;
 }
@@ -828,34 +873,9 @@ void hblank_handler(){
 }
 
 //ok
-bool ykeypp = false;
 void vblank_handler(){
-	if(!(REG_KEYXY & 0x2))
-	{
-		if(!ykeypp)
-		{
-			//REG_IPC_FIFO_TX = 0x4200BEEF;
-			SendArm9Command(0x4200BEEF,0x0,0x0,0x0);
-#ifdef anyarmcom
-			*amr7sendcom = *amr7sendcom + 1;
-#endif				//while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
-			//int val2 = REG_IPC_FIFO_RX; //Value skip
-			ykeypp = true;
-
-		}
-	}
-	else
-	{
-		ykeypp = false;
-	}
+	//checkpoint
 	
-	//Close nds lid @ ARM7
-	if(*(u16*)0x04000136 & 0x80)
-	{
-		SendArm9Command(FIFO_SWIGBA_FROM_ARM7,0x0,0x0,0x0);
-	}
-	
-	SendArm9Command(0x3F00BEEF,0x0,0x0,0x0);	//send cmd 0x3F00BEEF
 	Wifi_Update();
 	doFIFOUpdate();
 }

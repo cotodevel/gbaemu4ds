@@ -950,15 +950,11 @@ void Wifi_Update() {
 
 #endif
 
-		if(REG_DISPSTAT & DISP_IN_VBLANK){
-			// check if we have a handler
-			if(packethandler) {			
-				base2=base+6;
-				if(base2>=(WIFI_RXBUFFER_SIZE/2)) base2-=(WIFI_RXBUFFER_SIZE/2);
-				(*packethandler)(base2,len);
-				while((REG_DISPSTAT & DISP_IN_VBLANK));
-				//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-			}
+		// check if we have a handler
+		if(packethandler) {			
+			base2=base+6;
+			if(base2>=(WIFI_RXBUFFER_SIZE/2)) base2-=(WIFI_RXBUFFER_SIZE/2);
+			(*packethandler)(base2,len);
 		}
 
 		base+=fulllen/2;

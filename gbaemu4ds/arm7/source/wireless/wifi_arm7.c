@@ -614,7 +614,7 @@ void Wifi_Interrupt() {
 	if(!WifiData) return;
 	if(!(WifiData->flags7&WFLAG_ARM7_RUNNING)) return;
 	do {
-		//REG_IF=0x01000000; // now that we've cleared the wireless IF, kill the bit in regular IF.
+		REG_IF=0x01000000; // now that we've cleared the wireless IF, kill the bit in regular IF.
 		wIF= W_IE & W_IF;
 		if(wIF& 0x0001) { W_IF=0x0001;  Wifi_Intr_RxEnd();  } // 0) Rx End
 		if(wIF& 0x0002) { W_IF=0x0002;  Wifi_Intr_TxEnd();  } // 1) Tx End

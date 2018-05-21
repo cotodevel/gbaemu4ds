@@ -348,16 +348,14 @@ void initspeedupfelder()
 //---------------------------------------------------------------------------------
 __attribute__((section(".itcm")))
 void HblankHandler(void) {
-//---------------------------------------------------------------------------------
-	Wifi_Sync();
-	
+//---------------------------------------------------------------------------------	
     DISPSTAT |= (REG_DISPSTAT & 0x3);
     DISPSTAT |= 0x2;	//hblank
     DISPSTAT &= 0xFFFe; //remove vblank
     UPDATE_REG(0x04, DISPSTAT);
 	
     CPUCheckDMA(2, 0x0f);
-REG_IF = IRQ_HBLANK;
+	REG_IF = IRQ_HBLANK;
 
 }
 

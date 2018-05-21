@@ -212,10 +212,6 @@ volatile 	uint8 nfdata[128]			= {0xB2, 0xD1, (uint8)CRC_OK_SAYS_HOST, 0, 0, 0, 0
 __attribute__((section(".itcm")))
 void Handler(int packetID, int readlength)
 {
-	if(REG_DISPSTAT & DISP_IN_VBLANK){	//if game entered vblank while here, exit when returning from vblank+game method
-		return;
-	}
-	
 	switch(getMULTIMode()){
 		case (dswifi_localnifimode):{
 			Wifi_RxRawReadPacket(packetID, readlength, (unsigned short *)data);
