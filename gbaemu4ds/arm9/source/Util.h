@@ -142,6 +142,7 @@ extern sint32 HeapBlockOfst;
 extern uint32 * vramHeapAlloc(uint32 vramBlock,uint32 StartAddr,int size);
 extern uint32 * vramHeapFree(uint32 vramBlock,uint32 StartAddr,int size);
 
+extern void patchit(int romSize2);
 
 #ifdef __cplusplus
 }

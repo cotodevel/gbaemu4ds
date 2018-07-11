@@ -21,7 +21,6 @@
 #define VBA_GBA_H
 
 #include <nds.h>
-
 #include "System.h"
 #include "ichflysettings.h"
 
@@ -155,6 +154,20 @@ extern void updateVC();
 extern u8  ichfly_readu8extern(unsigned int pos);
 extern u16 ichfly_readu16extern(unsigned int pos);
 extern u32 ichfly_readu32extern(unsigned int pos);
+
+extern u32 CPUReadMemorypu(u32 address);
+extern u32 CPUReadHalfWordpu(u32 address);
+extern u8 CPUReadBytepu(u32 address);
+extern void CPUWriteMemorypuextern(u32 address, u32 value);
+extern void CPUWriteHalfWordpuextern(u32 address, u16 value);
+extern void CPUWriteBytepuextern(u32 address, u8 b);
+extern void CPUWriteMemoryextern(u32 address, u32 value);
+extern void CPUWriteHalfWordextern(u32 address, u16 value);
+extern void CPUWriteByteextern(u32 address, u8 b);
+extern s16 CPUReadHalfWordSignedoutline(u32 address);
+extern s8 CPUReadByteSigned(u32 address);
+extern s16 CPUReadHalfWordrealpuSignedoutline(u32 address);
+extern s8 CPUReadByteSignedpu(u32 address);
 
 extern void doDMAslow(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32);
 

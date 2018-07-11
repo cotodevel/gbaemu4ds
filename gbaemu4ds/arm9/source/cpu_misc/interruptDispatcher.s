@@ -56,21 +56,6 @@ findIRQ:
 @---------------------------------------------------------------------------------
 no_handler:
 @---------------------------------------------------------------------------------
-#ifndef gba_handel_IRQ_correct
-	str	r1, [r12, #4]	@ IF Clear
-	@help the emu
-	
-	ldr r0, =IF
-	ldrh r2, [r0]
-	orr r1,r1,r2
-	strh r1, [r0]
-	ldr r0, =ioMem
-	ldr r0,[r0]
-	add	r0, r0, #0x200
-	add	r0, r0, #0x2 @don't like todo
-	strh r1,[r0]
-#endif
-		
 	mov	pc,lr
 
 @---------------------------------------------------------------------------------
@@ -84,88 +69,15 @@ jump_intr:
 @---------------------------------------------------------------------------------
 got_handler:
 @---------------------------------------------------------------------------------
-#ifndef advanced_irq_check
-	str	r0, [r12, #4]	@ IF Clear
-#endif
-
-
 	mrs	r12, spsr
-
-
-#ifdef gba_handel_IRQ_correct
-
 	ldr r0,=__sp_irq
-	
 	stmfd	r0!, {r12,SP,lr}	@ {spsr,SP, lr_irq}
-
-
 	mov SP,r0
-	
 	blx	r1
 	
 exitichfly:
-
 	ldmfd   SP, {r0,SP,lr}	@ {spsr,SP, lr_irq}
-
-	
-#else
-	stmfd	sp!, {r12,lr}	@ {spsr, lr_irq}
-
-	@leave irq mode
-
-	mov r2,lr
-	
-	mrs	r12, cpsr
-	push {r12}
-	mov r0,sp
-
-	mov	r3, r12
-	ldr	r12, =SPtemp
-	ldr sp,[r12]
-	bic	r3, r3, #0xdf		@ \__
-	orr	r3, r3, #0x11		@ /  --> Enable IRQ & FIQ. Set CPU mode to Fiq. @so the pointer don't swap
-	msr	cpsr,r3
-
-	mov sp,r0
-	
-	mov lr,r2
-	
-	adr	lr, IntrRet
-	bx	r1
-
-@---------------------------------------------------------------------------------
-IntrRet:
-@---------------------------------------------------------------------------------
-
-	mov r0,sp
-	
-	mrs	r2, cpsr
-	mov	r3, r2
-	bic	r3, r3, #0xdf		@ \__
-	orr	r3, r3, #0xd2		@ /  --> Disable IRQ & FIQ. Set CPU mode to IRQ. @so the pointer don't swap
-	msr	cpsr,r3
-	
-	ldr r12,=SPtemp
-	str sp,[r12]@save new stack size change
-	
-	mov sp,r0
-
-
-	
-	
-	
-	pop	{r2}
-	msr	cpsr, r2
-exitichfly:
-
-	ldmfd   sp!, {r0,lr}	@ {spsr, lr_irq}
-
-#endif
-
-
-
 	msr	spsr, r0		@ restore spsr
-	
 	mov	pc,lr
 
 	.pool

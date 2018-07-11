@@ -1,19 +1,13 @@
-.align 4
-.arm
 .section	.itcm,"ax",%progbits
-
-.equ REG_BASE,	0x04000000
-.equ REG_IME,	0x04000208
-
-
-#include "../ichflysettings.h"
-
-@========== Exception code ====================
-.pool
-	
 .align 4
 .arm
+#include "../ichflysettings.h"
+.pool
+
+@========== Exception code ====================	
 .section	.vectors,"ax",%progbits
+.align 4
+.arm
 	
 .global irqhandler2
 irqhandler2:
@@ -39,8 +33,6 @@ inter_res2:
 	ldr lr, =exHandler
 	str sp,[lr]
 	b dointerwtf
-	
-
 
 
 .global savedsp
@@ -119,12 +111,9 @@ inter_swi:
 	ldr	r1, =exHandlerswi
 	ldr	r1, [r1]
 	
-	
 	ldr	sp, =spsvc	@ use the new stack
 	ldr sp, [sp]
-	
 	blx	r1 @ichfly change back if possible
-	
 	
 	ldr	r1, =spsvc	@save old stack
 	str sp, [r1]
@@ -138,8 +127,6 @@ inter_swi:
 	subs    pc, lr, #0 @ichfly this is not working	
 
 
-
-
 inter_fetch: @ break function todo
 
 	subs    lr, lr, #0x8000000
@@ -149,7 +136,6 @@ inter_fetch: @ break function todo
 	@ldr r2, [pc,#(rom - thisi4 -8)]
 	add		lr,lr,sp
 	subs    pc, lr, #4
-
 
 
 inter_undefined:
@@ -180,37 +166,20 @@ inter_undefined:
 	subs	pc, lr, #4
 
 
-
 dointerwtf:
-
 inter_data:
 	
-
-	
 	ldr	SP, =exRegs
-
 	str	lr, [SP, #(15 * 4)]	@ save r15 (lr is r15)
-
-
-	
 	@ save the registres 0->12
 	stmia	SP!, {r0-r12}
 	
 	@ change the PU to nds mode
 	ldr	r7,=0x36333333	@ see cpumg.cpp for meanings protections
 	mcr	p15, 0, r7, c5, c0, 2
-
 	
-
 	MRS r5,spsr
-
-	
 	mov r6,SP
-#ifndef directcpu
-	ldr r0, =BIOSDBG_SPSR
-	str	r1, [r0]	@ charge le SPSR
-#endif
-
 	@ change the mode  @ on change de mode (on se mets dans le mode qui était avant l'exception)
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
@@ -225,14 +194,6 @@ inter_data:
 	
 	stmia r6, {r13-r14} @save the registrers	@ on sauvegarde les registres bankés (r13 et r14)
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
-
-
-
-#ifdef directcpu
-	
-#ifndef gba_handel_IRQ_correct
-	BIC r5,r5,#0x80
-#endif
 	
 	@ldr r1,=exRegs
 	sub r1,SP,#13 * 4
@@ -253,26 +214,8 @@ itisTHUMB:
 	ldr	sp, =__sp_undef	@ use the new stack
 	BL emuInstrTHUMB @ is emuInstrTHUMB(u16 opcode, u32 *R)
 exitdirectcpu:
-#else
-
-	ldr	sp, =__sp_undef	@ use the new stack
-
-	@ jump into the personal handler @ on appelle l'handler perso
-	ldr	r12, =exHandler
-	ldr	r12, [r12]
-
-
-	blx	r12
-	
-#endif      
-
-	
 
 	@ restore SPSR @ on restaure les bankés
-#ifndef directcpu
-	ldr r0, =BIOSDBG_SPSR
-	ldr	r5, [r0]	@ charge le SPSR
-#endif
 	MSR spsr,r5
 
 	@change mode to the saved mode @ on change de mode (on se mets dans le mode qui était avant l'exception)
@@ -288,24 +231,14 @@ exitdirectcpu:
 	ldmia r6, {r13-r14}	@restor r13 and r14  @ on restaure les registres bankés (r13 et r14). /!\ N'allons pas croire qu'on les a restauré dans notre contexte: en effet, on a changé de mode là !
 	msr	cpsr, r3	@chagne to mode "normal"@ on revient au mode "normal"
 	
-
-
-
-	
 	ldr	SP, =0x06300033
 	mcr	p15, 0, SP, c5, c0, 2
-
-
 
 	@restore r0-r12 easy
 	sub lr,r6,#13 * 4 @ldr	lr, =exRegs
 	ldmia	lr, {r0-r12}
-			
-	@restore PU from the handler @ restaure la protection du PU, comme voulue par l'handler perso
-	
 
-	
-	
+	@restore PU from the handler @ restaure la protection du PU, comme voulue par l'handler perso	
 	@my speedup code
 	ldr	lr, [lr, #(15 * 4)] 
 	
@@ -358,6 +291,6 @@ exRegs:
 	.word	0
 	.word	0
 	.word	0
-		
-	.pool
-	.end
+	
+.pool
+.end

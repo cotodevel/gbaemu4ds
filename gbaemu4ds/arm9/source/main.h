@@ -6,38 +6,35 @@
 #include <nds/system.h>
 #include <nds/ipc.h>
 
-#ifdef ARM7
-#include <nds/arm7/i2c.h>
-#endif
-
-
-
+#include <nds/arm9/dldi.h>
 #include <stdio.h>
 #define Log(...) iprintf(__VA_ARGS__)
+#define INT_TABLE_SECTION __attribute__((section(".dtcm")))
 
-#define MAXPATHLEN 256 
+#define MAXPATHLEN 256 	//libfat directory path length
+
+#endif /*__MAIN_H__*/
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char biosPath[MAXPATHLEN * 2];
-
 extern char patchPath[MAXPATHLEN * 2];
-
 extern char savePath[MAXPATHLEN * 2];
-
 extern char szFile[MAXPATHLEN * 2];
-
-extern u8 var8;
-extern u16 var16;
-extern u32 var32;
 
 //libnds
 extern void irqDummy(void);
-extern struct IntTable irqTable[MAX_INTERRUPTS];
-//extern struct IntTable irqTable[MAX_INTERRUPTS] INT_TABLE_SECTION;
+extern struct IntTable irqTable[MAX_INTERRUPTS] INT_TABLE_SECTION;
+extern void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
 
-#ifdef INT_TABLE_SECTION
-#else
-extern struct IntTable irqTable[MAX_INTERRUPTS];
+// The only built in driver
+extern DLDI_INTERFACE _io_dldi_stub;
+
+extern int frameskip;
+
+#ifdef __cplusplus
+}
 #endif
-
-
-#endif /*__MAIN_H__*/

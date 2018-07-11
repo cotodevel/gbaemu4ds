@@ -32,7 +32,6 @@
 #include "GBA.h"
 #include "bios.h"
 #include "GBAinline.h"
-#include "GBAinlineforpu.h"
 
 #include "Globals.h"
 #include "Util.h"

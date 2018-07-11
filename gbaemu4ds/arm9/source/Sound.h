@@ -91,6 +91,7 @@ extern "C" {
 #endif
 
 extern u32 arm7amr9buffer;
+extern void arm7dmareqandcheat();
 
 #ifdef __cplusplus
 }

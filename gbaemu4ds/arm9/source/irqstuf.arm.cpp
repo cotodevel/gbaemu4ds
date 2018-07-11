@@ -1,40 +1,5 @@
 #include <nds.h>
 #include <stdio.h>
-
-#include "../../common/cpuglobal.h"
-#include "../../common/gba_ipc.h"
-#include "interrupts/fifo_handler.h"
-
-#include <filesystem.h>
-#include "GBA.h"
-#include "Sound.h"
-#include "Util.h"
-#include "getopt.h"
-#include "System.h"
-#include <fat.h>
-#include <dirent.h>
-
-#include "cpumg.h"
-#include "GBAinline.h"
-#include "bios.h"
-
-#include "mydebuger.h"
-
-#include "ichflysettings.h"
-
-#include <nds.h>
-
-#include "arm7sound.h"
-
-#include "main.h"
-#include "wifi_arm9.h"
-
-
-extern char savePath[MAXPATHLEN * 2];
-
-extern char szFile[MAXPATHLEN * 2];
-
-#include <stdio.h>
 #include <stdlib.h>
 #include <nds/memory.h>//#include <memory.h> ichfly
 #include <nds/ndstypes.h>
@@ -48,72 +13,48 @@ extern char szFile[MAXPATHLEN * 2];
 #include <nds/arm9/sassert.h>
 #include <stdarg.h>
 #include <string.h>
+#include "../../common/cpuglobal.h"
+#include "../../common/gba_ipc.h"
+#include "interrupts/fifo_handler.h"
+#include <filesystem.h>
+#include "GBA.h"
+#include "Sound.h"
+#include "Util.h"
+#include "getopt.h"
+#include "System.h"
+#include <fat.h>
+#include <dirent.h>
+#include "cpumg.h"
+#include "GBAinline.h"
+#include "bios.h"
+#include "mydebuger.h"
+#include "ichflysettings.h"
+#include "arm7sound.h"
+#include "main.h"
+#include "wifi_arm9.h"
 #include "../../common/dswnifi.h"
 #include "dswifi_arm9/dswnifi_lib.h"
-
-
-
-//#define loaddirect
-
-void emulateedbiosstart();
-
-volatile u16 DISPCNT;
-
-
-void downgreadcpu();
-
-//volatile u16 DISPCNT  = 0x0080;
-
-
-int framenummer;
-
-
-#define GBA_EWRAM ((void*)(0x02000000))
-
 #include <nds/disc_io.h>
 #include <dirent.h>
 
-   #define DEFAULT_CACHE_PAGES 16
-   #define DEFAULT_SECTORS_PAGE 8
+__attribute__((section(".dtcm")))
+u16 DISPCNT = 0; 	//u16 DISPCNT  = 0x0080;
 
-#define public
+__attribute__((section(".dtcm")))
+int framenummer = 0;
 
 char* rootdirnames [3] = {"nitro:/","fat:/","sd:/"};
 bool rootenabelde[3];
-
 int ausgewauhlt = 0;
-
 char* currentdir =  (char*)0;
-
 int seite = 0;
-
 int dirfeldsize = 0;
 char** names; //stupid i know but i don't know a better way
 u32* dirfeldsizes;
-
-
 int bg = 0;
-
-
-
-extern "C" void resettostartup();
-
-extern "C" void IntrMain();
-
-
-extern "C" void testasm(u32* feld);
-extern "C" void cpu_SetCP15Cnt(u32 v);
-extern "C" u32 cpu_GetCP15Cnt();
-extern "C" u32 pu_Enable();
-
-
-int main( int argc, char **argv);
-
-
 int ignorenextY = 0;
 
-
-
+__attribute__((section(".dtcm")))
 int arm9VCOUNTsyncline = 0;
 
 
@@ -233,11 +174,7 @@ In BG modes 4,5, one Frame may be displayed (selected by DISPCNT Bit 4), the oth
 */
 
 
-
-
-
-int frameskip = 10;
-
+__attribute__((section(".dtcm")))
 int framewtf = 0;
 
 #ifdef usebuffedVcout
@@ -245,9 +182,6 @@ u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
 u8 VCountdstogba[263]; //(LY)      (0..262)
 u8 VCountdoit[263]; //jump in or out
 #endif
-
-extern "C" int spirq;
-extern "C" int SPtemp;
 
 #ifdef skipper
 u8 skipval = 0;
@@ -547,11 +481,6 @@ void frameasyncsync(void) {
 			}
 		}
 	}
-
-
-
-
-
 
 
 

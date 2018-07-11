@@ -1,37 +1,11 @@
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
-
-
 #include <nds.h>
-#include <stdio.h>
-
-#include <filesystem.h>
-#include "GBA.h"
-#include "Sound.h"
-#include "Util.h"
-#include "getopt.h"
-#include "System.h"
-#include <fat.h>
-#include <dirent.h>
-
-#include "cpumg.h"
-#include "GBAinline.h"
-#include "bios.h"
-
-#include "mydebuger.h"
-
-#include "file_browse.h"
-
-#define MAXPATHLEN 256 
-
-#include <nds.h>
-
-
-#include "main.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
+#include <stdarg.h>
+#include <string.h>
+#include <nds/memory.h>
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 #include <nds/bios.h>
@@ -41,19 +15,24 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
-#include <stdarg.h>
-#include <string.h>
-
-
-extern "C" void pu_Enable();
-extern "C" void cpu_SetCP15Cnt(u32 v);
-extern "C" u32 cpu_GetCP15Cnt();
+#include <filesystem.h>
+#include "GBA.h"
+#include "Sound.h"
+#include "Util.h"
+#include "getopt.h"
+#include "System.h"
+#include <fat.h>
+#include <dirent.h>
+#include "cpumg.h"
+#include "GBAinline.h"
+#include "bios.h"
+#include "mydebuger.h"
+#include "file_browse.h"
+#include "main.h"
 
 char* seloptionsshowmem [7] = {"dump ram","dump gba ram","show nds ram","show gba ram","cram dump","dispcomdebug","exit"};
 
-#define readanom 0x100
-
-static inline void wait_press_b()
+void wait_press_b()
 {
     scanKeys();
     u16 keys_up = 0;

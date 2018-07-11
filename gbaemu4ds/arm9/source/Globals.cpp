@@ -67,7 +67,10 @@ u32 stop = 0x08000568;
 int saveType = 0;
 bool useBios = false;
 bool skipBios = false;
+
+__attribute__((section(".dtcm")))
 int frameSkip = 1;
+
 bool speedup = false;
 bool synchronize = true;
 bool cpuDisableSfx = false;

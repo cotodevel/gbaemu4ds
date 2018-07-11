@@ -1,5 +1,3 @@
-
-
 // -*- C++ -*-
 // VisualBoyAdvance - Nintendo Gameboy/GameboyAdvance (TM) emulator.
 // Copyright (C) 1999-2003 Forgotten
@@ -18,9 +16,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
 #ifndef VBA_GBAinline_H
 #define VBA_GBAinline_H
+
 
 #include "fatfileextract.h"
 #include "agbprint.h"
@@ -30,13 +28,9 @@
 #include "GBA.h"
 
 #include "ichflysettings.h"
-#include "cpumg.h"
 #include "main.h"
 
 #include <nds/interrupts.h>
-
-/*
-extern u32  objTilesAddress [3];
 
 extern bool cpuSramEnabled;
 extern bool cpuFlashEnabled;
@@ -59,6 +53,6 @@ extern int timer3ClockReload;
 extern int cpuTotalTicks;
 
 void Logsd(const char *defaultMsg,...);
-*/
+
 
 #endif //VBA_GBAinline_H

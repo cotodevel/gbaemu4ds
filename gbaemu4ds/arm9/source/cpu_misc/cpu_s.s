@@ -2,18 +2,14 @@
 	.align 4
 	.arm
 	
-	.equ REG_IME, 0x04000208
-	
 	.global readbankedsp
    .type   readbankedsp STT_FUNC
 readbankedsp:
 	push {r1-r4}
 	
-	
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
 	and	r0, r0, #0x1F
-	
 	
 	cmp r0,#0x10 @ichfly user is system
 	moveq r0,#0x1F
@@ -34,11 +30,9 @@ readbankedsp:
 readbankedlr:
 	push {r1-r4}
 	
-	
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
 	and	r0, r0, #0x1F
-	
 	
 	cmp r0,#0x10 @ichfly user is system
 	moveq r0,#0x1F
@@ -49,7 +43,6 @@ readbankedlr:
 	mov r0,lr
 	
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
-	
 	
 	pop {r1-r4}
 	bx lr
@@ -97,7 +90,7 @@ pu_Enable:
 cpu_SetCP15Cnt:
 	mcr p15, 0, r0, c1, c0, 0
 	bx lr
-			
+	
 	.global cpu_GetCP15Cnt
    .type   cpu_GetCP15Cnt STT_FUNC
 cpu_GetCP15Cnt:
@@ -133,7 +126,6 @@ cpu_ArmJumpforstackinit:
 	msr	cpsr, r2
 	ldr	sp, =0x03007FE0		@ Set SVC stack
 	
-
 	mov	r2, #0x1F		@ Switch to System Mode
 	msr	cpsr, r2
 	ldr sp,=0x03007F00
@@ -152,7 +144,6 @@ cpu_GbaSaveRegs:
 cpuGetSPSR:
 	mrs r0, spsr
 	bx lr
-	
 	
 	.global cpuGetCPSR
    .type   cpuGetCPSR STT_FUNC
@@ -260,7 +251,6 @@ wait_irq:
 	bic	r3, r2, #0xC0
 	
 	
-	
 	@push regs
 	push {r0-r3}
 	sub r0,sp,#4*17 @+1 res you know
@@ -290,7 +280,6 @@ wait_irq:
 	mov r2,#4*16
 	BLX memcpy
 	pop {r0-r3}
-
 
 
 	@ichfly my code end

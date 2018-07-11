@@ -92,7 +92,7 @@ extern u8 * ioMem;//extern u8 ioMem[0x400];
 
 extern u8 currentVRAMcapblock;
 
-extern volatile u16 DISPCNT;
+extern u16 DISPCNT;
 extern u16 DISPSTAT;
 extern u16 VCOUNT;
 extern u16 BG0CNT;

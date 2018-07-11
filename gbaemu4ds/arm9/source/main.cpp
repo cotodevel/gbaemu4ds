@@ -5,6 +5,10 @@
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+
 #include <filesystem.h>
 
 #include "../../common/cpuglobal.h"
@@ -28,19 +32,6 @@
 #include "ipc/touch_ipc.h"
 #include "dswifi_arm9/dswnifi_lib.h"
 
-
-char biosPath[MAXPATHLEN * 2];
-
-char patchPath[MAXPATHLEN * 2];
-
-char savePath[MAXPATHLEN * 2];
-
-char szFile[MAXPATHLEN * 2];
-
-void initspeedupfelder();
-
-#include <stdio.h>
-#include <stdlib.h>
 #include <nds/memory.h>//#include <memory.h> ichfly
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
@@ -51,53 +42,13 @@ void initspeedupfelder();
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
-#include <stdarg.h>
-#include <string.h>
+
+char biosPath[MAXPATHLEN * 2];
+char patchPath[MAXPATHLEN * 2];
+char savePath[MAXPATHLEN * 2];
+char szFile[MAXPATHLEN * 2];
 
 u8 arm7exchangefild[0x100];
-
-#define INT_TABLE_SECTION __attribute__((section(".dtcm")))
-
-
-extern struct IntTable irqTable[MAX_INTERRUPTS] INT_TABLE_SECTION;
-
-extern "C" void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
-
-
-#include <nds/arm9/dldi.h>
-
-// The only built in driver
-extern DLDI_INTERFACE _io_dldi_stub;
-
-
-
-//#define loaddirect
-
-void emulateedbiosstart();
-
-extern volatile u16 DISPCNT;
-
-extern void HblankHandler(void);
-
-
-void downgreadcpu();
-
-//volatile u16 DISPCNT  = 0x0080;
-
-
-
-#define GBA_EWRAM ((void*)(0x02000000))
-
-#include <nds/disc_io.h>
-#include <dirent.h>
-
-   #define DEFAULT_CACHE_PAGES 16
-   #define DEFAULT_SECTORS_PAGE 8
-
-#define public
-
-
-
 
 char* savetypeschar[7] =
 	{"SaveTypeAutomatic","SaveTypeEeprom","SaveTypeSram","SaveTypeFlash64KB","SaveTypeEepromSensor","SaveTypeNone","SaveTypeFlash128KB"};
@@ -105,37 +56,7 @@ char* savetypeschar[7] =
 char* memoryWaitrealram[8] =
   { "10 and 6","8 and 6","6 and 6","18 and 6","10 and 4","8 and 4","6 and 4","18 and 4" };
 
-
-
-
-
-extern "C" void IntrMain();
-
-
-extern "C" void testasm(u32* feld);
-extern "C" void cpu_SetCP15Cnt(u32 v);
-extern "C" u32 cpu_GetCP15Cnt();
-extern "C" u32 pu_Enable();
-
-
-
-
-
-
-
-
-
-extern int frameskip;
-
-extern int framewtf;
-
-
-
-extern "C" int spirq;
-extern "C" int SPtemp;
-
 u32 arm7amr9buffer = 0;
-
 
 #ifdef anyarmcom
 u32 amr7sendcom = 0;
@@ -146,6 +67,10 @@ u32 amr7directrec = 0;
 u32 amr7indirectrec = 0;
 u32 amr7fehlerfeld[10];
 #endif
+
+
+__attribute__((section(".dtcm")))
+int frameskip = 10;
 
 //---------------------------------------------------------------------------------
 int main( int argc, char **argv) {
@@ -181,7 +106,7 @@ int main( int argc, char **argv) {
 	vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 */
 
-//coto: fixed mode1 (partially)
+//coto: mode1 ok
 vramSetPrimaryBanks(	
 VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode	//Mode 1/2/3/4 special bitmap/rotscale modes
 VRAM_B_LCD, //6820000h-683FFFFh	getVRAMHeapStart(); here
@@ -448,4 +373,3 @@ if(save_decider()==0){
 	return 0;
 
 }
-//a

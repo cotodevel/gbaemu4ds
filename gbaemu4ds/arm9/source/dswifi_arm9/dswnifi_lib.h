@@ -59,6 +59,7 @@ typedef char sint8;
 #define WRAM_16KARM9_16KARM7FIRSTHALF9 	(uint8)(2)
 #define WRAM_0KARM9_32KARM7 			(uint8)(3)
 
+/*
 #ifdef ARM7
 #define WRAM_CR			(*(vuint8*)0x04000241)
 #endif
@@ -66,7 +67,7 @@ typedef char sint8;
 #ifdef ARM9
 #define WRAM_CR			(*(vuint8*)0x04000247)
 #endif
-
+*/
 
 
 

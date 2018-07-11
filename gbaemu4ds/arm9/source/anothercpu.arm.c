@@ -14,11 +14,6 @@
 
 #define patchmyregsfromromtoromaddr //parts todo
 
-
-
-
-
-
 #define C_CORE
 
 #define UPDATE_OLD_myregs \
@@ -2948,14 +2943,9 @@
 
 
 
-#ifdef directcpu
 void __attribute__ ((hot)) emuInstrARM(u32 opcode, u32 *R)
-#else
-void emuInstrARM(u32 opcode, u32 *R)
-#endif
-		{
-
-reg_pair* myregs = (reg_pair*)R;
+{
+	reg_pair* myregs = (reg_pair*)R;
 	
   /*int cond = opcode >> 28;  //ichfly cond_res must be true else there is no exeption
   // suggested optimization for frequent cases
@@ -8561,13 +8551,8 @@ if(cond_res) {*/
 }
 
 
-#ifdef directcpu
 __attribute__((section(".itcm")))
 void __attribute__ ((hot)) emuInstrTHUMB(u16 opcode, u32 *R) 
-#else
-__attribute__((section(".itcm")))
-void emuInstrTHUMB(u16 opcode, u32 *R) 
-#endif
 {
 
 reg_pair* myregs = (reg_pair*)R;
@@ -9842,10 +9827,7 @@ case 0x28:
 }
 void unknowndebugprint(reg_pair *myregs)
 {
-
-
     Log("Undefined THUMB instruction %04x\n", *(u16*)(myregs[15].I - 6));
-	 
 	/*u32 offset = myregs[15].I - 6;
 	if(offset > 0x02040000) offset = myregs[15].I - 6 - (u32)rom + 0x08000000;
 	disArm(offset - 2,disbuffer,DIS_VIEW_ADDRESS);
@@ -9861,8 +9843,3 @@ void unknowndebugprint(reg_pair *myregs)
 	debugDump();
 	while(1);
 }
-
-
-
-
-

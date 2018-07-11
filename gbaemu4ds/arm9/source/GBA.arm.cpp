@@ -1242,214 +1242,78 @@ void CPUUpdateRegister(u32 address, u16 value)
     BG0CNT = (value & 0xDFCF);
     UPDATE_REG(0x08, BG0CNT);
 	*(u16 *)(0x4000008) = BG0CNT;
-    break;
+    
+	break;
   case 0x0A:
     BG1CNT = (value & 0xDFCF);
     UPDATE_REG(0x0A, BG1CNT);
     *(u16 *)(0x400000A) = BG1CNT;
+	
 	break;
   case 0x0C:
     BG2CNT = (value & 0xFFCF);
     UPDATE_REG(0x0C, BG2CNT);
 	REG_BG2CNT = BG2CNT;
 	
-	//ichfly
-    /*
-    if((DISPCNT & 7) < 3){
-        
-        *(u16 *)(0x400000C) = BG2CNT;
-    }
-    else //ichfly some extra handling 
-	{
-		REG_BG3CNT = REG_BG3CNT | (BG2CNT & 0x43);
-	}
-    */
-    
-    //coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400000C) = BG2CNT;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x400000C) = 3;        //NDS BG2 is hidden since
-            *(u16 *)(0x400000E) = BG2CNT;   //we treat BG3 as BG2
-        }
-        break;
-        
-        case(3):case(4):case(5):{
-            REG_BG3CNT = REG_BG3CNT | (BG2CNT & 0x43);
-        }
-        break;
-    }
-	*/
   break;
   case 0x0E:
     BG3CNT = (value & 0xFFCF);
     UPDATE_REG(0x0E, BG3CNT);
 	REG_BG3CNT = BG3CNT;
 	
-	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400000E) = BG3CNT;
-    
-    //coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400000E) = BG3CNT;
-        }
-        break;
-        
-        case(1):{
-			//unused
-        }
-        break;
-    }
-	*/
 	break;
   case 0x10:
     BG0HOFS = value & 511;
     UPDATE_REG(0x10, BG0HOFS);
     REG_BG0HOFS = BG0HOFS;
+	
 	break;
   case 0x12:
     BG0VOFS = value & 511;
     UPDATE_REG(0x12, BG0VOFS);
     REG_BG0VOFS = BG0VOFS;
+	
 	break;
   case 0x14:
     BG1HOFS = value & 511;
     UPDATE_REG(0x14, BG1HOFS);
 	REG_BG1HOFS = BG1HOFS;
-    break;
+    
+	break;
   case 0x16:
     BG1VOFS = value & 511;
     UPDATE_REG(0x16, BG1VOFS);
     REG_BG1VOFS = BG1VOFS;
+	
 	break;      
   case 0x18:
     BG2HOFS = value & 511;
     UPDATE_REG(0x18, BG2HOFS);
 	REG_BG2HOFS = BG2HOFS; //todo the rest
 	
-	//ichfly
-	//*(u16 *)(0x4000018) = value;
-    
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):case(3):case(4):case(5):{
-            *(u16 *)(0x4000018) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000018) = 0;
-           *(u16 *)(0x400001C) = value; //bg3 nds hw map
-        }
-        break;
-    */
 	break;
   case 0x1A:
     BG2VOFS = value & 511;
     UPDATE_REG(0x1A, BG2VOFS);
     REG_BG2VOFS = BG2VOFS; //todo the rest
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400001A) = value; //ichfly only update if it is save
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400001A) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x400001A) = 0;
-           *(u16 *)(0x400001E) = value; //bg3 nds hw map
-        }
-        break;
-    }
-	*/
 	break;
   case 0x1C:
     BG3HOFS = value & 511;
     UPDATE_REG(0x1C, BG3HOFS);
 	REG_BG3HOFS = BG3HOFS;
 	
-	//ichfly
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x400001C) = value; //ichfly only update if it is save
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400001C) = value;
-        }
-        break;
-        
-        case(1):{
-           //unused
-        }
-        break;
-    }
-	*/
 	break;
   case 0x1E:
     BG3VOFS = value & 511;
     UPDATE_REG(0x1E, BG3VOFS);
 	REG_BG3VOFS = BG3VOFS; //todo the rest
 	
-	//ichfly
-    //*(u16 *)(0x400001E) = value;
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):case(3):case(4):case(5):{
-            *(u16 *)(0x400001E) = value;
-        }
-        break;
-        
-        case(1):{
-           //unused
-        }
-        break;
-    }
-	*/
 	break;      
   case 0x20:
     BG2PA = value;	//todo: mask value?
     UPDATE_REG(0x20, BG2PA);
 	REG_BG2PA = BG2PA;
-	
-	//ichfly
-    //if((DISPCNT & 7) < 3)*(u16 *)(0x4000020) = value;
-	//else *(u16 *)(0x4000030) = value;
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000020) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000020) = 0;
-           *(u16 *)(0x4000030) = value;
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x4000030) = value;
-        }
-        break;
-    }
-	*/
 	
 	break;
   case 0x22:
@@ -1457,57 +1321,11 @@ void CPUUpdateRegister(u32 address, u16 value)
     UPDATE_REG(0x22, BG2PB);
     REG_BG2PB = BG2PB;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000022) = value;
-	//else *(u16 *)(0x4000032) = value;
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000022) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000022) = 0;
-           *(u16 *)(0x4000032) = value;
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x4000032) = value;
-        }
-        break;
-    }
-	*/
 	break;
   case 0x24:
     BG2PC = value;
     UPDATE_REG(0x24, BG2PC);
     REG_BG2PC = BG2PC;
-	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000024) = value;
-	//else *(u16 *)(0x4000034) = value;
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000024) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000024) = 0;
-           *(u16 *)(0x4000034) = value;
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x4000034) = value;
-        }
-        break;
-    }
-	*/
 	
 	break;
   case 0x26:
@@ -1515,167 +1333,33 @@ void CPUUpdateRegister(u32 address, u16 value)
     UPDATE_REG(0x26, BG2PD);
 	REG_BG2PD = BG2PD;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000026) = value;
-	//else *(u16 *)(0x4000036) = value;
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000026) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000026) = 0;
-           *(u16 *)(0x4000036) = value;
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x4000036) = value;
-        }
-        break;
-    }
-	*/
-	
 	break;
   case 0x28:
     BG2X_L = value;
     UPDATE_REG(0x28, BG2X_L);
 	#define REG_BG2X_L              (*(vu16*)0x4000028)
-	#define REG_BG3X_L              (*(vu16*)0x4000038)
-    REG_BG2X_L = BG2X_L;
+	REG_BG2X_L = BG2X_L;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000028) = value;
-	//else *(u16 *)(0x4000038) = value;
-    
-	//4000020h - BG2PA - BG2 Rotation/Scaling Parameter A (alias dx) (W)
-    //4000022h - BG2PB - BG2 Rotation/Scaling Parameter B (alias dmx) (W)
-    //4000024h - BG2PC - BG2 Rotation/Scaling Parameter C (alias dy) (W)
-    //4000026h - BG2PD - BG2 Rotation/Scaling Parameter D (alias dmy) (W)
-
-    //4000028h - BG2X_L - BG2 Reference Point X-Coordinate, lower 16 bit (W)
-    //400002Ah - BG2X_H - BG2 Reference Point X-Coordinate, upper 12 bit (W)
-    //400002Ch - BG2Y_L - BG2 Reference Point Y-Coordinate, lower 16 bit (W)
-    //400002Eh - BG2Y_H - BG2 Reference Point Y-Coordinate, upper 12 bit (W)
-    
-    //coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000028) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x4000028) = 0;
-            *(u16 *)(0x4000038) = value;    //engine 3
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x4000038) = value;
-        }
-        break;
-    }
-	*/
 	break;
   case 0x2A:
     BG2X_H = (value & 0xFFF);
     UPDATE_REG(0x2A, BG2X_H);
     #define REG_BG2X_H              (*(vu16*)0x400002A)
-	#define REG_BG3X_H              (*(vu16*)0x400003A)
 	REG_BG2X_H = BG2X_H;
 	
-	//gfxBG2Changed |= 1;
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002A) = value;
-	//else *(u16 *)(0x400003A) = value;
-    
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400002A) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x400002A) = 0;
-            *(u16 *)(0x400003A) = value;    //engine 3
-            
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x400003A) = value;
-        }
-        break;
-    }
-	*/
 	break;
   case 0x2C:
     BG2Y_L = value;
     UPDATE_REG(0x2C, BG2Y_L);
 	#define REG_BG2Y_L              (*(vu16*)0x400002C)
-	#define REG_BG3Y_L              (*(vu16*)0x400003C)
-    REG_BG2Y_L = BG2Y_L;
+	REG_BG2Y_L = BG2Y_L;
 	
-	//gfxBG2Changed |= 2;
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002C) = value;
-	//else *(u16 *)(0x400003C) = value;
-    
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400002C) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x400002C) = 0;
-            *(u16 *)(0x400003C) = value;    //engine 3
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x400003C) = value;
-        }
-        break;
-    }
-	*/
 	break;
   case 0x2E:
     BG2Y_H = value & 0xFFF;
     UPDATE_REG(0x2E, BG2Y_H);
     #define REG_BG2Y_H              (*(vu16*)0x400002E)
-	#define REG_BG3Y_H              (*(vu16*)0x400003E)
 	REG_BG2Y_H = BG2Y_H;
-	
-	//gfxBG2Changed |= 2;
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400002E) = value;
-	//else *(u16 *)(0x400003E) = value;
-    
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400002E) = value;
-        }
-        break;
-        
-        case(1):{
-            *(u16 *)(0x400002E) = 0;
-            *(u16 *)(0x400003E) = value;    //engine 3
-        }
-        break;
-        case(3):case(4):case(5):{
-            *(u16 *)(0x400003E) = value;
-        }
-        break;
-    }
-	*/
 	
 	break;
   case 0x30:
@@ -1683,184 +1367,56 @@ void CPUUpdateRegister(u32 address, u16 value)
     UPDATE_REG(0x30, BG3PA);
     REG_BG3PA = BG3PA;
 	
-	//ichfly	
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000030) = value;
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000030) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
-	
 	break;
   case 0x32:
     BG3PB = value;
     UPDATE_REG(0x32, BG3PB);
     REG_BG3PB = BG3PB;
 	
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000032) = value;
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000032) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
-	
 	break;
   case 0x34:
-    BG3PC = value;
+    
+	BG3PC = value;
     UPDATE_REG(0x34, BG3PC);
 	REG_BG3PC = BG3PC;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000034) = value;
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000034) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x36:
     BG3PD = value;
     UPDATE_REG(0x36, BG3PD);
     REG_BG3PD = BG3PD;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000036) = value;
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000036) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x38:
     BG3X_L = value;
     UPDATE_REG(0x38, BG3X_L);
-    #define REG_BG3X_L              (*(vu16*)0x4000038)
-	//gfxBG3Changed |= 1;
+    
+	#define REG_BG3X_L              (*(vu16*)0x4000038)
 	REG_BG3X_L = BG3X_L;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x4000038) = value;
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x4000038) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x3A:
     BG3X_H = value & 0xFFF;
     UPDATE_REG(0x3A, BG3X_H);
-    //gfxBG3Changed |= 1;
+    
 	#define REG_BG3X_H              (*(vu16*)0x400003A)
 	REG_BG3X_H = BG3X_H;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400003A) = value;
-	
-	//coto
-	/*
-    switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400003A) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x3C:
     BG3Y_L = value;
     UPDATE_REG(0x3C, BG3Y_L);
-    //gfxBG3Changed |= 2;    
-    #define REG_BG3Y_L              (*(vu16*)0x400003C)
+    
+	#define REG_BG3Y_L              (*(vu16*)0x400003C)
 	REG_BG3Y_L = BG3Y_L;
-	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400003C) = value;
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400003C) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x3E:
     BG3Y_H = value & 0xFFF;
     UPDATE_REG(0x3E, BG3Y_H);
-    //gfxBG3Changed |= 2;    
-    #define REG_BG3Y_H              (*(vu16*)0x400003E)
+    
+	#define REG_BG3Y_H              (*(vu16*)0x400003E)
 	REG_BG3Y_H = BG3Y_H;
 	
-	//ichfly
-	//if((DISPCNT & 7) < 3)*(u16 *)(0x400003E) = value;
-	
-	//coto
-    /*
-	switch(REG_DISPCNT & 7){
-        case(0):case(2):{
-            *(u16 *)(0x400003E) = value;
-        }
-        break;
-        
-        case(1):{
-            //engine 3 in mode 1 writes are disabled
-        }
-    }
-	*/
 	break;
   case 0x40:
     WIN0H = value;
@@ -2437,12 +1993,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x202:
 	//REG_IF = value; //ichfly update at read outdated
 	//IF = REG_IF;
-#ifdef gba_handel_IRQ_correct
 	REG_IF = value;
-#else
-    IF ^= (value & IF);
-    UPDATE_REG(0x202, IF);
-#endif
     break;
   case 0x204:
     { //ichfly can't emulate that
@@ -2492,9 +2043,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x208:
     IME = value & 1;
     UPDATE_REG(0x208, IME);
-#ifdef gba_handel_IRQ_correct
 	REG_IME = IME;
-#endif
     /*if ((IME & 1) && (IF & IE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
     break;
@@ -3546,14 +3095,11 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 		value = *(u32 *)(address);
 		break;
 	}
-#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-#endif	
-
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
@@ -3759,15 +3305,11 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 		value = VCOUNT;
 		break;
 	}
-	
-#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214;
 		UPDATE_REG(0x202, IF);
-	}
-#endif
-	
+	}	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
 		value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
@@ -3939,13 +3481,11 @@ iprintf("r8 %02x\n",address);
 		break;
 	}
 	
-#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-#endif
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
     else goto unreadable;
@@ -4123,14 +3663,11 @@ u32 CPUReadMemoryrealpu(u32 address)
 		value = *(u32 *)(address);
 		break;
 	}
-#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-#endif	
-
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
@@ -4301,15 +3838,11 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 		value = VCOUNT;
 		break;
 	}
-	
-#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214;
 		UPDATE_REG(0x202, IF);
-	}
-#endif
-	
+	}	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
 		value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
@@ -4419,15 +3952,12 @@ iprintf("r8 %02x\n",address);
 	if(address==0x04000006){
 		return (u8)VCOUNT;
 		break;
-	}
-	
-#ifdef gba_handel_IRQ_correct
+	}	
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-#endif
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
     else goto unreadable;

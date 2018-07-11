@@ -29,35 +29,11 @@
 #include "System.h"
 #include <fat.h>
 #include <dirent.h>
-
 #include "cpumg.h"
 #include "GBAinline.h"
-
-
 #include "main.h"
-
 #include "armdis.h"
-
-
-	FILE * pFile;
-
-
 #include "main.h"
-
-#ifndef directcpu
-#include "anothercpu.h"
-#endif
-
-
-#define debugandhalt()\
-  {\
-					REG_IME = IME_DISABLE;\
-    			debugDump();\
-		while(1);\
-  }\
-
-extern "C" void swiHalt(void);
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <nds/memory.h>//#include <memory.h> ichfly
@@ -89,72 +65,84 @@ extern "C" void swiHalt(void);
 #include "agbprint.h"
 #include "../../../common/gba_ipc.h"
 #include "../../../common/cpuglobal.h"
-
-
-extern "C" u32 savedsp;
-extern "C" u32 savedlr;
-
-//#define DEV_VERSION
-
-
-bool disableMessage = false;
-
-
-
-void gbaExceptionHdl();
-
-
-extern "C" int spirq;
-extern "C" int SPtemp;
-
-
-
-
-
-
-
-
-
 #include "main.h"
 #include "cpumg.h"
 
-#define PU_PAGE_4K		(0x0B << 1)
-#define PU_PAGE_8K		(0x0C << 1)
-#define PU_PAGE_16K		(0x0D << 1)
-#define PU_PAGE_32K		(0x0E << 1)
-#define PU_PAGE_64K		(0x0F << 1)
-#define PU_PAGE_128K		(0x10 << 1)
-#define PU_PAGE_256K		(0x11 << 1)
-#define PU_PAGE_512K		(0x12 << 1)
-#define PU_PAGE_1M		(0x13 << 1)
-#define PU_PAGE_2M		(0x14 << 1)
-#define PU_PAGE_4M		(0x15 << 1)
-#define PU_PAGE_8M		(0x16 << 1)
-#define PU_PAGE_16M		(0x17 << 1)
-#define PU_PAGE_32M		(0x18 << 1)
-#define PU_PAGE_64M		(0x19 << 1)
-#define PU_PAGE_128M		(0x1A << 1)
-#define PU_PAGE_256M		(0x1B << 1)
-#define PU_PAGE_512M		(0x1C << 1)
-#define PU_PAGE_1G		(0x1D << 1)
-#define PU_PAGE_2G		(0x1E << 1)
-#define PU_PAGE_4G		(0x1F << 1)
 
-// extern void puSetMemPerm(u32 perm);
-extern "C" void pu_Enable();
-// extern void puSetGbaIWRAM();
-extern "C" void pu_SetRegion(u32 region, u32 value);
+bool disableMessage = false;
+FILE * pFile;
 
-extern "C" void pu_SetDataPermissions(u32 v);
-extern "C" void pu_SetCodePermissions(u32 v);
-extern "C" void  pu_SetDataCachability(u32 v);
-extern "C" void  pu_SetCodeCachability(u32 v);
-extern "C" void pu_GetWriteBufferability(u32 v);
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_4K		= (0x0B << 1);
 
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_8K		= (0x0C << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_16K		= (0x0D << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_32K		= (0x0E << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_64K		= (0x0F << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_128K		= (0x10 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_256K		= (0x11 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_512K		= (0x12 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_1M		= (0x13 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_2M		= (0x14 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_4M		= (0x15 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_8M		= (0x16 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_16M		= (0x17 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_32M		= (0x18 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_64M		= (0x19 << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_128M		= (0x1A << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_256M		= (0x1B << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_512M		= (0x1C << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_1G		= (0x1D << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_2G		= (0x1E << 1);
+
+__attribute__((section(".dtcm")))
+u32 PU_PAGE_4G		= (0x1F << 1);
+
+__attribute__((section(".dtcm")))
 u16 gbaIME = 0;
-u16 gbaDISPCNT = 0;
-u16 gbaBGxCNT[4] = {0, 0, 0, 0};
 
+__attribute__((section(".dtcm")))
+u16 gbaDISPCNT = 0;
+
+__attribute__((section(".dtcm")))
+u16 gbaBGxCNT[4] = {0, 0, 0, 0};
 
 char disbuffer[0x2000];
 
@@ -163,15 +151,6 @@ u32 lasttime[6];
 int lastdebugcurrent = 0;
 int lastdebugsize = 6;
 #endif
-
-//extern "C" void exMain(); 
-
-//#define BIOSDBG_CP15 *((volatile u32*)0x027FFD8C)
-//#define BIOSDBG_SPSR *((volatile u32*)0x027FFD90)
-//#define BIOSDBG_R12  *((volatile u32*)0x027FFD94)
-//#define BIOSDBG_PC   *((volatile u32*)0x027FFD98)
-
-
 
 int durchlauf = 0;
 void debugDump()
@@ -237,7 +216,7 @@ DC_FlushAll();
 }
 
 
-extern "C" void failcpphandler()
+void failcpphandler()
 {
 	iprintf("something failed\r\n");
 	REG_IME = IME_DISABLE;
@@ -261,11 +240,6 @@ void exInit(void (*customHdl)())
 	//EXCEPTION_VECTOR = exMain; //no more needed
 	exHandler = customHdl;
 }
-
-void emuInstrARM(u32 instr, u32 *regs);
-void emuInstrTHUMB(u16 instr, u32 *regs);
-
-#define B8(h,g,f,e,d,c,b,a) ((a)|((b)<<1)|((c)<<2)|((d)<<3)|((e)<<4)|((f)<<5)|((g)<<6)|((h)<<7))
 
 __attribute__((section(".itcm")))
 void undifinedresolver()
@@ -634,10 +608,6 @@ void gbaExceptionHdl()
 	//Log("%08X\n",exRegs[15]);
 	
 	//Log("enter\n");
-
-#ifndef gba_handel_IRQ_correct
-	BIOSDBG_SPSR = BIOSDBG_SPSR & ~0x80; //sorry but this must be done
-#endif
 
 	//Log("%08X %08X %08X\r\n",exRegs[15],REG_VCOUNT,REG_IE);
 	/*int i;

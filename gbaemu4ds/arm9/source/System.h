@@ -38,6 +38,9 @@
 #ifndef NULL
 #define NULL 0
 #endif
+
+#define __DOUTBUFSIZE 256
+
 /* ichfly test todo
 typedef unsigned char u8;
 typedef unsigned short u16;

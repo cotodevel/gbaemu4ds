@@ -1,31 +1,13 @@
 #include <nds.h>
 #include <stdio.h>
 #include "ichflysettings.h"
-#include "main.h"
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
-
-#include <nds.h>
-#include <stdio.h>
 #include <filesystem.h>
 #include <fat.h>
 #include <dirent.h>
 #include <stdarg.h>
 #include <string.h>
-
-#include "ichflysettings.h"
-#include "GBA.h"
-#include "Sound.h"
-#include "Util.h"
-#include "getopt.h"
-#include "System.h"
-#include "cpumg.h"
-#include "GBAinline.h"
-#include "bios.h"
-#include "mydebuger.h"
-#include "arm7sound.h"
-#include "main.h"
-
 #include <stdlib.h>
 #include <nds/memory.h>//#include <memory.h> ichfly
 #include <nds/ndstypes.h>
@@ -37,6 +19,19 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
+#include "ichflysettings.h"
+#include "GBA.h"
+#include "Sound.h"
+#include "Util.h"
+#include "getopt.h"
+#include "System.h"
+#include "cpumg.h"
+#include "GBAinline.h"
+#include "bios.h"
+#include "mydebuger.h"
+#include "arm7sound.h"
+#include "Cheats.h"
+#include "main.h"
 
 #ifdef anyarmcom
 u32 recDMA1 = 0;
@@ -45,20 +40,9 @@ u32 recdir = 0;
 u32 recdel = 0;
 #endif
 
-
-
-#include "Cheats.h"
-
-extern "C" int spirq;
-extern "C" int SPtemp;
-
 int cheatsCheckKeys();
-
 int counttrans = 0;
-
 int dasistnurzumtesten = 0;
-
-
 
 //ori
 /*

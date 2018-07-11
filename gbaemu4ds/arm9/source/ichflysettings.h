@@ -25,7 +25,6 @@
 
 #define ichflytestkeypossibillity	// disallow Left+Right or Up+Down of being pressed at the same time
 //#define powerpatches //do some hacky things that give the emulator more Vb in some cases.
-#define gba_handel_IRQ_correct
 
 //#define HBlankdma //only if hblanc irq is on
 //#define forceHBlankirqs
@@ -37,8 +36,6 @@
 
 //#define printsaveread
 //#define printsavewrite
-
-#define directcpu //use anothercpu.arm.c for data abort handling
 
 //#define print_uppern_read_emulation
 //#define ichflyDebugdumpon
@@ -58,6 +55,7 @@
 //#define soundwriteprint
 //#define printsoundtimer
 
+//#define loaddirect
 
 //outdated
 #define patch_VERSION 	//is set even if this is not defined

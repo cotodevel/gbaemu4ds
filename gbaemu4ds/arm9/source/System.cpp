@@ -19,10 +19,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
-
-
-#include <stdio.h>
 #include <stdlib.h>
+#include "System.h"
+
 #include <nds/memory.h>//#include <memory.h> ichfly
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
@@ -33,14 +32,9 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
-#include <stdarg.h>
-#include <string.h>
 
 //#include <SDL.h> //ichfly realy todo
 //#include <SDL_thread.h>
-
-
-#define __DOUTBUFSIZE 256
 
 char __outstr[__DOUTBUFSIZE];
 

@@ -17,13 +17,10 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #include <nds.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-//#include <zlib.h> //todo ichfly
 #include <stdio.h>
 #include <stdlib.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
+#include <nds/memory.h>
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 #include <nds/bios.h>
@@ -36,13 +33,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <assert.h>
-
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
-
-extern "C" void getandpatchmap(int offsetgba,int offsetthisfile);
-void arm7dmareqandcheat();
-
 #include <filesystem.h>
 #include "GBA.h"
 #include "Sound.h"
@@ -51,48 +43,17 @@ void arm7dmareqandcheat();
 #include "System.h"
 #include <fat.h>
 #include <dirent.h>
-
 #include "cpumg.h"
 #include "GBAinline.h"
 #include "bios.h"
-
 #include "mydebuger.h"
-
 #include "file_browse.h"
-
-#define MAXPATHLEN 256 
-
-#include <nds.h>
-
 #include "arm7sound.h"
-
 #include "main.h"
-
-
+#include "Sound.h"
 #include <unistd.h>    // for sbrk()
-
-
-#define INT_TABLE_SECTION __attribute__((section(".dtcm")))
-
-
-extern struct IntTable irqTable[MAX_INTERRUPTS] INT_TABLE_SECTION;
-
-extern "C" void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
-
-
-extern  char patchPath[MAXPATHLEN * 2];
-
 #include <fat.h>
-
-extern "C" {
-//#include <png.h> //ichfly todo ganze datei!!!!!!!! realy todo
-}
 #include "ichflysettings.h"
-
-#if 0
-#include "unrarlib.h"
-#endif
-
 #include "System.h"
 #include "NLS.h"
 #include "Util.h"
@@ -102,42 +63,9 @@ extern "C" {
 #include "RTC.h"
 #include "Port.h"
 
-extern "C" void pu_Enable();
-extern "C" void cpu_SetCP15Cnt(u32 v);
-extern "C" u32 cpu_GetCP15Cnt();
-
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
 #endif // ! _MSC_VER
-
-extern int systemColorDepth;
-extern int systemRedShift;
-extern int systemGreenShift;
-extern int systemBlueShift;
-
-extern u32 CPUReadMemorypu(u32 address);
-extern u32 CPUReadHalfWordpu(u32 address);
-extern u8 CPUReadBytepu(u32 address);
-extern void CPUWriteMemorypuextern(u32 address, u32 value);
-extern void CPUWriteHalfWordpuextern(u32 address, u16 value);
-extern void CPUWriteBytepuextern(u32 address, u8 b);
-
-extern u32 CPUReadMemory(u32 address);
-extern u32 CPUReadHalfWord(u32 address);
-extern u8 CPUReadByte(u32 address);
-extern void CPUWriteMemoryextern(u32 address, u32 value);
-extern void CPUWriteHalfWordextern(u32 address, u16 value);
-extern void CPUWriteByteextern(u32 address, u8 b);
-
-extern s16 CPUReadHalfWordSignedoutline(u32 address);
-extern s8 CPUReadByteSigned(u32 address);
-
-extern s16 CPUReadHalfWordrealpuSignedoutline(u32 address);
-extern s8 CPUReadByteSignedpu(u32 address);
-
-extern u32 ichfly_readu32extern(unsigned int pos);
-extern u16 ichfly_readu16extern(unsigned int pos);
-extern u8 ichfly_readu8extern(unsigned int pos);
 
 /*
 static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
@@ -656,6 +584,7 @@ void leavesu()
 			DC_FlushAll(); //try it
 			IC_InvalidateAll();
 }
+
 void patchit(int romSize2)
 {
 	FILE *patchf = fopen(patchPath, "rb");
