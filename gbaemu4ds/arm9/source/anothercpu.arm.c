@@ -1,6 +1,6 @@
 //ichfly all //ARITHMETIC_DATA_OPCODE disabeled
+//armNextPC disabeled 
 
-////armNextPC disabeled 
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,18 +14,14 @@
 
 #define patchmyregsfromromtoromaddr //parts todo
 
-#define C_CORE
-
 #define UPDATE_OLD_myregs \
-		   if (debugger_last) { \
-			   sprintf(oldbuffer,"%08x", armState ? myregs[15].I - 4 : myregs[15].I - 4); \
-			   for (xxx=0; xxx<18; xxx++){ \
-				   oldmyregs[xxx]=myregs[xxx].I; \
-			   } \
-		   } 
+if (debugger_last) { \
+   sprintf(oldbuffer,"%08x", armState ? myregs[15].I - 4 : myregs[15].I - 4); \
+   for (xxx=0; xxx<18; xxx++){ \
+	   oldmyregs[xxx]=myregs[xxx].I; \
+   } \
+} 
 
-
-#ifdef C_CORE
 #define NEG(i) ((i) >> 31)
 #define POS(i) ((~(i)) >> 31)
 #define ADDCARRY(a, b, c) \
@@ -207,649 +203,6 @@
      SUBCARRY(lhs, rhs, res);\
      SUBOVERFLOW(lhs, rhs, res);\
    }
-#else
-#ifdef __GNUC__
-#ifdef __POWERPC__
-            #define ADD_RD_RS_RN \
-            {										\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("addco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[source].I), 	\
-                              "r" (value)			\
-                            );						\
-                myregs[dest].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define ADD_RD_RS_O3 ADD_RD_RS_RN
-            #define ADD_RN_O8(d) \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("addco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[(d)].I), 	\
-                              "r" (opcode & 255)	\
-                            );						\
-                myregs[(d)].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define CMN_RD_RS \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("addco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[dest].I), 	\
-                              "r" (value)			\
-                            );						\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define ADC_RD_RS \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("mtspr xer, %4\n"		\
-                             "addeo. %0, %2, %3\n"	\
-                             "mcrxr cr1\n"			\
-                             "mfcr	%1\n"			\
-                             : "=r" (Result),		\
-                               "=r" (Flags)			\
-                             : "r" (myregs[dest].I),	\
-                               "r" (value),			\
-                               "r" (C_FLAG << 29)	\
-                             );						\
-                myregs[dest].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define SUB_RD_RS_RN \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("subco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[source].I), 	\
-                              "r" (value)			\
-                            );						\
-                myregs[dest].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define SUB_RD_RS_O3 SUB_RD_RS_RN
-            #define SUB_RN_O8(d) \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("subco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[(d)].I), 	\
-                              "r" (opcode & 255)	\
-                            );						\
-                myregs[(d)].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define CMP_RN_O8(d) \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("subco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[(d)].I), 	\
-                              "r" (opcode & 255)	\
-                            );						\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define SBC_RD_RS \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("mtspr xer, %4\n"		\
-                             "subfeo. %0, %3, %2\n"	\
-                             "mcrxr cr1\n"			\
-                             "mfcr	%1\n"			\
-                             : "=r" (Result),		\
-                               "=r" (Flags)			\
-                             : "r" (myregs[dest].I),	\
-                               "r" (value),			\
-                               "r" (C_FLAG << 29) 	\
-                             );						\
-                myregs[dest].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define LSL_RD_RM_I5 \
-            {\
-                C_FLAG = (myregs[source].I >> (32 - shift)) & 1 ? true : false;\
-                value = myregs[source].I << shift;\
-            }
-            #define LSL_RD_RS \
-            {\
-                C_FLAG = (myregs[dest].I >> (32 - value)) & 1 ? true : false;\
-                value = myregs[dest].I << value;\
-            }
-            #define LSR_RD_RM_I5 \
-            {\
-                C_FLAG = (myregs[source].I >> (shift - 1)) & 1 ? true : false;\
-                value = myregs[source].I >> shift;\
-            }
-            #define LSR_RD_RS \
-            {\
-                C_FLAG = (myregs[dest].I >> (value - 1)) & 1 ? true : false;\
-                value = myregs[dest].I >> value;\
-            }
-            #define ASR_RD_RM_I5 \
-            {\
-                C_FLAG = ((s32)myregs[source].I >> (int)(shift - 1)) & 1 ? true : false;\
-                value = (s32)myregs[source].I >> (int)shift;\
-            }
-            #define ASR_RD_RS \
-            {\
-                C_FLAG = ((s32)myregs[dest].I >> (int)(value - 1)) & 1 ? true : false;\
-                value = (s32)myregs[dest].I >> (int)value;\
-            }
-            #define ROR_RD_RS \
-            {\
-                C_FLAG = (myregs[dest].I >> (value - 1)) & 1 ? true : false;\
-                value = ((myregs[dest].I << (32 - value)) |\
-                        (myregs[dest].I >> value));\
-            }
-            #define NEG_RD_RS \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("subfco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[source].I), 	\
-                              "r" (0)				\
-                            );						\
-                myregs[dest].I = Result;				\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-            #define CMP_RD_RS \
-            {\
-                myregsister int Flags;					\
-                myregsister int Result;				\
-                asm volatile("subco. %0, %2, %3\n"	\
-                            "mcrxr cr1\n"			\
-                            "mfcr %1\n"				\
-                            : "=r" (Result), 		\
-                              "=r" (Flags)			\
-                            : "r" (myregs[dest].I), 	\
-                              "r" (value)			\
-                            );						\
-                Z_FLAG = (Flags >> 29) & 1;			\
-                N_FLAG = (Flags >> 31) & 1;			\
-                C_FLAG = (Flags >> 25) & 1;			\
-                V_FLAG = (Flags >> 26) & 1;			\
-            }
-#else
-#define ADD_RD_RS_RN \
-     asm ("add %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setcb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "r" (value), "b" (myregs[source].I));
-#define ADD_RD_RS_O3 \
-     asm ("add %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setcb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "r" (value), "b" (myregs[source].I));
-#define ADD_RN_O8(d) \
-     asm ("add %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setcb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[(d)].I)\
-          : "r" (opcode & 255), "b" (myregs[(d)].I));
-#define CMN_RD_RS \
-     asm ("add %0, %1;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setcb C_FLAG;"\
-          "setob V_FLAG;"\
-          : \
-          : "r" (value), "r" (myregs[dest].I):"1");
-#define ADC_RD_RS \
-     asm ("bt $0, C_FLAG;"\
-          "adc %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setcb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "r" (value), "b" (myregs[dest].I));
-#define SUB_RD_RS_RN \
-     asm ("sub %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "r" (value), "b" (myregs[source].I));
-#define SUB_RD_RS_O3 \
-     asm ("sub %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "r" (value), "b" (myregs[source].I));
-#define SUB_RN_O8(d) \
-     asm ("sub %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[(d)].I)\
-          : "r" (opcode & 255), "b" (myregs[(d)].I));
-#define CMP_RN_O8(d) \
-     asm ("sub %0, %1;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : \
-          : "r" (opcode & 255), "r" (myregs[(d)].I) : "1");
-#define SBC_RD_RS \
-     asm volatile ("bt $0, C_FLAG;"\
-                   "cmc;"\
-                   "sbb %1, %%ebx;"\
-                   "setsb N_FLAG;"\
-                   "setzb Z_FLAG;"\
-                   "setncb C_FLAG;"\
-                   "setob V_FLAG;"\
-                   : "=b" (myregs[dest].I)\
-                   : "r" (value), "b" (myregs[dest].I) : "cc", "memory");
-#define LSL_RD_RM_I5 \
-       asm ("shl %%cl, %%eax;"\
-            "setcb C_FLAG;"\
-            : "=a" (value)\
-            : "a" (myregs[source].I), "c" (shift));
-#define LSL_RD_RS \
-         asm ("shl %%cl, %%eax;"\
-              "setcb C_FLAG;"\
-              : "=a" (value)\
-              : "a" (myregs[dest].I), "c" (value));
-#define LSR_RD_RM_I5 \
-       asm ("shr %%cl, %%eax;"\
-            "setcb C_FLAG;"\
-            : "=a" (value)\
-            : "a" (myregs[source].I), "c" (shift));
-#define LSR_RD_RS \
-         asm ("shr %%cl, %%eax;"\
-              "setcb C_FLAG;"\
-              : "=a" (value)\
-              : "a" (myregs[dest].I), "c" (value));
-#define ASR_RD_RM_I5 \
-     asm ("sar %%cl, %%eax;"\
-          "setcb C_FLAG;"\
-          : "=a" (value)\
-          : "a" (myregs[source].I), "c" (shift));
-#define ASR_RD_RS \
-         asm ("sar %%cl, %%eax;"\
-              "setcb C_FLAG;"\
-              : "=a" (value)\
-              : "a" (myregs[dest].I), "c" (value));
-#define ROR_RD_RS \
-         asm ("ror %%cl, %%eax;"\
-              "setcb C_FLAG;"\
-              : "=a" (value)\
-              : "a" (myregs[dest].I), "c" (value));
-#define NEG_RD_RS \
-     asm ("neg %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : "=b" (myregs[dest].I)\
-          : "b" (myregs[source].I));
-#define CMP_RD_RS \
-     asm ("sub %0, %1;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-          : \
-          : "r" (value), "r" (myregs[dest].I):"1");
-#endif
-#else
-#define ADD_RD_RS_RN \
-   {\
-     __asm mov eax, source\
-     __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-     __asm add ebx, value\
-     __asm mov eax, dest\
-     __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define ADD_RD_RS_O3 \
-   {\
-     __asm mov eax, source\
-     __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-     __asm add ebx, value\
-     __asm mov eax, dest\
-     __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define ADD_RN_O8(d) \
-   {\
-     __asm mov ebx, opcode\
-     __asm and ebx, 255\
-     __asm add dword ptr [OFFSET myregs+4*(d)], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define CMN_RD_RS \
-     {\
-       __asm mov eax, dest\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-       __asm add ebx, value\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#define ADC_RD_RS \
-     {\
-       __asm mov ebx, dest\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-       __asm bt word ptr C_FLAG, 0\
-       __asm adc ebx, value\
-       __asm mov eax, dest\
-       __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#define SUB_RD_RS_RN \
-   {\
-     __asm mov eax, source\
-     __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-     __asm sub ebx, value\
-     __asm mov eax, dest\
-     __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setnc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define SUB_RD_RS_O3 \
-   {\
-     __asm mov eax, source\
-     __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-     __asm sub ebx, value\
-     __asm mov eax, dest\
-     __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setnc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define SUB_RN_O8(d) \
-   {\
-     __asm mov ebx, opcode\
-     __asm and ebx, 255\
-     __asm sub dword ptr [OFFSET myregs + 4*(d)], ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setnc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define CMP_RN_O8(d) \
-   {\
-     __asm mov eax, dword ptr [OFFSET myregs+4*(d)]\
-     __asm mov ebx, opcode\
-     __asm and ebx, 255\
-     __asm sub eax, ebx\
-     __asm sets byte ptr N_FLAG\
-     __asm setz byte ptr Z_FLAG\
-     __asm setnc byte ptr C_FLAG\
-     __asm seto byte ptr V_FLAG\
-   }
-#define SBC_RD_RS \
-     {\
-       __asm mov ebx, dest\
-       __asm mov ebx, dword ptr [OFFSET myregs + 4*ebx]\
-       __asm mov eax, value\
-       __asm bt word ptr C_FLAG, 0\
-       __asm cmc\
-       __asm sbb ebx, eax\
-       __asm mov eax, dest\
-       __asm mov dword ptr [OFFSET myregs + 4*eax], ebx\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setnc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#define LSL_RD_RM_I5 \
-     {\
-       __asm mov eax, source\
-       __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-       __asm mov cl, byte ptr shift\
-       __asm shl eax, cl\
-       __asm mov value, eax\
-       __asm setc byte ptr C_FLAG\
-     }
-#define LSL_RD_RS \
-         {\
-           __asm mov eax, dest\
-           __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-           __asm mov cl, byte ptr value\
-           __asm shl eax, cl\
-           __asm mov value, eax\
-           __asm setc byte ptr C_FLAG\
-         }
-#define LSR_RD_RM_I5 \
-     {\
-       __asm mov eax, source\
-       __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-       __asm mov cl, byte ptr shift\
-       __asm shr eax, cl\
-       __asm mov value, eax\
-       __asm setc byte ptr C_FLAG\
-     }
-#define LSR_RD_RS \
-         {\
-           __asm mov eax, dest\
-           __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-           __asm mov cl, byte ptr value\
-           __asm shr eax, cl\
-           __asm mov value, eax\
-           __asm setc byte ptr C_FLAG\
-         }
-#define ASR_RD_RM_I5 \
-     {\
-       __asm mov eax, source\
-       __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-       __asm mov cl, byte ptr shift\
-       __asm sar eax, cl\
-       __asm mov value, eax\
-       __asm setc byte ptr C_FLAG\
-     }
-#define ASR_RD_RS \
-         {\
-           __asm mov eax, dest\
-           __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-           __asm mov cl, byte ptr value\
-           __asm sar eax, cl\
-           __asm mov value, eax\
-           __asm setc byte ptr C_FLAG\
-         }
-#define ROR_RD_RS \
-         {\
-           __asm mov eax, dest\
-           __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-           __asm mov cl, byte ptr value\
-           __asm ror eax, cl\
-           __asm mov value, eax\
-           __asm setc byte ptr C_FLAG\
-         }
-#define NEG_RD_RS \
-     {\
-       __asm mov ebx, source\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-       __asm neg ebx\
-       __asm mov eax, dest\
-       __asm mov dword ptr [OFFSET myregs+4*eax],ebx\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setnc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#define CMP_RD_RS \
-     {\
-       __asm mov eax, dest\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-       __asm sub ebx, value\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setnc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#endif
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #ifdef BKPT_SUPPORT
@@ -882,7 +235,7 @@
       N_FLAG = (myregs[dest].I & 0x80000000) ? true : false;\
       Z_FLAG = (myregs[dest].I) ? false : true;\
       C_FLAG = C_OUT;
-//#ifdef C_CORE
+
 #define NEG(i) ((i) >> 31)
 #define POS(i) ((~(i)) >> 31)
 #define ADDCARRY(a, b, c) \
@@ -1101,757 +454,6 @@
      value = ((value >> 1) |\
               (shift << 31));\
    }
-//#else
-/*#ifdef __GNUC__
-        #ifdef __POWERPC__
-            #define OP_SUB \
-                {\
-                myregs[dest].I = myregs[base].I - value;\
-                }
-            #define OP_SUBS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("subco. %0, %2, %3\n"              \
-                            "mcrxr cr1\n"                       \
-                            "mfcr %1\n"                         \
-                            : "=r" (Result),                    \
-                              "=r" (Flags)                      \
-                            : "r" (myregs[base].I),                \
-                              "r" (value)                       \
-                            );                                  \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_RSB \
-                {\
-                myregs[dest].I = value - myregs[base].I;\
-                }
-            #define OP_RSBS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("subfco. %0, %2, %3\n"             \
-                            "mcrxr cr1\n"                       \
-                            "mfcr %1\n"                         \
-                            : "=r" (Result),                    \
-                              "=r" (Flags)                      \
-                            : "r" (myregs[base].I),                \
-                              "r" (value)                       \
-                            );                                  \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_ADD \
-                {\
-                myregs[dest].I = myregs[base].I + value;\
-                }
-
-            #define OP_ADDS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("addco. %0, %2, %3\n"              \
-                            "mcrxr cr1\n"                       \
-                            "mfcr %1\n"                         \
-                            : "=r" (Result),                    \
-                              "=r" (Flags)                      \
-                            : "r" (myregs[base].I),                \
-                              "r" (value)                       \
-                            );                                  \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_ADC \
-            {\
-                myregs[dest].I = myregs[base].I + value + (u32)C_FLAG;\
-            }
-            #define OP_ADCS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("mtspr xer, %4\n"                  \
-                             "addeo. %0, %2, %3\n"              \
-                             "mcrxr cr1\n"                      \
-                             "mfcr      %1\n"                   \
-                             : "=r" (Result),                   \
-                               "=r" (Flags)                     \
-                             : "r" (myregs[base].I),               \
-                               "r" (value),                     \
-                               "r" (C_FLAG << 29)               \
-                             );                                 \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_SBC \
-                {\
-                myregs[dest].I = myregs[base].I - value - (C_FLAG^1);\
-                }
-            #define OP_SBCS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("mtspr xer, %4\n"                  \
-                             "subfeo. %0, %3, %2\n"             \
-                             "mcrxr cr1\n"                      \
-                             "mfcr      %1\n"                   \
-                             : "=r" (Result),                   \
-                               "=r" (Flags)                     \
-                             : "r" (myregs[base].I),               \
-                               "r" (value),                     \
-                               "r" (C_FLAG << 29)               \
-                             );                                 \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_RSC \
-                {\
-                myregs[dest].I = value - myregs[base].I - (C_FLAG^1);\
-                }
-            #define OP_RSCS \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("mtspr xer, %4\n"                  \
-                             "subfeo. %0, %2, %3\n"             \
-                             "mcrxr cr1\n"                      \
-                             "mfcr      %1\n"                   \
-                             : "=r" (Result),                   \
-                               "=r" (Flags)                     \
-                             : "r" (myregs[base].I),               \
-                               "r" (value),                     \
-                               "r" (C_FLAG << 29)               \
-                             );                                 \
-                myregs[dest].I = Result;                           \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_CMP \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("subco. %0, %2, %3\n"              \
-                            "mcrxr cr1\n"                       \
-                            "mfcr %1\n"                         \
-                            : "=r" (Result),                    \
-                              "=r" (Flags)                      \
-                            : "r" (myregs[base].I),                \
-                              "r" (value)                       \
-                            );                                  \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            #define OP_CMN \
-            {\
-                myregsister int Flags;                             \
-                myregsister int Result;                            \
-                asm volatile("addco. %0, %2, %3\n"              \
-                            "mcrxr cr1\n"                       \
-                            "mfcr %1\n"                         \
-                            : "=r" (Result),                    \
-                              "=r" (Flags)                      \
-                            : "r" (myregs[base].I),                \
-                              "r" (value)                       \
-                            );                                  \
-                Z_FLAG = (Flags >> 29) & 1;                     \
-                N_FLAG = (Flags >> 31) & 1;                     \
-                C_FLAG = (Flags >> 25) & 1;                     \
-                V_FLAG = (Flags >> 26) & 1;                     \
-            }
-            */
-            #define LOGICAL_LSL_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                C_OUT = (v >> (32 - shift)) & 1 ? true : false;\
-                value = v << shift;\
-            }
-            #define LOGICAL_LSR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                C_OUT = (v >> (shift - 1)) & 1 ? true : false;\
-                value = v >> shift;\
-            }
-            #define LOGICAL_ASR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                C_OUT = ((s32)v >> (int)(shift - 1)) & 1 ? true : false;\
-                value = (s32)v >> (int)shift;\
-            }
-            #define LOGICAL_ROR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                C_OUT = (v >> (shift - 1)) & 1 ? true : false;\
-                value = ((v << (32 - shift)) |\
-                        (v >> shift));\
-            }
-            #define LOGICAL_RRX_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                shift = (int)C_FLAG;\
-                C_OUT = (v  & 1) ? true : false;\
-                value = ((v >> 1) |\
-                        (shift << 31));\
-            }
-            #define LOGICAL_ROR_IMM \
-            {\
-                u32 v = opcode & 0xff;\
-                C_OUT = (v >> (shift - 1)) & 1 ? true : false;\
-                value = ((v << (32 - shift)) |\
-                        (v >> shift));\
-            }
-            #define ARITHMETIC_LSL_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                value = v << shift;\
-            }
-            #define ARITHMETIC_LSR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                value = v >> shift;\
-            }
-            #define ARITHMETIC_ASR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                value = (s32)v >> (int)shift;\
-            }
-            #define ARITHMETIC_ROR_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                value = ((v << (32 - shift)) |\
-                        (v >> shift));\
-            }
-            #define ARITHMETIC_RRX_myregs \
-            {\
-                u32 v = myregs[opcode & 0x0f].I;\
-                shift = (int)C_FLAG;\
-                value = ((v >> 1) |\
-                        (shift << 31));\
-            }
-            #define ARITHMETIC_ROR_IMM \
-            {\
-                u32 v = opcode & 0xff;\
-                value = ((v << (32 - shift)) |\
-                        (v >> shift));\
-            }
-            #define ROR_IMM_MSR \
-            {\
-                u32 v = opcode & 0xff;\
-                value = ((v << (32 - shift)) |\
-                        (v >> shift));\
-            }
-            #define ROR_VALUE \
-            {\
-                value = ((value << (32 - shift)) |\
-                        (value >> shift));\
-            }
-            #define RCR_VALUE \
-            {\
-                shift = (int)C_FLAG;\
-                value = ((value >> 1) |\
-                        (shift << 31));\
-            }
-/*#else
-#define OP_SUB \
-     asm ("sub %1, %%ebx;"\
-                  : "=b" (myregs[dest].I)\
-                  : "r" (value), "b" (myregs[base].I));
-
-#define OP_SUBS \
-     asm ("sub %1, %%ebx;"\
-          "setsb N_FLAG;"\
-          "setzb Z_FLAG;"\
-          "setncb C_FLAG;"\
-          "setob V_FLAG;"\
-                  : "=b" (myregs[dest].I)\
-                  : "r" (value), "b" (myregs[base].I));
-
-#define OP_RSB \
-            asm  ("sub %1, %%ebx;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (myregs[base].I), "b" (value));
-
-#define OP_RSBS \
-            asm  ("sub %1, %%ebx;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setncb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (myregs[base].I), "b" (value));
-
-#define OP_ADD \
-            asm  ("add %1, %%ebx;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-
-#define OP_ADDS \
-            asm  ("add %1, %%ebx;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setcb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-
-#define OP_ADC \
-            asm  ("bt $0, C_FLAG;"\
-                  "adc %1, %%ebx;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-
-#define OP_ADCS \
-            asm  ("bt $0, C_FLAG;"\
-                  "adc %1, %%ebx;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setcb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-
-#define OP_SBC \
-            asm  ("bt $0, C_FLAG;"\
-                  "cmc;"\
-                  "sbb %1, %%ebx;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-
-#define OP_SBCS \
-            asm  ("bt $0, C_FLAG;"\
-                  "cmc;"\
-                  "sbb %1, %%ebx;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setncb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (value), "b" (myregs[base].I));
-#define OP_RSC \
-            asm  ("bt $0, C_FLAG;"\
-                  "cmc;"\
-                  "sbb %1, %%ebx;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (myregs[base].I), "b" (value));
-
-#define OP_RSCS \
-            asm  ("bt $0, C_FLAG;"\
-                  "cmc;"\
-                  "sbb %1, %%ebx;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setncb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : "=b" (myregs[dest].I)\
-                 : "r" (myregs[base].I), "b" (value));
-#define OP_CMP \
-            asm  ("sub %0, %1;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setncb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 :\
-                 : "r" (value), "r" (myregs[base].I));
-
-#define OP_CMN \
-            asm  ("add %0, %1;"\
-                  "setsb N_FLAG;"\
-                  "setzb Z_FLAG;"\
-                  "setcb C_FLAG;"\
-                  "setob V_FLAG;"\
-                 : \
-                 : "r" (value), "r" (myregs[base].I));
-#define LOGICAL_LSL_myregs \
-       asm("shl %%cl, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define LOGICAL_LSR_myregs \
-       asm("shr %%cl, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define LOGICAL_ASR_myregs \
-       asm("sar %%cl, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define LOGICAL_ROR_myregs \
-       asm("ror %%cl, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));       
-
-#define LOGICAL_RRX_myregs \
-       asm("bt $0, C_FLAG;"\
-           "rcr $1, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (myregs[opcode & 0x0f].I));       
-
-#define LOGICAL_ROR_IMM \
-       asm("ror %%cl, %%eax;"\
-           "setcb %%cl;"\
-           : "=a" (value), "=c" (C_OUT)\
-           : "a" (opcode & 0xff), "c" (shift));
-#define ARITHMETIC_LSL_myregs \
-       asm("\
-             shl %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define ARITHMETIC_LSR_myregs \
-       asm("\
-             shr %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define ARITHMETIC_ASR_myregs \
-       asm("\
-             sar %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));
-
-#define ARITHMETIC_ROR_myregs \
-       asm("\
-             ror %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (myregs[opcode & 0x0f].I), "c" (shift));       
-
-#define ARITHMETIC_RRX_myregs \
-       asm("\
-             bt $0, C_FLAG;\
-             rcr $1, %%eax;"\
-           : "=a" (value)\
-           : "a" (myregs[opcode & 0x0f].I));       
-
-#define ARITHMETIC_ROR_IMM \
-       asm("\
-             ror %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (opcode & 0xff), "c" (shift));
-#define ROR_IMM_MSR \
-      asm ("ror %%cl, %%eax;"\
-           : "=a" (value)\
-           : "a" (opcode & 0xFF), "c" (shift));
-#define ROR_VALUE \
-      asm("ror %%cl, %0"\
-          : "=r" (value)\
-          : "r" (value), "c" (shift));
-#define RCR_VALUE \
-      asm("bt $0, C_FLAG;"\
-          "rcr $1, %0"\
-          : "=r" (value)\
-          : "r" (value));
-#endif
-#else
-#define OP_SUB \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm sub ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-      }
-
-#define OP_SUBS \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm sub ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setnc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-
-#define OP_RSB \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm mov eax, value\
-        __asm sub eax, ebx\
-        __asm mov ebx, dest\
-        __asm mov dword ptr [OFFSET myregs+4*ebx], eax\
-      }
-
-#define OP_RSBS \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm mov eax, value\
-        __asm sub eax, ebx\
-        __asm mov ebx, dest\
-        __asm mov dword ptr [OFFSET myregs+4*ebx], eax\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setnc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-
-#define OP_ADD \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm add ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-      }
-
-#define OP_ADDS \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm add ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-
-#define OP_ADC \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm bt word ptr C_FLAG, 0\
-        __asm adc ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-      }
-
-#define OP_ADCS \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs+4*ebx]\
-        __asm bt word ptr C_FLAG, 0\
-        __asm adc ebx, value\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs+4*eax], ebx\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-
-#define OP_SBC \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs + 4*ebx]\
-        __asm mov eax, value\
-        __asm bt word ptr C_FLAG, 0\
-        __asm cmc\
-        __asm sbb ebx, eax\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs + 4*eax], ebx\
-      }
-
-#define OP_SBCS \
-      {\
-        __asm mov ebx, base\
-        __asm mov ebx, dword ptr [OFFSET myregs + 4*ebx]\
-        __asm mov eax, value\
-        __asm bt word ptr C_FLAG, 0\
-        __asm cmc\
-        __asm sbb ebx, eax\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs + 4*eax], ebx\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setnc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-#define OP_RSC \
-      {\
-        __asm mov ebx, value\
-        __asm mov eax, base\
-        __asm mov eax, dword ptr[OFFSET myregs + 4*eax]\
-        __asm bt word ptr C_FLAG, 0\
-        __asm cmc\
-        __asm sbb ebx, eax\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs + 4*eax], ebx\
-      }
-
-#define OP_RSCS \
-      {\
-        __asm mov ebx, value\
-        __asm mov eax, base\
-        __asm mov eax, dword ptr[OFFSET myregs + 4*eax]\
-        __asm bt word ptr C_FLAG, 0\
-        __asm cmc\
-        __asm sbb ebx, eax\
-        __asm mov eax, dest\
-        __asm mov dword ptr [OFFSET myregs + 4*eax], ebx\
-        __asm sets byte ptr N_FLAG\
-        __asm setz byte ptr Z_FLAG\
-        __asm setnc byte ptr C_FLAG\
-        __asm seto byte ptr V_FLAG\
-      }
-#define OP_CMP \
-     {\
-       __asm mov eax, base\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-       __asm sub ebx, value\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setnc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-
-#define OP_CMN \
-     {\
-       __asm mov eax, base\
-       __asm mov ebx, dword ptr [OFFSET myregs+4*eax]\
-       __asm add ebx, value\
-       __asm sets byte ptr N_FLAG\
-       __asm setz byte ptr Z_FLAG\
-       __asm setc byte ptr C_FLAG\
-       __asm seto byte ptr V_FLAG\
-     }
-#define LOGICAL_LSL_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm shl eax, cl\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-
-#define LOGICAL_LSR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm shr eax, cl\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-
-#define LOGICAL_ASR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm sar eax, cl\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-
-#define LOGICAL_ROR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0F\
-        __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-        __asm mov cl, byte ptr shift\
-        __asm ror eax, cl\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-
-#define LOGICAL_RRX_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0F\
-        __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-        __asm bt word ptr C_OUT, 0\
-        __asm rcr eax, 1\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-
-#define LOGICAL_ROR_IMM \
-        __asm mov eax, opcode\
-        __asm and eax, 0xff\
-        __asm mov cl, byte ptr shift\
-        __asm ror eax, cl\
-        __asm mov value, eax\
-        __asm setc byte ptr C_OUT
-#define ARITHMETIC_LSL_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm shl eax, cl\
-        __asm mov value, eax
-
-#define ARITHMETIC_LSR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm shr eax, cl\
-        __asm mov value, eax
-
-#define ARITHMETIC_ASR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0f\
-        __asm mov eax, dword ptr [OFFSET myregs + 4 * eax]\
-        __asm mov cl, byte ptr shift\
-        __asm sar eax, cl\
-        __asm mov value, eax
-
-#define ARITHMETIC_ROR_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0F\
-        __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-        __asm mov cl, byte ptr shift\
-        __asm ror eax, cl\
-        __asm mov value, eax
-
-#define ARITHMETIC_RRX_myregs \
-        __asm mov eax, opcode\
-        __asm and eax, 0x0F\
-        __asm mov eax, dword ptr [OFFSET myregs + 4*eax]\
-        __asm bt word ptr C_FLAG, 0\
-        __asm rcr eax, 1\
-        __asm mov value, eax
-
-#define ARITHMETIC_ROR_IMM \
-        __asm mov eax, opcode\
-        __asm and eax, 0xff\
-        __asm mov cl, byte ptr shift\
-        __asm ror eax, cl\
-        __asm mov value, eax
-#define ROR_IMM_MSR \
-      {\
-        __asm mov eax, opcode\
-        __asm and eax, 0xff\
-        __asm mov cl, byte ptr shift\
-        __asm ror eax, CL\
-        __asm mov value, eax\
-      }
-#define ROR_VALUE \
-      {\
-        __asm mov cl, byte ptr shift\
-        __asm ror dword ptr value, cl\
-      }
-#define RCR_VALUE \
-      {\
-        __asm mov cl, byte ptr shift\
-        __asm bt word ptr C_FLAG, 0\
-        __asm rcr dword ptr value, 1\
-      }
-#endif
-#endif*/
 
 #define OP_TST \
       u32 res = myregs[base].I & value;\
@@ -2897,56 +1499,11 @@
     }\
     break;\
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void __attribute__ ((hot)) emuInstrARM(u32 opcode, u32 *R)
 {
 	reg_pair* myregs = (reg_pair*)R;
-	
+
+
   /*int cond = opcode >> 28;  //ichfly cond_res must be true else there is no exeption
   // suggested optimization for frequent cases
   bool cond_res;
@@ -3011,36 +1568,11 @@ if(cond_res) {*/
   switch(((opcode>>16)&0xFF0) | ((opcode>>4)&0x0F)) {
     //LOGICAL_DATA_OPCODE_WITHOUT_base(OP_AND,  OP_AND, 0x000);
 	//LOGICAL_DATA_OPCODE_WITHOUT_base(OP_ANDS, OP_AND, 0x010); //ichfly
-  /*case 0x009: //ichfly
-    {
-      // MUL Rd, Rm, Rs
-      int dest = (opcode >> 16) & 0x0F;
-      int mult = (opcode & 0x0F);
-      u32 rs = myregs[(opcode >> 8) & 0x0F].I;
-      myregs[dest].I = myregs[mult].I * rs;
-      if(((s32)rs)<0)
-         rs = ~rs;
-
-    }
-    break;
-  case 0x019:
-    {
-      // MULS Rd, Rm, Rs
-      int dest = (opcode >> 16) & 0x0F;
-      int mult = (opcode & 0x0F);
-      u32 rs = myregs[(opcode >> 8) & 0x0F].I;
-      myregs[dest].I = myregs[mult].I * rs;
-      N_FLAG = (myregs[dest].I & 0x80000000) ? true : false;
-      Z_FLAG = (myregs[dest].I) ? false : true;
-      if(((s32)rs)<0)
-        rs = ~rs;
-    }
-    break;*/
+  
   case 0x00b:
   case 0x02b:
     {
       // STRH Rd, [Rn], -Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3055,7 +1587,6 @@ if(cond_res) {*/
   case 0x06b:
     {
       // STRH Rd, [Rn], #-offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3070,7 +1601,6 @@ if(cond_res) {*/
   case 0x0ab:
     {
       // STRH Rd, [Rn], Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3085,7 +1615,6 @@ if(cond_res) {*/
   case 0x0eb:
     {
       // STRH Rd, [Rn], #offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3099,7 +1628,6 @@ if(cond_res) {*/
   case 0x10b:
     {
       // STRH Rd, [Rn, -Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3110,7 +1638,6 @@ if(cond_res) {*/
   case 0x12b:
     {
       // STRH Rd, [Rn, -Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3122,7 +1649,6 @@ if(cond_res) {*/
   case 0x14b:
     {
       // STRH Rd, [Rn, -#offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3133,7 +1659,6 @@ if(cond_res) {*/
   case 0x16b:
     {
       // STRH Rd, [Rn, -#offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3145,7 +1670,6 @@ if(cond_res) {*/
   case 0x18b:
     {
       // STRH Rd, [Rn, Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3156,7 +1680,6 @@ if(cond_res) {*/
   case 0x1ab:
     {
       // STRH Rd, [Rn, Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3168,7 +1691,6 @@ if(cond_res) {*/
   case 0x1cb:
     {
       // STRH Rd, [Rn, #offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3179,7 +1701,6 @@ if(cond_res) {*/
   case 0x1eb:
     {
       // STRH Rd, [Rn, #offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3192,7 +1713,6 @@ if(cond_res) {*/
   case 0x03b:
     {
       // LDRH Rd, [Rn], -Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3217,7 +1737,6 @@ if(cond_res) {*/
   case 0x07b:
     {
       // LDRH Rd, [Rn], #-offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3242,7 +1761,6 @@ if(cond_res) {*/
   case 0x0bb:
     {
       // LDRH Rd, [Rn], Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3267,7 +1785,6 @@ if(cond_res) {*/
   case 0x0fb:
     {
       // LDRH Rd, [Rn], #offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3291,7 +1808,6 @@ if(cond_res) {*/
   case 0x11b:
     {
       // LDRH Rd, [Rn, -Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3310,7 +1826,6 @@ if(cond_res) {*/
   case 0x13b:
     {
       // LDRH Rd, [Rn, -Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3331,7 +1846,6 @@ if(cond_res) {*/
   case 0x15b:
     {
       // LDRH Rd, [Rn, -#offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3350,7 +1864,6 @@ if(cond_res) {*/
   case 0x17b:
     {
       // LDRH Rd, [Rn, -#offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3371,7 +1884,6 @@ if(cond_res) {*/
   case 0x19b:
     {
       // LDRH Rd, [Rn, Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3390,7 +1902,6 @@ if(cond_res) {*/
   case 0x1bb:
     {
       // LDRH Rd, [Rn, Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3411,7 +1922,6 @@ if(cond_res) {*/
   case 0x1db:
     {
       // LDRH Rd, [Rn, #offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3430,7 +1940,6 @@ if(cond_res) {*/
   case 0x1fb:
     {
       // LDRH Rd, [Rn, #offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3452,7 +1961,6 @@ if(cond_res) {*/
   case 0x03d:
     {
       // LDRSB Rd, [Rn], -Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3477,7 +1985,6 @@ if(cond_res) {*/
   case 0x07d:
     {
       // LDRSB Rd, [Rn], #-offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3502,7 +2009,6 @@ if(cond_res) {*/
   case 0x0bd:
     {
       // LDRSB Rd, [Rn], Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3527,7 +2033,6 @@ if(cond_res) {*/
   case 0x0fd:
     {
       // LDRSB Rd, [Rn], #offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3551,7 +2056,6 @@ if(cond_res) {*/
   case 0x11d:
     {
       // LDRSB Rd, [Rn, -Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3570,7 +2074,6 @@ if(cond_res) {*/
   case 0x13d:
     {
       // LDRSB Rd, [Rn, -Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3591,7 +2094,6 @@ if(cond_res) {*/
   case 0x15d:
     {
       // LDRSB Rd, [Rn, -#offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3610,7 +2112,6 @@ if(cond_res) {*/
   case 0x17d:
     {
       // LDRSB Rd, [Rn, -#offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3631,7 +2132,6 @@ if(cond_res) {*/
   case 0x19d:
     {
       // LDRSB Rd, [Rn, Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3650,7 +2150,6 @@ if(cond_res) {*/
   case 0x1bd:
     {
       // LDRSB Rd, [Rn, Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3671,7 +2170,6 @@ if(cond_res) {*/
   case 0x1dd:
     {
       // LDRSB Rd, [Rn, #offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3690,7 +2188,6 @@ if(cond_res) {*/
   case 0x1fd:
     {
       // LDRSB Rd, [Rn, #offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3712,7 +2209,6 @@ if(cond_res) {*/
   case 0x03f:
     {
       // LDRSH Rd, [Rn], -Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3737,7 +2233,6 @@ if(cond_res) {*/
   case 0x07f:
     {
       // LDRSH Rd, [Rn], #-offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3762,7 +2257,6 @@ if(cond_res) {*/
   case 0x0bf:
     {
       // LDRSH Rd, [Rn], Rm
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3787,7 +2281,6 @@ if(cond_res) {*/
   case 0x0ff:
     {
       // LDRSH Rd, [Rn], #offset
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I;
@@ -3811,7 +2304,6 @@ if(cond_res) {*/
   case 0x11f:
     {
       // LDRSH Rd, [Rn, -Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3829,8 +2321,7 @@ if(cond_res) {*/
     break;
   case 0x13f:
     {
-      // LDRSH Rd, [Rn, -Rm]!
- 
+      // LDRSH Rd, [Rn, -Rm]! 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - myregs[opcode & 0x0F].I;
@@ -3851,7 +2342,6 @@ if(cond_res) {*/
   case 0x15f:
     {
       // LDRSH Rd, [Rn, -#offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3870,7 +2360,6 @@ if(cond_res) {*/
   case 0x17f:
     {
       // LDRSH Rd, [Rn, -#offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I - ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3891,7 +2380,6 @@ if(cond_res) {*/
   case 0x19f:
     {
       // LDRSH Rd, [Rn, Rm]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3910,7 +2398,6 @@ if(cond_res) {*/
   case 0x1bf:
     {
       // LDRSH Rd, [Rn, Rm]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + myregs[opcode & 0x0F].I;
@@ -3931,7 +2418,6 @@ if(cond_res) {*/
   case 0x1df:
     {
       // LDRSH Rd, [Rn, #offset]
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3950,7 +2436,6 @@ if(cond_res) {*/
   case 0x1ff:
     {
       // LDRSH Rd, [Rn, #offset]!
- 
       int base = (opcode >> 16) & 0x0F;
       int dest = (opcode >> 12) & 0x0F;
       u32 address = myregs[base].I + ((opcode & 0x0F)|((opcode>>4)&0xF0));
@@ -3968,12 +2453,13 @@ if(cond_res) {*/
  
     }
     break;
+	
     //LOGICAL_DATA_OPCODE_WITHOUT_base(OP_EOR,  OP_EOR, 0x020); //ichfly
     //LOGICAL_DATA_OPCODE_WITHOUT_base(OP_EORS, OP_EOR, 0x030);
+
 /*  case 0x029: //ichfly
     {
       // MLA Rd, Rm, Rs, Rn
- 
       int dest = (opcode >> 16) & 0x0F;
       int mult = (opcode & 0x0F);
       u32 rs = myregs[(opcode >> 8) & 0x0F].I;
@@ -3982,8 +2468,7 @@ if(cond_res) {*/
     break;
   case 0x039:
     {
-      // MLAS Rd, Rm, Rs, Rn
- 
+      // MLAS Rd, Rm, Rs, Rn 
       int dest = (opcode >> 16) & 0x0F;
       int mult = (opcode & 0x0F);
       u32 rs = myregs[(opcode >> 8) & 0x0F].I;
@@ -4004,7 +2489,6 @@ if(cond_res) {*/
   case 0x089:
     {
       // UMULL RdLo, RdHi, Rn, Rs
- 
       u32 umult = myregs[(opcode & 0x0F)].I;
       u32 usource = myregs[(opcode >> 8) & 0x0F].I;
       int destLo = (opcode >> 12) & 0x0F;         
@@ -4018,7 +2502,6 @@ if(cond_res) {*/
   case 0x099:
     {
       // UMULLS RdLo, RdHi, Rn, Rs
- 
       u32 umult = myregs[(opcode & 0x0F)].I;
       u32 usource = myregs[(opcode >> 8) & 0x0F].I;
       int destLo = (opcode >> 12) & 0x0F;         
@@ -4053,7 +2536,6 @@ if(cond_res) {*/
   case 0x0b9:
     {
       // UMLALS RdLo, RdHi, Rn, Rs
- 
       u32 umult = myregs[(opcode & 0x0F)].I;
       u32 usource = myregs[(opcode >> 8) & 0x0F].I;
       int destLo = (opcode >> 12) & 0x0F;         
@@ -4149,17 +2631,8 @@ if(cond_res) {*/
     //CPUUpdateCPSR();
     myregs[(opcode >> 12) & 0x0F].I = myregs[16].I;
     break;
-  case 0x109:
-    {
-      // SWP Rd, Rm, [Rn]
-      u32 address = myregs[(opcode >> 16) & 15].I;
-      u32 temp = CPUReadMemory(address);
-      CPUWriteMemory(address, myregs[opcode&15].I);
-      myregs[(opcode >> 12) & 15].I = temp;
- 
-    }
-    break;
-    //LOGICAL_DATA_OPCODE(OP_TEQ, OP_TEQ, 0x130); //ichfly
+	
+	//LOGICAL_DATA_OPCODE(OP_TEQ, OP_TEQ, 0x130); //ichfly
   case 0x120:
     {
       // MSR CPSR_fields, Rm
@@ -4186,31 +2659,23 @@ if(cond_res) {*/
       }
     }
     break;
-  case 0x121:
-    {
-      // BX Rm
-      // TODO: check if right instruction...
-      int base = opcode & 0x0F;
-      armState = myregs[base].I & 1 ? false : true;
-      if(armState) {
-        myregs[15].I = myregs[base].I & 0xFFFFFFFC;
-        //armNextPC = myregs[15].I;
-        myregs[15].I += 4;
-        //ARM_PREFETCH;
-      } else {
-        myregs[15].I = myregs[base].I & 0xFFFFFFFE;
-        //armNextPC = myregs[15].I;
-        myregs[15].I += 2;
-        //THUMB_PREFETCH;
-      }
-    }
-    break;
+	
     //ARITHMETIC_DATA_OPCODE(OP_CMP, OP_CMP, 0x150);
   case 0x140:
     // MRS Rd, SPSR
     // TODO: check if right instruction...
     myregs[(opcode >> 12) & 0x0F].I = myregs[17].I;
     break;*/
+  
+  case 0x109:
+    {
+      // SWP Rd, Rm, [Rn]
+      u32 address = myregs[(opcode >> 16) & 15].I;
+      u32 temp = CPUReadMemory(address);
+      CPUWriteMemory(address, myregs[opcode&15].I);
+      myregs[(opcode >> 12) & 15].I = temp;
+    }
+    break;  
   case 0x149:
     {
       // SWPB Rd, Rm, [Rn]
@@ -4218,9 +2683,9 @@ if(cond_res) {*/
       u32 temp = CPUReadByte(address);
       CPUWriteByte(address, myregs[opcode&15].B.B0);
       myregs[(opcode>>12)&15].I = temp;
- 
     }
     break;
+	
     //ARITHMETIC_DATA_OPCODE(OP_CMN, OP_CMN, 0x170);
   /*case 0x160: //ichfly
     {
@@ -4246,7 +2711,8 @@ if(cond_res) {*/
     //LOGICAL_DATA_OPCODE             (OP_BICS, OP_BIC, 0x1d0);
     //LOGICAL_DATA_OPCODE_WITHOUT_base(OP_MVN,  OP_MVN, 0x1e0);
     //LOGICAL_DATA_OPCODE_WITHOUT_base(OP_MVNS, OP_MVN, 0x1f0);
-*//*#ifdef BKPT_SUPPORT //ichly
+
+#ifdef BKPT_SUPPORT
   case 0x127:
   case 0x7ff: // for GDB support
     extern void (*dbgSignal)(int,int);
@@ -4255,6 +2721,7 @@ if(cond_res) {*/
     dbgSignal(5, (opcode & 0x0f)|((opcode>>4) & 0xfff0));
     return;
 #endif
+
   case 0x320:
   case 0x321:
   case 0x322:
@@ -4342,7 +2809,6 @@ if(cond_res) {*/
   CASE_16(0x420)
     {
       // STR Rd, [Rn], -#
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4357,7 +2823,6 @@ if(cond_res) {*/
   CASE_16(0x4a0)
     {
       // STR Rd, [Rn], #
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4370,7 +2835,6 @@ if(cond_res) {*/
   CASE_16(0x500)
     {
       // STR Rd, [Rn, -#]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4382,7 +2846,6 @@ if(cond_res) {*/
   CASE_16(0x520)
     {
       // STR Rd, [Rn, -#]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4395,7 +2858,6 @@ if(cond_res) {*/
   CASE_16(0x580)
     {
       // STR Rd, [Rn, #]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4407,7 +2869,6 @@ if(cond_res) {*/
   CASE_16(0x5a0)
     {
       // STR Rd, [Rn, #]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4420,7 +2881,6 @@ if(cond_res) {*/
   CASE_16(0x410)
     {
       // LDR Rd, [Rn], -#
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4440,7 +2900,6 @@ if(cond_res) {*/
   CASE_16(0x430)
     {
       // LDRT Rd, [Rn], -#
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4460,7 +2919,6 @@ if(cond_res) {*/
   CASE_16(0x490)
     {
       // LDR Rd, [Rn], #
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4480,7 +2938,6 @@ if(cond_res) {*/
   CASE_16(0x4b0)
     {
       // LDRT Rd, [Rn], #
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4500,7 +2957,6 @@ if(cond_res) {*/
   CASE_16(0x510)
     {
       // LDR Rd, [Rn, -#]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4518,7 +2974,6 @@ if(cond_res) {*/
   CASE_16(0x530)
     {
       // LDR Rd, [Rn, -#]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4538,7 +2993,6 @@ if(cond_res) {*/
   CASE_16(0x590)
     {
       // LDR Rd, [Rn, #]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4556,7 +3010,6 @@ if(cond_res) {*/
   CASE_16(0x5b0)
     {
       // LDR Rd, [Rn, #]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4578,7 +3031,6 @@ if(cond_res) {*/
   CASE_16(0x460)
     {
       // STRB Rd, [Rn], -#
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4593,7 +3045,6 @@ if(cond_res) {*/
   CASE_16(0x4e0)
     {
       // STRB Rd, [Rn], #
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4606,7 +3057,6 @@ if(cond_res) {*/
   CASE_16(0x540)
     {
       // STRB Rd, [Rn, -#]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4618,14 +3068,13 @@ if(cond_res) {*/
 	//ichfly hier entnommen
 
 
-		    case 0x6c4:
+  case 0x6c4:
   case 0x6cc:
     // T versions are the same
   case 0x6e4:
   case 0x6ec:
     {
       // STRB Rd, [Rn], Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -4649,7 +3098,6 @@ if(cond_res) {*/
   case 0x6ee:
     {
       // STRB Rd, [Rn], Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -4669,7 +3117,6 @@ if(cond_res) {*/
   case 0x748:
     {
       // STRB Rd, [Rn, -Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4682,7 +3129,6 @@ if(cond_res) {*/
   case 0x74a:
     {
       // STRB Rd, [Rn, -Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -4696,7 +3142,6 @@ if(cond_res) {*/
   case 0x74c:
     {
       // STRB Rd, [Rn, -Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -4716,7 +3161,6 @@ if(cond_res) {*/
   case 0x74e:
     {
       // STRB Rd, [Rn, -Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -4735,7 +3179,6 @@ if(cond_res) {*/
   case 0x768:
     {
       // STRB Rd, [Rn, -Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4749,7 +3192,6 @@ if(cond_res) {*/
   case 0x76a:
     {
       // STRB Rd, [Rn, -Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -4764,7 +3206,6 @@ if(cond_res) {*/
   case 0x76c:
     {
       // STRB Rd, [Rn, -Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -4787,7 +3228,6 @@ if(cond_res) {*/
   case 0x76e:
     {
       // STRB Rd, [Rn, -Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -4807,7 +3247,6 @@ if(cond_res) {*/
   case 0x7c8:
     {
       // STRB Rd, [Rn, Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4820,7 +3259,6 @@ if(cond_res) {*/
   case 0x7ca:
     {
       // STRB Rd, [Rn, Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -4834,7 +3272,6 @@ if(cond_res) {*/
   case 0x7cc:
     {
       // STRB Rd, [Rn, Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -4854,7 +3291,6 @@ if(cond_res) {*/
   case 0x7ce:
     {
       // STRB Rd, [Rn, Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -4873,7 +3309,6 @@ if(cond_res) {*/
   case 0x7e8:
     {
       // STRB Rd, [Rn, Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4887,7 +3322,6 @@ if(cond_res) {*/
   case 0x7ea:
     {
       // STRB Rd, [Rn, Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -4902,7 +3336,6 @@ if(cond_res) {*/
   case 0x7ec:
     {
       // STRB Rd, [Rn, Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -4923,7 +3356,6 @@ if(cond_res) {*/
   case 0x7ee:
     {
       // STRB Rd, [Rn, Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -4946,7 +3378,6 @@ if(cond_res) {*/
   case 0x678:
     {
       // LDRB Rd, [Rn], -Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -4972,7 +3403,6 @@ if(cond_res) {*/
   case 0x67a:
     {
       // LDRB Rd, [Rn], -Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -4999,7 +3429,6 @@ if(cond_res) {*/
   case 0x67c:
     {
       // LDRB Rd, [Rn], -Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5032,7 +3461,6 @@ if(cond_res) {*/
   case 0x67e:
     {
       // LDRB Rd, [Rn], -Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5064,7 +3492,6 @@ if(cond_res) {*/
   case 0x6f8:
     {
       // LDRB Rd, [Rn], Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5090,7 +3517,6 @@ if(cond_res) {*/
   case 0x6fa:
     {
       // LDRB Rd, [Rn], Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5117,7 +3543,6 @@ if(cond_res) {*/
   case 0x6fc:
     {
       // LDRB Rd, [Rn], Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5150,7 +3575,6 @@ if(cond_res) {*/
   case 0x6fe:
     {
       // LDRB Rd, [Rn], Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5179,7 +3603,6 @@ if(cond_res) {*/
   case 0x758:
     {
       // LDRB Rd, [Rn, -Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5200,7 +3623,6 @@ if(cond_res) {*/
   case 0x75a:
     {
       // LDRB Rd, [Rn, -Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5221,8 +3643,7 @@ if(cond_res) {*/
   case 0x754:
   case 0x75c:
     {
-      // LDRB Rd, [Rn, -Rm, ASR #]
- 
+      // LDRB Rd, [Rn, -Rm, ASR #] 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5250,7 +3671,6 @@ if(cond_res) {*/
   case 0x75e:
     {
       // LDRB Rd, [Rn, -Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5277,7 +3697,6 @@ if(cond_res) {*/
   case 0x778:
     {
       // LDRB Rd, [Rn, -Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5300,7 +3719,6 @@ if(cond_res) {*/
   case 0x77a:
     {
       // LDRB Rd, [Rn, -Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5324,7 +3742,6 @@ if(cond_res) {*/
   case 0x77c:
     {
       // LDRB Rd, [Rn, -Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5354,7 +3771,6 @@ if(cond_res) {*/
   case 0x77e:
     {
       // LDRB Rd, [Rn, -Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5383,7 +3799,6 @@ if(cond_res) {*/
   case 0x7d8:
     {
       // LDRB Rd, [Rn, Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5404,7 +3819,6 @@ if(cond_res) {*/
   case 0x7da:
     {
       // LDRB Rd, [Rn, Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5426,7 +3840,6 @@ if(cond_res) {*/
   case 0x7dc:
     {
       // LDRB Rd, [Rn, Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5454,7 +3867,6 @@ if(cond_res) {*/
   case 0x7de:
     {
       // LDRB Rd, [Rn, Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5481,7 +3893,6 @@ if(cond_res) {*/
   case 0x7f8:
     {
       // LDRB Rd, [Rn, Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5504,7 +3915,6 @@ if(cond_res) {*/
   case 0x7fa:
     {
       // LDRB Rd, [Rn, Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5528,7 +3938,6 @@ if(cond_res) {*/
   case 0x7fc:
     {
       // LDRB Rd, [Rn, Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5558,7 +3967,6 @@ if(cond_res) {*/
   case 0x7fe:
     {
       // LDRB Rd, [Rn, Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5587,7 +3995,6 @@ if(cond_res) {*/
   case 0x7be:
     {
       // LDR Rd, [Rn, Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5617,7 +4024,6 @@ if(cond_res) {*/
   case 0x668:
     {
       // STRB Rd, [Rn], -Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5634,7 +4040,6 @@ if(cond_res) {*/
   case 0x66a:
     {
       // STRB Rd, [Rn], -Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5652,7 +4057,6 @@ if(cond_res) {*/
   case 0x66c:
     {
       // STRB Rd, [Rn], -Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5676,7 +4080,6 @@ if(cond_res) {*/
   case 0x66e:
     {
       // STRB Rd, [Rn], -Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5699,7 +4102,6 @@ if(cond_res) {*/
   case 0x6e8:
     {
       // STRB Rd, [Rn], Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5716,7 +4118,6 @@ if(cond_res) {*/
   case 0x6ea:
     {
       // STRB Rd, [Rn], Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5734,7 +4135,6 @@ if(cond_res) {*/
   case 0x6ba:
     {
       // LDR Rd, [Rn], Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5759,7 +4159,6 @@ if(cond_res) {*/
   case 0x6bc:
     {
       // LDR Rd, [Rn], Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5790,7 +4189,6 @@ if(cond_res) {*/
   case 0x6be:
     {
       // LDR Rd, [Rn], Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5817,7 +4215,6 @@ if(cond_res) {*/
   case 0x718:
     {
       // LDR Rd, [Rn, -Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5836,7 +4233,6 @@ if(cond_res) {*/
   case 0x71a:
     {
       // LDR Rd, [Rn, -Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5856,7 +4252,6 @@ if(cond_res) {*/
   case 0x71c:
     {
       // LDR Rd, [Rn, -Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5882,7 +4277,6 @@ if(cond_res) {*/
   case 0x71e:
     {
       // LDR Rd, [Rn, -Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -5907,7 +4301,6 @@ if(cond_res) {*/
   case 0x738:
     {
       // LDR Rd, [Rn, -Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -5928,7 +4321,6 @@ if(cond_res) {*/
   case 0x73a:
     {
       // LDR Rd, [Rn, -Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -5950,7 +4342,6 @@ if(cond_res) {*/
   case 0x73c:
     {
       // LDR Rd, [Rn, -Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -5978,7 +4369,6 @@ if(cond_res) {*/
   case 0x73e:
     {
       // LDR Rd, [Rn, -Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6005,7 +4395,6 @@ if(cond_res) {*/
   case 0x798:
     {
       // LDR Rd, [Rn, Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6024,7 +4413,6 @@ if(cond_res) {*/
   case 0x79a:
     {
       // LDR Rd, [Rn, Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6044,7 +4432,6 @@ if(cond_res) {*/
   case 0x79c:
     {
       // LDR Rd, [Rn, Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6070,7 +4457,6 @@ if(cond_res) {*/
   case 0x79e:
     {
       // LDR Rd, [Rn, Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6095,7 +4481,6 @@ if(cond_res) {*/
   case 0x7b8:
     {
       // LDR Rd, [Rn, Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6116,7 +4501,6 @@ if(cond_res) {*/
   case 0x7ba:
     {
       // LDR Rd, [Rn, Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6138,7 +4522,6 @@ if(cond_res) {*/
   case 0x7bc:
     {
       // LDR Rd, [Rn, Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6165,7 +4548,6 @@ if(cond_res) {*/
   CASE_16(0x560)
     {
       // STRB Rd, [Rn, -#]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6178,7 +4560,6 @@ if(cond_res) {*/
   CASE_16(0x5c0)
     {
       // STRB Rd, [Rn, #]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6190,7 +4571,6 @@ if(cond_res) {*/
   CASE_16(0x5e0)
     {
       // STRB Rd, [Rn, #]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6205,7 +4585,6 @@ if(cond_res) {*/
   CASE_16(0x470)
     {
       // LDRB Rd, [Rn], -#
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6228,7 +4607,6 @@ if(cond_res) {*/
   CASE_16(0x4f0) // T versions should not be different
     {
       // LDRB Rd, [Rn], #
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6250,7 +4628,6 @@ if(cond_res) {*/
   CASE_16(0x550)
     {
       // LDRB Rd, [Rn, -#]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6270,7 +4647,6 @@ if(cond_res) {*/
   CASE_16(0x570)
     {
       // LDRB Rd, [Rn, -#]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6292,7 +4668,6 @@ if(cond_res) {*/
   CASE_16(0x5d0)
     {
       // LDRB Rd, [Rn, #]
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6312,7 +4687,6 @@ if(cond_res) {*/
   CASE_16(0x5f0)
     {
       // LDRB Rd, [Rn, #]!
- 
       int offset = opcode & 0xFFF;
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6338,7 +4712,6 @@ if(cond_res) {*/
   case 0x628:
     {
       // STR Rd, [Rn], -Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6355,7 +4728,6 @@ if(cond_res) {*/
   case 0x62a:
     {
       // STR Rd, [Rn], -Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6373,7 +4745,6 @@ if(cond_res) {*/
   case 0x62c:
     {
       // STR Rd, [Rn], -Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6397,7 +4768,6 @@ if(cond_res) {*/
   case 0x62e:
     {
       // STR Rd, [Rn], -Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6420,7 +4790,6 @@ if(cond_res) {*/
   case 0x6a8:
     {
       // STR Rd, [Rn], Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6437,7 +4806,6 @@ if(cond_res) {*/
   case 0x6aa:
     {
       // STR Rd, [Rn], Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6455,7 +4823,6 @@ if(cond_res) {*/
   case 0x6ac:
     {
       // STR Rd, [Rn], Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6479,7 +4846,6 @@ if(cond_res) {*/
   case 0x6ae:
     {
       // STR Rd, [Rn], Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6499,7 +4865,6 @@ if(cond_res) {*/
   case 0x708:
     {
       // STR Rd, [Rn, -Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6512,7 +4877,6 @@ if(cond_res) {*/
   case 0x70a:
     {
       // STR Rd, [Rn, -Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6526,7 +4890,6 @@ if(cond_res) {*/
   case 0x70c:
     {
       // STR Rd, [Rn, -Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6546,7 +4909,6 @@ if(cond_res) {*/
   case 0x70e:
     {
       // STR Rd, [Rn, -Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6565,7 +4927,6 @@ if(cond_res) {*/
   case 0x728:
     {
       // STR Rd, [Rn, -Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6579,7 +4940,6 @@ if(cond_res) {*/
   case 0x72a:
     {
       // STR Rd, [Rn, -Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6594,7 +4954,6 @@ if(cond_res) {*/
   case 0x72c:
     {
       // STR Rd, [Rn, -Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6615,7 +4974,6 @@ if(cond_res) {*/
   case 0x72e:
     {
       // STR Rd, [Rn, -Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6635,7 +4993,6 @@ if(cond_res) {*/
   case 0x788:
     {
       // STR Rd, [Rn, Rm, LSL #]
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6648,7 +5005,6 @@ if(cond_res) {*/
   case 0x78a:
     {
       // STR Rd, [Rn, Rm, LSR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6662,7 +5018,6 @@ if(cond_res) {*/
   case 0x78c:
     {
       // STR Rd, [Rn, Rm, ASR #]
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6682,7 +5037,6 @@ if(cond_res) {*/
   case 0x78e:
     {
       // STR Rd, [Rn, Rm, ROR #]
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6701,7 +5055,6 @@ if(cond_res) {*/
   case 0x7a8:
     {
       // STR Rd, [Rn, Rm, LSL #]!
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6715,7 +5068,6 @@ if(cond_res) {*/
   case 0x7aa:
     {
       // STR Rd, [Rn, Rm, LSR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6730,7 +5082,6 @@ if(cond_res) {*/
   case 0x7ac:
     {
       // STR Rd, [Rn, Rm, ASR #]!
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6751,7 +5102,6 @@ if(cond_res) {*/
   case 0x7ae:
     {
       // STR Rd, [Rn, Rm, ROR #]!
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6774,7 +5124,6 @@ if(cond_res) {*/
   case 0x638:
     {
       // LDR Rd, [Rn], -Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6798,7 +5147,6 @@ if(cond_res) {*/
   case 0x63a:
     {
       // LDR Rd, [Rn], -Rm, LSR #
- 
       int shift = (opcode >> 7) & 31;
       int offset = shift ? myregs[opcode & 15].I >> shift : 0;
       int dest = (opcode >> 12) & 15;
@@ -6823,7 +5171,6 @@ if(cond_res) {*/
   case 0x63c:
     {
       // LDR Rd, [Rn], -Rm, ASR #
- 
       int shift = (opcode >> 7) & 31;
       int offset;
       if(shift)
@@ -6854,7 +5201,6 @@ if(cond_res) {*/
   case 0x63e:
     {
       // LDR Rd, [Rn], -Rm, ROR #
- 
       int shift = (opcode >> 7) & 31;
       u32 value = myregs[opcode & 15].I;
       if(shift) {
@@ -6884,7 +5230,6 @@ if(cond_res) {*/
   case 0x6b8:
     {
       // LDR Rd, [Rn], Rm, LSL #
- 
       int offset = myregs[opcode & 15].I << ((opcode>>7)& 31);
       int dest = (opcode >> 12) & 15;
       int base = (opcode >> 16) & 15;
@@ -6902,6 +5247,33 @@ if(cond_res) {*/
       }     }
     break;
 
+//coto[ARM mode]: these cases would be intended for prefetch abort (instruction abort, that is raised once the opcode is executed, but it is signaled before)
+//this would fix prefetch aborts that may be signaled outside the mapped GBA ROM memory, but still handled by the NDS prefetch abort handler.
+
+//how could this happen? This logic applies to both prefetch/data abort handlers . Well, for instance, if any opcode bits are armv4, and the armv5 does not understand them
+//the handler would trap that opcode. In the data abort handler, that logic works. Prefetch handler does not that now.
+
+/*
+case 0x121:
+    {
+      // BX Rm
+      // TODO: check if right instruction...
+      int base = opcode & 0x0F;
+      armState = myregs[base].I & 1 ? false : true;
+      if(armState) {
+        myregs[15].I = myregs[base].I & 0xFFFFFFFC;
+        //armNextPC = myregs[15].I;
+        myregs[15].I += 4;
+        //ARM_PREFETCH;
+      } else {
+        myregs[15].I = myregs[base].I & 0xFFFFFFFE;
+        //armNextPC = myregs[15].I;
+        myregs[15].I += 2;
+        //THUMB_PREFETCH;
+      }
+    }
+    break;
+*/
 
  /* CASE_256(0xa00)
     {
@@ -6958,6 +5330,7 @@ if(cond_res) {*/
     // MRC
     break;    
 #endif*/
+
 #define STMW_myregs(val,num) \
   if(opcode & (val)) {\
     CPUWriteMemory(address, myregs[(num)].I);\
@@ -6985,7 +5358,6 @@ if(cond_res) {*/
   CASE_16(0x800)
     {
       // STMDA Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7016,7 +5388,6 @@ if(cond_res) {*/
   CASE_16(0x820)
     {
       // STMDA Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7049,7 +5420,6 @@ if(cond_res) {*/
   CASE_16(0x840)
     {
       // STMDA Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7097,7 +5467,6 @@ if(cond_res) {*/
   CASE_16(0x860)
     {
       // STMDA Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7147,7 +5516,6 @@ if(cond_res) {*/
   CASE_16(0x880)
     {
       // STMIA Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
       int offset = 0;
@@ -7176,7 +5544,6 @@ if(cond_res) {*/
   CASE_16(0x8a0)
     {
       // STMIA Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
       int offset = 0;
@@ -7211,7 +5578,6 @@ if(cond_res) {*/
   CASE_16(0x8c0)
     {
       // STMIA Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
       int offset = 0;
@@ -7253,7 +5619,6 @@ if(cond_res) {*/
   CASE_16(0x8e0)
     {
       // STMIA Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
       int offset = 0;
@@ -7302,7 +5667,6 @@ if(cond_res) {*/
   CASE_16(0x900)
     {
       // STMDB Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7333,7 +5697,6 @@ if(cond_res) {*/
   CASE_16(0x920)
     {
       // STMDB Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7367,7 +5730,6 @@ if(cond_res) {*/
   CASE_16(0x940)
     {
       // STMDB Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7415,7 +5777,6 @@ if(cond_res) {*/
   CASE_16(0x960)
     {
       // STMDB Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7465,7 +5826,6 @@ if(cond_res) {*/
   CASE_16(0x980)
     {
       // STMIB Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = (myregs[base].I+4) & 0xFFFFFFFC;
       int offset = 0;
@@ -7494,7 +5854,6 @@ if(cond_res) {*/
   CASE_16(0x9a0)
     {
       // STMIB Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = (myregs[base].I+4) & 0xFFFFFFFC;
       int offset = 0;
@@ -7529,7 +5888,6 @@ if(cond_res) {*/
   CASE_16(0x9c0)
     {
       // STMIB Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = (myregs[base].I+4) & 0xFFFFFFFC;
       int offset = 0;
@@ -7571,7 +5929,6 @@ if(cond_res) {*/
   CASE_16(0x9e0)
     {
       // STMIB Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = (myregs[base].I+4) & 0xFFFFFFFC;
       int offset = 0;
@@ -7630,7 +5987,6 @@ if(cond_res) {*/
   CASE_16(0x810)
     {
       // LDMDA Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7665,7 +6021,6 @@ if(cond_res) {*/
   CASE_16(0x830)
     {
       // LDMDA Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7702,7 +6057,6 @@ if(cond_res) {*/
   CASE_16(0x850)
     {
       // LDMDA Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7778,7 +6132,6 @@ if(cond_res) {*/
   CASE_16(0x870)
     {
       // LDMDA Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7860,7 +6213,6 @@ if(cond_res) {*/
   CASE_16(0x890)
     {
       // LDMIA Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
        
@@ -7894,7 +6246,6 @@ if(cond_res) {*/
   CASE_16(0x8b0)
     {
       // LDMIA Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I + 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -7931,7 +6282,6 @@ if(cond_res) {*/
   CASE_16(0x8d0)
     {
       // LDMIA Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 address = myregs[base].I & 0xFFFFFFFC;
        
@@ -8004,7 +6354,6 @@ if(cond_res) {*/
   CASE_16(0x8f0)
     {
       // LDMIA Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I +
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -8087,7 +6436,6 @@ if(cond_res) {*/
   CASE_16(0x910)
     {
       // LDMDB Rn, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -8123,7 +6471,6 @@ if(cond_res) {*/
   CASE_16(0x930)
     {
       // LDMDB Rn!, {Rlist}
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -8160,7 +6507,6 @@ if(cond_res) {*/
   CASE_16(0x950)
     {
       // LDMDB Rn, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -8235,7 +6581,6 @@ if(cond_res) {*/
   CASE_16(0x970)
     {
       // LDMDB Rn!, {Rlist}^
- 
       int base = (opcode & 0x000F0000) >> 16;
       u32 temp = myregs[base].I - 
         4 * (cpuBitsSet[opcode & 255] + cpuBitsSet[(opcode >> 8) & 255]);
@@ -8559,639 +6904,7 @@ reg_pair* myregs = (reg_pair*)R;
 
 
 switch(opcode >> 8) {
-/* case 0x00:
- case 0x01:
- case 0x02:
- case 0x03:
- case 0x04:
- case 0x05:
- case 0x06:
- case 0x07:
-   {
-     // LSL Rd, Rm, #Imm 5
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     int shift = (opcode >> 6) & 0x1f;
-     u32 value;
-     
-     if(shift) {
-       LSL_RD_RM_I5;
-     } else {
-       value = myregs[source].I;
-     }
-     myregs[dest].I = value;
-     // C_FLAG set above
-     N_FLAG = (value & 0x80000000 ? true : false);
-     Z_FLAG = (value ? false : true);
-   }
-   break;
- case 0x08:
- case 0x09:
- case 0x0a:
- case 0x0b:
- case 0x0c:
- case 0x0d:
- case 0x0e:
- case 0x0f:
-   {
-     // LSR Rd, Rm, #Imm 5
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     int shift = (opcode >> 6) & 0x1f;
-     u32 value;
-     
-     if(shift) {
-       LSR_RD_RM_I5;
-     } else {
-       C_FLAG = myregs[source].I & 0x80000000 ? true : false;
-       value = 0;
-     }
-     myregs[dest].I = value;
-     // C_FLAG set above
-     N_FLAG = (value & 0x80000000 ? true : false);
-     Z_FLAG = (value ? false : true);
-   }
-   break;
- case 0x10:
- case 0x11:
- case 0x12:
- case 0x13:
- case 0x14:
- case 0x15:
- case 0x16:
- case 0x17:
-   {     
-     // ASR Rd, Rm, #Imm 5
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     int shift = (opcode >> 6) & 0x1f;
-     u32 value;
-     
-     if(shift) {
-       ASR_RD_RM_I5;
-     } else {
-       if(myregs[source].I & 0x80000000) {
-         value = 0xFFFFFFFF;
-         C_FLAG = true;
-       } else {
-         value = 0;
-         C_FLAG = false;
-       }
-     }
-     myregs[dest].I = value;
-     // C_FLAG set above
-     N_FLAG = (value & 0x80000000 ? true : false);
-     Z_FLAG = (value ? false :true);
-   }
-   break;
- case 0x18:
- case 0x19:
-   {
-     // ADD Rd, Rs, Rn
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     u32 value = myregs[(opcode>>6)& 0x07].I;
-     ADD_RD_RS_RN;
-   }
-   break;
- case 0x1a:
- case 0x1b:
-   {
-     // SUB Rd, Rs, Rn
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     u32 value = myregs[(opcode>>6)& 0x07].I;
-     SUB_RD_RS_RN;
-   }
-   break;
- case 0x1c:
- case 0x1d:
-   {
-     // ADD Rd, Rs, #Offset3
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     u32 value = (opcode >> 6) & 7;
-     ADD_RD_RS_O3;
-   }
-   break;
- case 0x1e:
- case 0x1f:
-   {
-     // SUB Rd, Rs, #Offset3
-     int dest = opcode & 0x07;
-     int source = (opcode >> 3) & 0x07;
-     u32 value = (opcode >> 6) & 7;
-     SUB_RD_RS_O3;
-   }
-   break;
- case 0x20:
- case 0x21:
- case 0x22:
- case 0x23:
- case 0x24:
- case 0x25:
- case 0x26:
- case 0x27:
-     {
-   u8 myregsist = (opcode >> 8) & 7;
-   // MOV R0~R7, #Offset8
-   myregs[myregsist].I = opcode & 255;
-   N_FLAG = false;
-   Z_FLAG = (myregs[myregsist].I ? false : true);
-     }
-   break;
-case 0x28:
-   // CMP R0, #Offset8
-   CMP_RN_O8(0);
-   break;
- case 0x29:
-   // CMP R1, #Offset8
-   CMP_RN_O8(1);
-   break;
- case 0x2a:
-   // CMP R2, #Offset8
-   CMP_RN_O8(2);
-   break;
- case 0x2b:
-   // CMP R3, #Offset8
-   CMP_RN_O8(3);
-   break;
- case 0x2c:
-   // CMP R4, #Offset8
-   CMP_RN_O8(4);
-   break;
- case 0x2d:
-   // CMP R5, #Offset8
-   CMP_RN_O8(5);
-   break;
- case 0x2e:
-   // CMP R6, #Offset8
-   CMP_RN_O8(6);
-   break;
- case 0x2f:
-   // CMP R7, #Offset8
-   CMP_RN_O8(7);
-   break;
- case 0x30:
-   // ADD R0,#Offset8
-   ADD_RN_O8(0);
-   break;   
- case 0x31:
-   // ADD R1,#Offset8
-   ADD_RN_O8(1);
-   break;   
- case 0x32:
-   // ADD R2,#Offset8
-   ADD_RN_O8(2);
-   break;   
- case 0x33:
-   // ADD R3,#Offset8
-   ADD_RN_O8(3);
-   break;   
- case 0x34:
-   // ADD R4,#Offset8
-   ADD_RN_O8(4);
-   break;   
- case 0x35:
-   // ADD R5,#Offset8
-   ADD_RN_O8(5);
-   break;   
- case 0x36:
-   // ADD R6,#Offset8
-   ADD_RN_O8(6);
-   break;   
- case 0x37:
-   // ADD R7,#Offset8
-   ADD_RN_O8(7);
-   break;
- case 0x38:
-   // SUB R0,#Offset8
-   SUB_RN_O8(0);
-   break;
- case 0x39:
-   // SUB R1,#Offset8
-   SUB_RN_O8(1);
-   break;
- case 0x3a:
-   // SUB R2,#Offset8
-   SUB_RN_O8(2);
-   break;
- case 0x3b:
-   // SUB R3,#Offset8
-   SUB_RN_O8(3);
-   break;
- case 0x3c:
-   // SUB R4,#Offset8
-   SUB_RN_O8(4);
-   break;
- case 0x3d:
-   // SUB R5,#Offset8
-   SUB_RN_O8(5);
-   break;
- case 0x3e:
-   // SUB R6,#Offset8
-   SUB_RN_O8(6);
-   break;
- case 0x3f:
-   // SUB R7,#Offset8
-   SUB_RN_O8(7);
-   break;
 
- case 0x40:
-   switch((opcode >> 6) & 3) {
-   case 0x00:
-     {
-       // AND Rd, Rs
-       int dest = opcode & 7;
-       myregs[dest].I &= myregs[(opcode >> 3)&7].I;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-#ifdef BKPT_SUPPORT     
-#define THUMB_CONSOLE_OUTPUT(a,b) \
-  if((opcode == 0x4000) && (myregs[0].I == 0xC0DED00D)) {\
-    extern void (*dbgOutput)(char *, u32);\
-    dbgOutput((a), (b));\
-  }
-#else
-#define THUMB_CONSOLE_OUTPUT(a,b)
-#endif
-       THUMB_CONSOLE_OUTPUT(NULL, myregs[2].I);
-     }
-     break;
-   case 0x01:
-     // EOR Rd, Rs
-     {
-       int dest = opcode & 7;
-       myregs[dest].I ^= myregs[(opcode >> 3)&7].I;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-     }
-     break;
-   case 0x02:
-     // LSL Rd, Rs
-     {
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].B.B0;
-       if(value) {
-         if(value == 32) {
-           value = 0;
-           C_FLAG = (myregs[dest].I & 1 ? true : false);
-         } else if(value < 32) {
-           LSL_RD_RS;
-         } else {
-           value = 0;
-           C_FLAG = false;
-         }
-         myregs[dest].I = value;        
-       }
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-     }
-     break;
-   case 0x03:
-     {
-       // LSR Rd, Rs
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].B.B0;
-       if(value) {
-         if(value == 32) {
-           value = 0;
-           C_FLAG = (myregs[dest].I & 0x80000000 ? true : false);
-         } else if(value < 32) {
-           LSR_RD_RS;
-         } else {
-           value = 0;
-           C_FLAG = false;
-         }
-         myregs[dest].I = value;        
-       }
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-     }
-     break;
-   }
-   break;
- case 0x41:
-   switch((opcode >> 6) & 3) {
-   case 0x00:
-     {
-       // ASR Rd, Rs
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].B.B0;
-       // ASR
-       if(value) {
-         if(value < 32) {
-           ASR_RD_RS;
-           myregs[dest].I = value;        
-         } else {
-           if(myregs[dest].I & 0x80000000){
-             myregs[dest].I = 0xFFFFFFFF;
-             C_FLAG = true;
-           } else {
-             myregs[dest].I = 0x00000000;
-             C_FLAG = false;
-           }
-         }
-       }
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-     }
-     break;
-   case 0x01:
-     {
-       // ADC Rd, Rs
-       int dest = opcode & 0x07;
-       u32 value = myregs[(opcode >> 3)&7].I;
-       // ADC
-       ADC_RD_RS;
-     }
-     break;
-   case 0x02:
-     {
-       // SBC Rd, Rs
-       int dest = opcode & 0x07;
-       u32 value = myregs[(opcode >> 3)&7].I;
-       
-       // SBC
-       SBC_RD_RS;
-     }
-     break;
-   case 0x03:
-     // ROR Rd, Rs
-     {
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].B.B0;
-       
-       if(value) {
-         value = value & 0x1f;
-         if(value == 0) {
-           C_FLAG = (myregs[dest].I & 0x80000000 ? true : false);
-         } else {
-           ROR_RD_RS;
-           myregs[dest].I = value;
-         }
-       }
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-       Z_FLAG = myregs[dest].I ? false : true;
-     }
-     break;
-   }
-   break;
- case 0x42:
-   switch((opcode >> 6) & 3) {
-   case 0x00:
-     {
-       // TST Rd, Rs
-       u32 value = myregs[opcode & 7].I & myregs[(opcode >> 3) & 7].I;
-       N_FLAG = value & 0x80000000 ? true : false;
-       Z_FLAG = value ? false : true;
-     }
-     break;
-   case 0x01:
-     {
-       // NEG Rd, Rs
-       int dest = opcode & 7;
-       int source = (opcode >> 3) & 7;
-       NEG_RD_RS;
-     }
-     break;
-   case 0x02:
-     {
-       // CMP Rd, Rs
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].I;
-       CMP_RD_RS;
-     }
-     break;
-   case 0x03:
-     {
-       // CMN Rd, Rs
-       int dest = opcode & 7;
-       u32 value = myregs[(opcode >> 3)&7].I;
-       // CMN
-       CMN_RD_RS;
-     }
-     break;
-   }
-   break;
- case 0x43:
-   switch((opcode >> 6) & 3) {
-   case 0x00:
-     {
-       // ORR Rd, Rs       
-       int dest = opcode & 7;
-       myregs[dest].I |= myregs[(opcode >> 3) & 7].I;
-       Z_FLAG = myregs[dest].I ? false : true;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-     }
-     break;
-   case 0x01:
-     {
-       // MUL Rd, Rs
-       int dest = opcode & 7;
-       u32 rm = myregs[dest].I;
-       myregs[dest].I = myregs[(opcode >> 3) & 7].I * rm;
-       if (((s32)rm) < 0)
-         rm = ~rm;
-       Z_FLAG = myregs[dest].I ? false : true;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-     }
-     break;
-   case 0x02:
-     {
-       // BIC Rd, Rs
-       int dest = opcode & 7;
-       myregs[dest].I &= (~myregs[(opcode >> 3) & 7].I);
-       Z_FLAG = myregs[dest].I ? false : true;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-     }
-     break;
-   case 0x03:
-     {
-       // MVN Rd, Rs
-       int dest = opcode & 7;
-       myregs[dest].I = ~myregs[(opcode >> 3) & 7].I;
-       Z_FLAG = myregs[dest].I ? false : true;
-       N_FLAG = myregs[dest].I & 0x80000000 ? true : false;
-     }
-     break;
-   }
-   break;
- case 0x44:
-   {
-     int dest = opcode & 7;
-     int base = (opcode >> 3) & 7;
-     switch((opcode >> 6)& 3) {
-     default:
-       goto unknown_thumb;
-     case 1:
-       // ADD Rd, Hs
-       myregs[dest].I += myregs[base+8].I;
-       break;
-     case 2:
-       // ADD Hd, Rs
-       myregs[dest+8].I += myregs[base].I;
-       if(dest == 7) {
-         myregs[15].I &= 0xFFFFFFFE;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;
-       }       
-       break;
-     case 3:
-       // ADD Hd, Hs
-       myregs[dest+8].I += myregs[base+8].I;
-       if(dest == 7) {
-         myregs[15].I &= 0xFFFFFFFE;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;  
-       }
-       break;
-     }
-   }
-   break;
- case 0x45:
-   {
-     int dest = opcode & 7;
-     int base = (opcode >> 3) & 7;
-     u32 value;
-     switch((opcode >> 6) & 3) {
-     case 0:
-       // CMP Rd, Hs
-       value = myregs[base].I;
-       CMP_RD_RS;
-       break;
-     case 1:
-       // CMP Rd, Hs
-       value = myregs[base+8].I;
-       CMP_RD_RS;
-       break;
-     case 2:
-       // CMP Hd, Rs
-       value = myregs[base].I;
-       dest += 8;
-       CMP_RD_RS;
-       break;
-     case 3:
-       // CMP Hd, Hs
-       value = myregs[base+8].I;
-       dest += 8;
-       CMP_RD_RS;
-       break;
-     }
-   }
-   break;
- case 0x46:
-   {
-     int dest = opcode & 7;
-     int base = (opcode >> 3) & 7;
-     switch((opcode >> 6) & 3) {
-     case 0:
-       // this form should not be used...
-       // MOV Rd, Rs
-       myregs[dest].I = myregs[base].I;
-       break;
-     case 1:
-       // MOV Rd, Hs
-       myregs[dest].I = myregs[base+8].I;
-       break;
-     case 2:
-       // MOV Hd, Rs
-       myregs[dest+8].I = myregs[base].I;
-       if(dest == 7) {
-#ifdef BKPT_SUPPORT
-	     UPDATE_OLD_myregs
-#endif
-
-         myregs[15].I &= 0xFFFFFFFE;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;
-       }
-       break;
-     case 3:
-       // MOV Hd, Hs
-       myregs[dest+8].I = myregs[base+8].I;
-       if(dest == 7) {
-
-#ifdef BKPT_SUPPORT
-	     UPDATE_OLD_myregs
-#endif
-
-         myregs[15].I &= 0xFFFFFFFE;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;
-       }   
-       break;
-     }
-   }
-   break;
- case 0x47:
-   {
-     int base = (opcode >> 3) & 7;
-     switch((opcode >>6) & 3) {
-     case 0:
-       // BX Rs
-#ifdef BKPT_SUPPORT
-		 UPDATE_OLD_myregs
-#endif
-       myregs[15].I = (myregs[base].I) & 0xFFFFFFFE;
-       if(myregs[base].I & 1) {
-         armState = false;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;
-       } else {
-         armState = true;
-         myregs[15].I &= 0xFFFFFFFC;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 4;
-         ////ARM_PREFETCH;
-       }
-       break;
-     case 1:
-       // BX Hs
-
-#ifdef BKPT_SUPPORT
-		 UPDATE_OLD_myregs
-#endif
-
-       myregs[15].I = (myregs[8+base].I) & 0xFFFFFFFE;
-       if(myregs[8+base].I & 1) {
-         armState = false;
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 2;
-         ////THUMB_PREFETCH;
-       } else {
-         armState = true;
-         myregs[15].I &= 0xFFFFFFFC;       
-         //armNextPC = myregs[15].I;
-         myregs[15].I += 4;
-         //////ARM_PREFETCH;
-       }
-       break;
-     default:
-       goto unknown_thumb;
-     }
-   }
-   break;*/
- /*case 0x48:
- case 0x49:
- case 0x4a:
- case 0x4b:
- case 0x4c:
- case 0x4d:
- case 0x4e:
- case 0x4f:
-   // LDR R0~R7,[PC, #Imm]
-   {
-   u8 myregsist = (opcode >> 8) & 7;
-     u32 address = (myregs[15].I & 0xFFFFFFFC) + ((opcode & 0xFF) << 2);
-     myregs[myregsist].I = CPUReadMemoryrealpuQuick(address);
-   }
-   break;*/
  case 0x50:
  case 0x51:
    // STR Rd, [Rs, Rn]
@@ -9377,43 +7090,7 @@ case 0x28:
 	 myregs[myregsist].I = CPUReadMemory(address);
    }
    break;
-/* case 0xa0:
- case 0xa1:
- case 0xa2:
- case 0xa3:
- case 0xa4:
- case 0xa5:
- case 0xa6:
- case 0xa7:
-     {
-   // ADD R0~R7, PC, Imm
-   u8 myregsist = (opcode >> 8) & 7;
-   myregs[myregsist].I = (myregs[15].I & 0xFFFFFFFC) + ((opcode&255)<<2);
-     }
-   break;   
- case 0xa8:
- case 0xa9:
- case 0xaa:
- case 0xab:
- case 0xac:
- case 0xad:
- case 0xae:
- case 0xaf:
-     {
-   // ADD R0~R7, SP, Imm
-   u8 myregsist = (opcode >> 8) & 7;
-   myregs[myregsist].I = myregs[13].I + ((opcode&255)<<2);
-     }
-   break;     
- case 0xb0:
-   {
-     // ADD SP, Imm
-     int offset = (opcode & 127) << 2;
-     if(opcode & 0x80)
-       offset = -offset;
-     myregs[13].I += offset;
-   }
-   break;*/
+
 #define PUSH_myregs(val, r) \
   if(opcode & (val)) {\
     CPUWriteMemory(address, myregs[(r)].I);\
@@ -9569,6 +7246,15 @@ case 0x28:
 	   //iprintf("%x\n",myregs[myregsist].I);
    }
    break;
+
+
+//coto[Thumb mode]: these cases would be intended for prefetch abort (instruction abort, that is raised once the opcode is executed, but it is signaled before)
+//this would fix prefetch aborts that may be signaled outside the mapped GBA ROM memory, but still handled by the NDS prefetch abort handler.
+
+//how could this happen? This logic applies to both prefetch/data abort handlers . Well, for instance, if any opcode bits are armv4, and the armv5 does not understand them
+//the handler would trap that opcode. In the data abort handler, that logic works. Prefetch handler does not that now.
+
+
 /* case 0xd0:
    // BEQ offset
 #ifdef BKPT_SUPPORT
@@ -9820,11 +7506,12 @@ case 0x28:
 #endif
  case 0xbf:
  case 0xde:*/
+ 
  default:
+	unknowndebugprint(myregs);
+}
+}
 
-	 unknowndebugprint(myregs);
-}
-}
 void unknowndebugprint(reg_pair *myregs)
 {
     Log("Undefined THUMB instruction %04x\n", *(u16*)(myregs[15].I - 6));

@@ -14,8 +14,8 @@ irqhandler2:
 b	inter_Reset + 0x01FF8000
 b	inter_undefined + 0x01FF8000
 b	inter_swi + 0x01FF8000
-b	inter_fetch + 0x01FF8000
-b	inter_data + 0x01FF8000
+b	inter_prefetchAbt + 0x01FF8000
+b	inter_dataAbt + 0x01FF8000
 b	inter_res + 0x01FF8000
 b	inter_irq + 0x01FF8000
 b	inter_fast + 0x01FF8000
@@ -127,7 +127,7 @@ inter_swi:
 	subs    pc, lr, #0 @ichfly this is not working	
 
 
-inter_fetch: @ break function todo
+inter_prefetchAbt: @ break function todo
 
 	subs    lr, lr, #0x8000000
 	ldr		sp,=rom
@@ -167,7 +167,7 @@ inter_undefined:
 
 
 dointerwtf:
-inter_data:
+inter_dataAbt:
 	
 	ldr	SP, =exRegs
 	str	lr, [SP, #(15 * 4)]	@ save r15 (lr is r15)

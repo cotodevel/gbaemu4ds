@@ -200,7 +200,7 @@ extern bool armState;
 extern int armMode;
 extern void (*cpuSaveGameFunc)(u32,u8);
 
-//#ifdef BKPT_SUPPORT //ichfly
+#ifdef BKPT_SUPPORT 
 extern u8 freezeWorkRAM[0x40000];
 extern u8 freezeInternalRAM[0x8000];
 extern u8 freezeVRAM[0x18000];
@@ -209,7 +209,7 @@ extern u8 freezePRAM[0x400];
 extern bool debugger_last;
 extern int  oldreg[17];
 extern char oldbuffer[10];
-//#endif
+#endif
 
 #ifdef usebuffedVcout
 extern u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
