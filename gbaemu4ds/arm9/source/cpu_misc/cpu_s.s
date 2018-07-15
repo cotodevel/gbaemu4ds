@@ -133,12 +133,6 @@ cpu_ArmJumpforstackinit:
 	bic r0, r0, #1
 	bx r0
 
-
-	.global cpu_GetCP15Cnt
-   .type   cpu_GetCP15Cnt STT_FUNC
-	
-cpu_GbaSaveRegs:
-
 	.global cpuGetSPSR
    .type   cpuGetSPSR STT_FUNC
 cpuGetSPSR:

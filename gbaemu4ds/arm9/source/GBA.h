@@ -252,9 +252,6 @@ extern void cpuProfil(profile_segment *seg);
 extern void cpuEnableProfiling(int hz);
 #endif
 
-extern void cpu_SetCP15Cnt(u32 v);
-extern u32 cpu_GetCP15Cnt();
-
 extern void VblankHandler();
 extern void frameasyncsync();
 extern void pausemenue();

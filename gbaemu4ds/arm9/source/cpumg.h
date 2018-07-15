@@ -100,8 +100,6 @@ extern void emulateedbiosstart();
 extern void resettostartup();
 extern void IntrMain();
 extern void testasm(u32* feld);
-extern void cpu_SetCP15Cnt(u32 v);
-extern u32 cpu_GetCP15Cnt();
 extern int main( int argc, char **argv);
 extern void testasm(u32* feld);
 extern void cpu_SetCP15Cnt(u32 v);
