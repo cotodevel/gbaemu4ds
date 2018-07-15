@@ -54,10 +54,5 @@
 //#define dmawriteprint
 //#define soundwriteprint
 //#define printsoundtimer
-
 //#define loaddirect
 
-//outdated
-#define patch_VERSION 	//is set even if this is not defined
-#define releas 			//non releas no more working 
-//#define trap_unhandled_map	//all addresses over 0x08000000 trapped by MPU

@@ -261,23 +261,8 @@ int durchgang = 0;
 
 void gbaInit(bool slow)
 {
-
-
-	/*
-	Region 0 - background	0x00000000 PU_PAGE_128M
-	Region 1 - DTCM 0x0b000000 PAGE_16K   
-	Region 2 - speedupone 0x02040000 PU_PAGE_256K
-	Region 3 - speeduptwo 0x02080000 PU_PAGE_512K
-	Region 4 - speedupthree 0x02100000 PU_PAGE_1M
-	Region 5 - speedupfour 0x02200000 PU_PAGE_2M
-	Region 6 - ITCM protector 0x00000000 PU_PAGE_16M
-	Region 7 - IO 0x04000000 PU_PAGE_16M
-	*/
-
-
 	exInitswisystem(gbaswieulatedbios); //define handler
 	exInitundifinedsystem(undifinedresolver); //define handler
-
 
 	REG_IME = IME_DISABLE;
 
@@ -286,11 +271,7 @@ void gbaInit(bool slow)
 	pu_SetDataCachability(   0b00111110);
 	pu_SetCodeCachability(   0b00111110);
 	pu_GetWriteBufferability(0b00100010);	
-
-
-#ifdef releas
 	exInit(gbaExceptionHdl); //define handler
-#endif
 
 	WRAM_CR = 0; //swap wram in
 	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
@@ -326,12 +307,9 @@ void gbaswieulatedbios()
 {
 	//Log("\n\rswi\n\r");
 	//debugDump();
-
-//while(1);
-
+	//while(1);
 	//Log("%08X S\n", readbankedsp(0x12));
-
-
+	
 	u16 tempforwtf = *(u16*)(exRegs[15] - 2);
 	BIOScall(tempforwtf,  exRegs);
 #ifdef lastdebug
@@ -344,7 +322,6 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 	gbaMode();
 	//while(1);
 }
-
 
 
 __attribute__((section(".itcm")))
@@ -543,57 +520,26 @@ void emulateedbiosstart()
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~BIT(13));
 }
 
-
-void downgreadcpu()
+__attribute__((section(".itcm")))
+void ARMV5toARMV4Mode()
 {
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | BIT(15));
 }
 
-
-
-#ifndef releas
-void ndsExceptionHdl()
+__attribute__((section(".itcm")))
+void ARMV4toARMV5Mode()
 {
-	u32 mode = cpuGetCPSR() & 0x1F;
-	u32 instrset = BIOSDBG_SPSR & 0x20;
-	if(mode == 0x17)
-	{
-		u32 codeAddress = exRegs[15] - 8;
-		if (	(codeAddress > 0x02000000 && codeAddress < 0x02400000) ||
-		(codeAddress > (u32)0x01000000 && codeAddress < (u32)(0x01000000 + 32768)) )
-		{
-			Log("NDS DATA ABORT AT %08X\n",getExceptionAddress( codeAddress, instrset));
-		}
-		else
-		{
-			Log("NDS DATA ABORT\n");
-		}
-	}
-	else if(mode == 0x1B) Log("NDS UNDEFINED INSTRUCTION\n");
-	else Log("NDS STRANGE EXCEPTION !\n");
-	Log("SAVED PC = %08X (%s)\n", exRegs[15], instrset ? "THUMB" : "ARM");
-	debugDump();
-	/*if(instrset) Log("FAILED INSTR = %04X\n", *(u16*)(exRegs[15] - (mode == 0x17 ? 4 : 2)));
-	else Log("FAILED INSTR = %08X\n", *(u32*)(exRegs[15] - (mode == 0x17 ? 8 : 4)));*/ //ichfly don't like that
-			REG_IME = IME_DISABLE;
-		while(1);
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~ BIT(15));
 }
-#endif
 
 void ndsModeinline()
 {
 	puNds();
-#ifndef releas
-	exInit(ndsExceptionHdl);
-#endif
 }
 
 void ndsMode()
 {
 	puNds();
-#ifndef releas
-	exInit(ndsExceptionHdl);
-#endif
 }
 
 __attribute__((section(".itcm")))
@@ -616,30 +562,6 @@ void gbaExceptionHdl()
 	} 
 	Log("\n");*/
 
-
-#ifdef trap_unhandled_map
-	{
-
-		if(exRegs[15] > 0x08000000)//don't know why this land herer but it dose
-		{
-			//exRegs[15] = (exRegs[15] & 0x01FFFFFF) + (s32)rom;
-			iprintf("MPU GBAMode PC trapped @ %x! \n",(unsigned int)exRegs[15]);
-			while(1==1){
-				scanKeys();
-				if (keysDown()&KEY_A){
-					break;
-				}
-			}
-		}
-		else
-		{
-			Log("gba jumped to an unknown region\n");
-			debugDump(); //test
-			REG_IME = IME_DISABLE;
-			while(1);
-		}
-	}
-#endif
 
 	if(cpuMode)
 	{
@@ -665,22 +587,6 @@ void gbaExceptionHdl()
 	//Log("exit\n");
 }
 
-#ifndef releas
-void gbaMode()
-{
-
-	exInit(gbaExceptionHdl);
-	puGba();
-	
-}
- void gbaMode2()
-{
-	exInit(gbaExceptionHdl);
-	puGba();	
-}
-#endif
-
- #ifdef releas
 __attribute__((section(".itcm")))
 void gbaMode2()
 {
@@ -691,185 +597,3 @@ void gbaMode()
 {
 	puGba();	
 }
-#endif
-
-
-
-
-
-
-
-
-#ifndef releas
-
-//extern things
-
-//---------------------------------------------------------------------------------
-u32 getExceptionAddress( u32 opcodeAddress, u32 thumbState) {
-//---------------------------------------------------------------------------------
-
-	int Rf, Rb, Rd, Rn, Rm;
-
-	if (thumbState) {
-		// Thumb
-
-		unsigned short opcode = *(unsigned short *)opcodeAddress ;
-		// ldr r,[pc,###]			01001ddd ffffffff
-		// ldr r,[r,r]				0101xx0f ffbbbddd
-		// ldrsh					0101xx1f ffbbbddd
-		// ldr r,[r,imm]			011xxfff ffbbbddd
-		// ldrh						1000xfff ffbbbddd
-		// ldr r,[sp,###]			1001xddd ffffffff
-		// push						1011x10l llllllll
-		// ldm						1100xbbb llllllll
-
-
-		if ((opcode & 0xF800) == 0x4800) {
-			// ldr r,[pc,###]
-			s8 offset = opcode & 0xff;
-			return exRegs[15] + offset;
-		} else if ((opcode & 0xF200) == 0x5000) {
-			// ldr r,[r,r]
-			Rb = (opcode >> 3) & 0x07 ;
-			Rf = (opcode >> 6) & 0x07 ;
-			return exRegs[Rb] + exRegs[Rf];
-
-		} else if ((opcode & 0xF200) == 0x5200) {
-			// ldrsh
-			Rb = (opcode >> 3) & 0x07;
-			Rf = (opcode >> 6) & 0x03;
-			return exRegs[Rb] + exRegs[Rf];
-
-		} else if ((opcode & 0xE000) == 0x6000) {
-			// ldr r,[r,imm]
-			Rb = (opcode >> 3) & 0x07;
-			Rf = (opcode >> 6) & 0x1F ;
-			return exRegs[Rb] + (Rf << 2);
-		} else if ((opcode & 0xF000) == 0x8000) {
-			// ldrh
-			Rb = (opcode >> 3) & 0x07 ;
-			Rf = (opcode >> 6) & 0x1F ;
-			return exRegs[Rb] + (Rf << 2);
-		} else if ((opcode & 0xF000) == 0x9000) {
-			// ldr r,[sp,#imm]
-			s8 offset = opcode & 0xff;
-			return exRegs[13] + offset;
-		} else if ((opcode & 0xF700) == 0xB500) {
-			// push/pop
-			return exRegs[13];
-		} else if ((opcode & 0xF000) == 0xC000) {
-			// ldm/stm
-			Rd = (opcode >> 8) & 0x07;
-			return exRegs[Rd];
-		}
-	} else {
-		// arm32
-		unsigned long opcode = *(unsigned long *)opcodeAddress ;
-
-		// SWP			xxxx0001 0x00nnnn dddd0000 1001mmmm
-		// STR/LDR		xxxx01xx xxxxnnnn ddddffff ffffffff
-		// STRH/LDRH	xxxx000x x0xxnnnn dddd0000 1xx1mmmm
-		// STRH/LDRH	xxxx000x x1xxnnnn ddddffff 1xx1ffff
-		// STM/LDM		xxxx100x xxxxnnnn llllllll llllllll
-
-		if ((opcode & 0x0FB00FF0) == 0x01000090) {
-			// SWP
-			Rn = (opcode >> 16) & 0x0F;
-			return exRegs[Rn];
-		} else if ((opcode & 0x0C000000) == 0x04000000) {
-			// STR/LDR
-			Rn = (opcode >> 16) & 0x0F;
-			if (opcode & 0x02000000) {
-				// Register offset
-				Rm = opcode & 0x0F;
-				if (opcode & 0x01000000) {
-					unsigned short shift = (unsigned short)((opcode >> 4) & 0xFF) ;
-					// pre indexing
-					long Offset = ARMShift(exRegs[Rm],shift);
-					// add or sub the offset depending on the U-Bit
-					return exRegs[Rn] + ((opcode & 0x00800000)?Offset:-Offset);
-				} else {
-					// post indexing
-					return exRegs[Rn];
-				}
-			} else {
-				// Immediate offset
-				unsigned long Offset = (opcode & 0xFFF) ;
-				if (opcode & 0x01000000) {
-					// pre indexing
-					// add or sub the offset depending on the U-Bit
-					return exRegs[Rn] + ((opcode & 0x00800000)?Offset:-Offset);
-				} else {
-					// post indexing
-					return exRegs[Rn];
-				}
-			}
-		} else if ((opcode & 0x0E400F90) == 0x00000090) {
-			// LDRH/STRH with register Rm
-			Rn = (opcode >> 16) & 0x0F;
-			Rd = (opcode >> 12) & 0x0F;
-			Rm = opcode & 0x0F;
-			unsigned short shift = (unsigned short)((opcode >> 4) & 0xFF);
-			long Offset = ARMShift(exRegs[Rm],shift);
-			// add or sub the offset depending on the U-Bit
-			return exRegs[Rn] + ((opcode & 0x00800000)?Offset:-Offset);
-		} else if ((opcode & 0x0E400F90) == 0x00400090) {
-			// LDRH/STRH with immediate offset
-			Rn = (opcode >> 16) & 0x0F;
-			Rd = (opcode >> 12) & 0x0F;
-			unsigned long Offset = (opcode & 0xF) | ((opcode & 0xF00)>>8) ;
-			// add or sub the offset depending on the U-Bit
-			return exRegs[Rn] + ((opcode & 0x00800000)?Offset:-Offset) ;
-		} else if ((opcode & 0x0E000000) == 0x08000000) {
-			// LDM/STM
-			Rn = (opcode >> 16) & 0x0F;
-			return exRegs[Rn];
-		}
-	}
-	return 0;
-}
-
-
-//---------------------------------------------------------------------------------
-unsigned long ARMShift(unsigned long value,unsigned char shift) {
-//---------------------------------------------------------------------------------
-	// no shift at all
-	if (shift == 0x0B) return value ;
-	int index ;
-	if (shift & 0x01) {
-		// shift index is a register
-		index = exRegs[(shift >> 4) & 0x0F];
-	} else {
-		// constant shift index
-		index = ((shift >> 3) & 0x1F) ;
-	} ;
-	int i ;
-	bool isN ;
-	switch (shift & 0x06) {
-		case 0x00:
-			// logical left
-			return (value << index) ;
-		case 0x02:
-			// logical right
-			return (value >> index) ;
-		case 0x04:
-			// arithmetical right
-			isN = (value & 0x80000000) ;
-			value = value >> index ;
-			if (isN) {
-				for (i=31;i>31-index;i--) {
-					value = value | (1 << i) ;
-				} ;
-			} ;
-			return value ;
-		case 0x06:
-			// rotate right
-			index = index & 0x1F;
-			value = (value >> index) | (value << (32-index));
-			return value;
-	};
-	return value;
-}
-
-
-#endif

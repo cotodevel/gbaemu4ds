@@ -97,7 +97,8 @@ extern u32 MPUPERMBACKUPSET_SWI;	//MPUd/itcmmemorypermissionsfromcaller
 
 extern int arm9VCOUNTsyncline;
 extern void failcpphandler();
-extern void downgreadcpu();
+extern void ARMV5toARMV4Mode();
+extern void ARMV4toARMV5Mode();
 extern void emulateedbiosstart();
 extern void resettostartup();
 extern void IntrMain();
