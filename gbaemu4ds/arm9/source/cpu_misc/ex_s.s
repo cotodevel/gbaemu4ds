@@ -72,9 +72,10 @@ inter_irq:
 	
 	BEQ	irqexitdirect		@ IF > 0 ? continue serving interrupts
 	
-gba_handler:
-	ldr	r1, =0x06300033        @prepare for GBA IRQ handler
-	mcr	p15, 0, r1, c5, c0, 2
+gba_handler:					
+	ldr	r1, =0x06300033        	@puGba();
+	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
+	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
 @acquire and jump to usr irq handler and go back right after
 	add    LR,PC,#0            @retadr for USER handler
@@ -82,8 +83,9 @@ gba_handler:
 	b irqexit
 	
 irqexitdirect:	
-	ldr	r1, =0x06300033        @prepare for GBA IRQ handler
-	mcr	p15, 0, r1, c5, c0, 2
+	ldr	r1, =0x06300033         @puGba();
+	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
+	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
 irqexit:
 	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
@@ -231,9 +233,10 @@ exitdirectcpu:
 	ldmia r6, {r13-r14}	@restor r13 and r14  @ on restaure les registres bankés (r13 et r14). /!\ N'allons pas croire qu'on les a restauré dans notre contexte: en effet, on a changé de mode là !
 	msr	cpsr, r3	@chagne to mode "normal"@ on revient au mode "normal"
 	
-	ldr	SP, =0x06300033
-	mcr	p15, 0, SP, c5, c0, 2
-
+	ldr	SP, =0x06300033			@puGba();
+	mcr	p15, 0, SP, c5, c0, 2	@setDataPermiss
+	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ prefetch abort handles different logic. Policy is when GBAMode enters is set once.
+	
 	@restore r0-r12 easy
 	sub lr,r6,#13 * 4 @ldr	lr, =exRegs
 	ldmia	lr, {r0-r12}
