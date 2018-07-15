@@ -588,11 +588,6 @@ void gbaExceptionHdl()
 }
 
 __attribute__((section(".itcm")))
-void gbaMode2()
-{
-	puGba();	
-}
-__attribute__((section(".itcm")))
 void gbaMode()
 {
 	puGba();	

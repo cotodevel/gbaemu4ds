@@ -359,9 +359,9 @@ if(save_decider()==0){
 	
 	gbaInit(slow);
 #ifndef capture_and_pars
-	iprintf("gbaMode2\n");
+	iprintf("gbaMode\n");
 #endif
-	gbaMode2();
+	gbaMode();
 #ifndef capture_and_pars
 	iprintf("jump to (%08X):%x",rom,*rom);
 #endif

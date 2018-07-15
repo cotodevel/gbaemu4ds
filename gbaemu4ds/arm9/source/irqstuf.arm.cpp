@@ -571,5 +571,5 @@ void pausemenue()
 	fifoGetDatamsg(FIFO_USER_02, bytes, msg);
 	iprintf((char*)msg);
 	iprintf("exit");
-	//if(gbamode)gbaMode2();
+	//if(gbamode)gbaMode();
 }*/

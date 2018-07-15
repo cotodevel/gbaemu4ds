@@ -54,9 +54,6 @@ extern void cpu_ArmJump(u32 address, u32 r1);
 extern void cpu_ArmJumpforstackinit(u32 address, u32 r1);
 extern void exInitswisystem(void (*customswiHdl)());
 extern void gbaswieulatedbios();
-
-extern void gbaMode2();
-
 extern void gbaInit(bool slow);
 extern void switch_to_unprivileged_mode();
 extern void gbaMode();
