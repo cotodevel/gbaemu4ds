@@ -104,6 +104,9 @@ extern int main( int argc, char **argv);
 extern void testasm(u32* feld);
 extern void cpu_SetCP15Cnt(u32 v);
 extern u32 cpu_GetCP15Cnt();
+
+extern void undefinedExceptionHandler();
+
 extern void HblankHandler(void);
 extern int frameskip;
 

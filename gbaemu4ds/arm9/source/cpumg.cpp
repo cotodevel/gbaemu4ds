@@ -242,14 +242,20 @@ void exInit(void (*customHdl)())
 }
 
 __attribute__((section(".itcm")))
-void undifinedresolver()
+void undefinedExceptionHandler()
 {
+	//coto: by downgrading armv5 to armv4 and running always in ARMv4 mode we prevent the below undefined exception.
+	
+	//ichfly
+	/*
 	u32 tempforwtf = *(u32*)(exRegs[15] - 4);
 	if((tempforwtf &0x0F200090) == 0x00200090) //wtf why dos this tigger an exeption it is strh r1,[r0]+2! ≤‡‡ 0xB2 10 E0 E0 on gba 0xE0E010B2 so think all strh rx,[ry]+z! do that
 	{
 		*(u32*)(exRegs[15] - 4) = tempforwtf & ~0x200000;//ther is just a wrong bit so don't worry patch it to strh r1,[r0]+2
 	}
 	else
+	*/
+	
 	{
 		printf("unknown OP\r\n");
 		debugDump();
@@ -262,7 +268,7 @@ int durchgang = 0;
 void gbaInit(bool slow)
 {
 	exInitswisystem(gbaswieulatedbios); //define handler
-	exInitundifinedsystem(undifinedresolver); //define handler
+	exInitundifinedsystem(undefinedExceptionHandler); //define handler
 
 	REG_IME = IME_DISABLE;
 

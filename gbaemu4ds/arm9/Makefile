@@ -56,7 +56,7 @@ GAME_SUBTITLE2	:=
 # options for code generation  # -save-temps
 #---------------------------------------------------------------------------------
 
-export GLOBAL_SHARED_FLAGS_9 = -march=armv5te	-mthumb-interwork
+export GLOBAL_SHARED_FLAGS_9 = -mcpu=arm7tdmi -mtune=arm7tdmi	-mthumb-interwork
 
 #CPU code builder settings
 export GLOBAL_AS_COMPILER_FLAGS =	-defsym	readvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-defsym		NDS='1'

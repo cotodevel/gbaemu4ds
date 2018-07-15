@@ -74,7 +74,9 @@ int frameskip = 10;
 
 //---------------------------------------------------------------------------------
 int main( int argc, char **argv) {
-
+	
+	ARMV5toARMV4Mode();	//so undefined resolver deals with proper armv4 opcodes and we iron out patches // for upcoming prefetch logic
+	
   biosPath[0] = 0;
   savePath[0] = 0;
   patchPath[0] = 0;
@@ -220,6 +222,7 @@ if(argv[8][0] == '1')
 initspeedupfelder();
 #endif
 
+  iprintf("ARM9 @ARMv4 ok");
   iprintf("\x1b[2J");
   parseDebug = true;
     bool failed = false;
