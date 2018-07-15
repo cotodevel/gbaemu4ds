@@ -94,43 +94,119 @@ static u8 *workRAM = (u8*)0x02000000;
 static u8 *paletteRAM = (u8*)0x05000000;
 static u8 *vram = (u8*)0x06000000;
 static u8 *oam = (u8*)0x07000000;*/
+
+__attribute__((section(".dtcm")))
 u16 BG0CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG1CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3CNT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG0HOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG0VOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG1HOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG1VOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2HOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2VOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3HOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3VOFS  = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2PA    = 0x0100;
+
+__attribute__((section(".dtcm")))
 u16 BG2PB    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2PC    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2PD    = 0x0100;
+
+__attribute__((section(".dtcm")))
 u16 BG2X_L   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2X_H   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2Y_L   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG2Y_H   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3PA    = 0x0100;
+
+__attribute__((section(".dtcm")))
 u16 BG3PB    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3PC    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3PD    = 0x0100;
+
+__attribute__((section(".dtcm")))
 u16 BG3X_L   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3X_H   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3Y_L   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BG3Y_H   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WIN0H    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WIN1H    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WIN0V    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WIN1V    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WININ    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 WINOUT   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 MOSAIC   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 BLDMOD   = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 COLEV    = 0x0000;
+
+__attribute__((section(".dtcm")))
 u16 COLY     = 0x0000;
 
 __attribute__((section(".dtcm")))
