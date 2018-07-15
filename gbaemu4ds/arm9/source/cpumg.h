@@ -34,10 +34,7 @@ extern "C"{
 
 extern u32 savedsp;
 extern u32 savedlr;
-
-extern void gbaExceptionHdl();
 extern int spirq;
-extern int SPtemp;
 
 // extern void puSetMemPerm(u32 perm);
 extern void pu_Enable();
@@ -52,8 +49,8 @@ extern void pu_GetWriteBufferability(u32 v);
 
 extern void cpu_ArmJump(u32 address, u32 r1);
 extern void cpu_ArmJumpforstackinit(u32 address, u32 r1);
-extern void exInitswisystem(void (*customswiHdl)());
-extern void gbaswieulatedbios();
+
+extern void swiExceptionHandler();
 extern void gbaInit(bool slow);
 extern void switch_to_unprivileged_mode();
 extern void gbaMode();
@@ -79,7 +76,6 @@ extern void ichflyswiHalt();
 extern void ichflyswiWaitForVBlank();
 extern void ichflyswiIntrWait(u32 i,u32 c);
 
-extern void (*exHandler)();
 extern void (*exHandlerswi)();
 extern void (*exHandlerundifined)();
 extern u32  exRegs[];

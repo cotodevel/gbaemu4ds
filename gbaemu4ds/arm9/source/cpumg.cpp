@@ -165,7 +165,7 @@ void debugDump()
 		Log("R%d=%X ", i, exRegs[i]);
 	} 
 	Log("\n");
-	Log("sup %X %X\n",spirq,SPtemp);
+	Log("sp %X \n",spirq);
 
 	/*if((exRegs[13] &0xFF000000) != 0x3000000)
 	{
@@ -225,26 +225,10 @@ void failcpphandler()
 		while(1);
 }
 
-void exInitundifinedsystem(void (*customundifinedHdl)())
-{
-	exHandlerundifined = customundifinedHdl;
-}
-
-void exInitswisystem(void (*customswiHdl)())
-{
-	exHandlerswi = customswiHdl;
-}
-
-void exInit(void (*customHdl)())
-{
-	//EXCEPTION_VECTOR = exMain; //no more needed
-	exHandler = customHdl;
-}
-
 __attribute__((section(".itcm")))
 void undefinedExceptionHandler()
 {
-	//coto: by downgrading armv5 to armv4 and running always in ARMv4 mode we prevent the below undefined exception.
+	//coto: by downgrading (ARM9) armv5 to armv4 and running always in ARMv4 mode we prevent the below undefined exception.
 	
 	//ichfly
 	/*
@@ -267,18 +251,14 @@ int durchgang = 0;
 
 void gbaInit(bool slow)
 {
-	exInitswisystem(gbaswieulatedbios); //define handler
-	exInitundifinedsystem(undefinedExceptionHandler); //define handler
-
 	REG_IME = IME_DISABLE;
 
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu while configurating pu
-
+	
 	pu_SetDataCachability(   0b00111110);
 	pu_SetCodeCachability(   0b00111110);
 	pu_GetWriteBufferability(0b00100010);	
-	exInit(gbaExceptionHdl); //define handler
-
+	
 	WRAM_CR = 0; //swap wram in
 	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
 	pu_SetRegion(1, 0x027C0000 | PU_PAGE_16K | 1);	//dtcm helper: enable I/Dtcm caches in DTCM region: gives speedup
@@ -309,14 +289,14 @@ void puNds()
 }
 
 __attribute__((section(".itcm")))
-void gbaswieulatedbios()
+void swiExceptionHandler()
 {
 	//Log("\n\rswi\n\r");
 	//debugDump();
 	//while(1);
 	//Log("%08X S\n", readbankedsp(0x12));
 	
-	u16 tempforwtf = *(u16*)(exRegs[15] - 2);
+	u16 tempforwtf = *(u16*)(exRegs[15] - 2);	//coto: todo: range check, swi from GBA area fetch will cause problems
 	BIOScall(tempforwtf,  exRegs);
 #ifdef lastdebug
 	if(readbankedsp(0x12) < 0x1000000)debugandhalt();
@@ -460,7 +440,6 @@ void BIOScall(int op,  u32 *R)
 		BIOS_Diff8bitUnFilterVram();
 		break;
 	  case 0x18:
-
 		BIOS_Diff16bitUnFilter();
 		break;
 	  case 0x19:
@@ -521,6 +500,7 @@ void switch_to_unprivileged_mode()
 	cpuSetCPSR(temp);
 }
 
+__attribute__((section(".itcm")))
 void emulateedbiosstart()
 {
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~BIT(13));
@@ -538,59 +518,10 @@ void ARMV4toARMV5Mode()
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~ BIT(15));
 }
 
-void ndsModeinline()
-{
-	puNds();
-}
-
+__attribute__((section(".itcm")))
 void ndsMode()
 {
 	puNds();
-}
-
-__attribute__((section(".itcm")))
-void gbaExceptionHdl()
-{
-
-	u32 instr;
-	u32 cpuMode;
-	
-	//ndsModeinline();
-	cpuMode = BIOSDBG_SPSR & 0x20;
-	//Log("%08X\n",exRegs[15]);
-	
-	//Log("enter\n");
-
-	//Log("%08X %08X %08X\r\n",exRegs[15],REG_VCOUNT,REG_IE);
-	/*int i;
-	for(i = 0; i <= 15; i++) {
-		Log("R%d=%X ", i, exRegs[i]);
-	} 
-	Log("\n");*/
-
-
-	if(cpuMode)
-	{
-		instr = *(u16*)(exRegs[15] - 8);
-		exRegs[15] -= 2;
-		{
-			emuInstrTHUMB(instr, exRegs);
-		}		
-	}
-	else
-	{
-		instr = *(u32*)(exRegs[15] - 8);
-		emuInstrARM(instr, exRegs);
-	}
-
-#ifdef lastdebug
-	if(readbankedsp(0x12) < 0x1000000)debugandhalt();
-	lasttime[lastdebugcurrent] = exRegs[15];
-	lastdebugcurrent++;
-	if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
-#endif
-	//gbaMode();
-	//Log("exit\n");
 }
 
 __attribute__((section(".itcm")))

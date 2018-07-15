@@ -21,19 +21,15 @@ b	inter_irq + 0x01FF8000
 b	inter_fast + 0x01FF8000
 b	inter_res2 + 0x01FF8000
 
-somethingfailed:
 
+somethingfailed:
 inter_Reset:
 inter_res:
 inter_fast:
 inter_res2:
 	str sp,[pc, #0x10]
-	str lr,[pc, #0x10]
-	ldr sp, =failcpphandler
-	ldr lr, =exHandler
-	str sp,[lr]
-	b dointerwtf
-
+	str lr,[pc, #0x10]		
+	b inter_dataAbt
 
 .global savedsp
 savedsp:
@@ -42,15 +38,13 @@ savedsp:
 savedlr:
 	.word 0
 
-_exMain_tmpPuplain:
-	.word 0
 .global spirq
 spirq:
 	.word __sp_irq
-	
-.global SPtemp
-SPtemp: @lol not realy
-	.word 0
+
+.global spsvc
+spsvc:
+	.word __sp_svc
 
 @irq handler start
 inter_irq:
@@ -93,10 +87,6 @@ irqexit:
 
 @irq handler end
 
-
-.global spsvc
-spsvc:
-	.word __sp_svc
 	
 inter_swi:
 	@ change the PU to nds mode
@@ -109,13 +99,9 @@ inter_swi:
 	@ save the registres 0->12
 	stmia	SP, {r0-r12}
 	
-	@ jump into the personal handler
-	ldr	r1, =exHandlerswi
-	ldr	r1, [r1]
-	
 	ldr	sp, =spsvc	@ use the new stack
 	ldr sp, [sp]
-	blx	r1 @ichfly change back if possible
+	bl	swiExceptionHandler @ichfly change back if possible
 	
 	ldr	r1, =spsvc	@save old stack
 	str sp, [r1]
@@ -124,8 +110,7 @@ inter_swi:
 	ldr	lr, =exRegs
 	ldmia	lr, {r0-r12}
 	
-	ldr	lr, [lr, #(15 * 4)] 
-	
+	ldr	lr, [lr, #(15 * 4)]
 	subs    pc, lr, #0 @ichfly this is not working	
 
 
@@ -154,7 +139,7 @@ inter_undefined:
 	ldr sp, [sp]
 
 	@coto : jump to handler,  make for arm9 is set for -marm ARM code (with interchange THUMB). If you switch back to -mthumb it will be slower & this will have to be BLX
-	BL exHandlerundifined
+	BL undefinedExceptionHandler
 
 	@save nds swi stack context
 	ldr	r1, =__sp_undef
@@ -168,7 +153,6 @@ inter_undefined:
 	subs	pc, lr, #4
 
 
-dointerwtf:
 inter_dataAbt:
 	
 	ldr	SP, =exRegs
@@ -246,30 +230,12 @@ exitdirectcpu:
 	ldr	lr, [lr, #(15 * 4)] 
 	
 	subs    pc, lr, #4	
+
 	
-	.section	.dtcm,"ax",%progbits
+.section	.dtcm,"ax",%progbits
 
 .global BIOSDBG_SPSR
 BIOSDBG_SPSR:
-	.word 0
-
-_exMain_tmpPu:
-	.word 0
-			
-	.global exHandler
-exHandler:
-	.word	0
-	
-	.global exHandlerundifined
-exHandlerundifined:
-	.word	0
-
-	.global exHandlerswi
-exHandlerswi:
-	.word	0
-			
-	.global exPuProtection
-exPuProtection:
 	.word 0
 
 .global MPUPERMBACKUPSET_SWI	@swi mpu save sleep mode
