@@ -56,12 +56,12 @@ GAME_SUBTITLE2	:=
 # options for code generation  # -save-temps
 #---------------------------------------------------------------------------------
 
-export GLOBAL_SHARED_FLAGS_9 = -mcpu=arm7tdmi -mtune=arm7tdmi	-mthumb-interwork
+export GLOBAL_SHARED_FLAGS_9 = -mcpu=arm7tdmi -march=armv4t	-mthumb-interwork
 
 #CPU code builder settings
 export GLOBAL_AS_COMPILER_FLAGS =	-defsym	readvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-defsym		NDS='1'
-export GLOBAL_CC_COMPILER_FLAGS =	-w 	-marm	-Os -Dreadvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=32
-export GLOBAL_CXX_COMPILER_FLAGS =	-marm	-Os	-fno-exceptions	-MMD	-MP	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=32
+export GLOBAL_CC_COMPILER_FLAGS =	-w 	-marm	-O2 -Dreadvertoolchain='$(TOOLCHAIN_GENERIC_DS_VER)'	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=32
+export GLOBAL_CXX_COMPILER_FLAGS =	-marm	-O2	-fno-exceptions	-MMD	-MP	-DSINGLE_THREADED	-falign-functions=4	-mstructure-size-boundary=32
 
 #CPU code builder settings TGDS project specific
 export SPECIFIC_AS_COMPILER_FLAGS_7		= -defsym	ARM7='1'	-defsym	appver='$(EXECUTABLE_VERSION)'

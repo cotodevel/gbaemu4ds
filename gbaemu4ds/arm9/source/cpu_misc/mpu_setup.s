@@ -1,3 +1,6 @@
+.arch	armv4t
+.cpu arm7tdmi
+	
 #define PAGE_4K		(0b01011 << 1)
 #define PAGE_8K		(0b01100 << 1)
 #define PAGE_16K	(0b01101 << 1)

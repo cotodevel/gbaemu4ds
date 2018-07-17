@@ -1,7 +1,10 @@
+	.arch	armv4t
+	.cpu arm7tdmi
+	
 	.section	.itcm,"ax",%progbits
 	.align 4
 	.arm
-	
+
 	.global readbankedsp
    .type   readbankedsp STT_FUNC
 readbankedsp:
@@ -250,7 +253,7 @@ wait_irq:
 	sub r0,sp,#4*17 @+1 res you know
 	ldr r1,=exRegs
 	mov r2,#4*16
-	BLX memcpy
+	BL memcpy
 	pop {r0-r3}
 	
 	sub sp,sp,#0x58
@@ -272,7 +275,7 @@ wait_irq:
 	sub r1,sp,#4*17 @+1 res you know
 	ldr r0,=exRegs
 	mov r2,#4*16
-	BLX memcpy
+	BL memcpy
 	pop {r0-r3}
 
 

@@ -1,3 +1,6 @@
+.arch	armv4t
+.cpu arm7tdmi
+	
 /*---------------------------------------------------------------------------------
 
 	Copyright (C) 2005
@@ -73,7 +76,8 @@ got_handler:
 	ldr r0,=__sp_irq
 	stmfd	r0!, {r12,SP,lr}	@ {spsr,SP, lr_irq}
 	mov SP,r0
-	blx	r1
+	mov lr,pc
+	bx	r1
 	
 exitichfly:
 	ldmfd   SP, {r0,SP,lr}	@ {spsr,SP, lr_irq}

@@ -1,3 +1,5 @@
+.arch	armv4t
+.cpu arm7tdmi
 .section	.itcm,"ax",%progbits
 .align 4
 .arm
