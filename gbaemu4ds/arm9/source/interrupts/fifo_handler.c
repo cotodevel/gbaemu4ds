@@ -21,14 +21,9 @@
 //Coto:
 __attribute__((section(".itcm")))
 void HandleFifo() {
+	
 	volatile uint32 command1 = 0, command2 = 0, command3 = 0, command4 = 0;
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
-		
-		if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-		{
-			break;	//discard
-		}
-		
 		if (!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
 			command1 = (uint32)REG_IPC_FIFO_RX;
 		}
@@ -171,10 +166,10 @@ void HandleFifo() {
 	
 	if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
 	{
-		//clear fifo inmediately
-		REG_IPC_FIFO_CR |= (1<<3);
 		REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 	}
-	
 	REG_IF = IRQ_FIFO_NOT_EMPTY;
+	
+	//clear fifo inmediately
+	REG_IPC_FIFO_CR |= (1<<3);
 }

@@ -550,30 +550,38 @@ int main() {
 				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
 			}
 #endif
-			u32 cmd0 = (u32)(REG_IPC_FIFO_RX);
-			u32 addr = (u32)(cmd0 & ~0xC0000000);
-			while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
-			u32 val = (u32)(REG_IPC_FIFO_RX); //Value skip add for speedup
-#ifdef checkforerror
-			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-			{
-				senddebug32(0x7FFFFFF1);
-				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
+			if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+				
+				u32 cmd0 = (u32)(REG_IPC_FIFO_RX);
+				u32 addr = (u32)(cmd0 & ~0xC0000000);
+				u32 val = 0;
+				
+				if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+					val = (u32)(REG_IPC_FIFO_RX); //Value skip add for speedup
+				}
+				
+				#ifdef checkforerror
+							if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
+							{
+								senddebug32(0x7FFFFFF1);
+								//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
+							}
+				#endif
+							newvalwrite(addr,val,cmd0);
+							
+				#ifdef anyarmcom
+							*amr7directrec = *amr7directrec + 1;
+							if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))*amr7indirectrec = *amr7indirectrec + 1;
+				#endif
+				#ifdef checkforerror
+							if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
+							{
+								senddebug32(0x7FFFFFF2);
+								REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
+							}
+				#endif
 			}
-#endif
-			newvalwrite(addr,val,cmd0);
 			
-#ifdef anyarmcom
-			*amr7directrec = *amr7directrec + 1;
-			if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))*amr7indirectrec = *amr7indirectrec + 1;
-#endif
-#ifdef checkforerror
-			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
-			{
-				senddebug32(0x7FFFFFF2);
-				//REG_IPC_FIFO_CR |= IPC_FIFO_ERROR;
-			}
-#endif
 #ifndef noenterCriticalSection
 			leaveCriticalSection(oldIME);
 #endif
