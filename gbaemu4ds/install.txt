@@ -1,1 +1,0 @@
-copy ld and specs from arm7 to C:\devkitPro\devkitARM\arm-eabi\lib
