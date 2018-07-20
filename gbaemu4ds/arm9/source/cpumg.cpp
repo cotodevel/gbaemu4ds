@@ -241,7 +241,7 @@ void undefinedExceptionHandler()
 	*/
 	
 	{
-		printf("unknown OP\r\n");
+		printf("unknown OP:%x:[%x] \n",(exRegs[15] - 4), *(u32*)(exRegs[15] - 4));
 		debugDump();
 		REG_IME = IME_DISABLE;
 		while(1);
@@ -501,10 +501,25 @@ void switch_to_unprivileged_mode()
 }
 
 __attribute__((section(".itcm")))
-void emulateedbiosstart()
+void CP15Vectors0x00000000()
 {
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~BIT(13));
 }
+
+__attribute__((section(".itcm")))
+void CP15Vectors0xFFFF0000()
+{
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | BIT(13));
+}
+
+void setGBAVectors()
+{
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu while configurating pu
+	CP15Vectors0x00000000();
+	setVectorsAsm();
+}
+
+
 
 __attribute__((section(".itcm")))
 void ARMV5toARMV4Mode()
@@ -528,4 +543,10 @@ __attribute__((section(".itcm")))
 void gbaMode()
 {
 	puGba();	
+}
+
+__attribute__((section(".itcm")))
+void debugExceptionHandler(){
+	iprintf("jump to debugExceptionHandler");
+	while(1==1);
 }

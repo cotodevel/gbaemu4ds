@@ -92,7 +92,8 @@ extern int arm9VCOUNTsyncline;
 extern void failcpphandler();
 extern void ARMV5toARMV4Mode();
 extern void ARMV4toARMV5Mode();
-extern void emulateedbiosstart();
+extern void CP15Vectors0x00000000();
+extern void CP15Vectors0xFFFF0000();
 extern void resettostartup();
 extern void IntrMain();
 extern void testasm(u32* feld);
@@ -105,6 +106,11 @@ extern void undefinedExceptionHandler();
 
 extern void HblankHandler(void);
 extern int frameskip;
+
+//GBA (unused by design) ARM vectors, actually used here.
+extern void setGBAVectors();
+extern void setVectorsAsm();
+extern void debugExceptionHandler();
 
 #ifdef __cplusplus
 }

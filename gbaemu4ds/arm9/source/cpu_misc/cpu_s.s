@@ -297,7 +297,7 @@ testirq:
 	strb	r0, [r12,#0x208]
 	bx	lr
 
-
+.pool
 
 @---------------------------------------------------------------------------------
 	.global ichflyswiHalt
@@ -355,3 +355,53 @@ restore_mpu_setprot:
 resettostartup:
 @---------------------------------------------------------------------------------
 	B main
+
+.pool
+
+@Use the actual 32byte ARM vectors unused by DS design, (and not the BIOS ROM vectors).
+.global setVectorsAsm
+.type   setVectorsAsm STT_FUNC
+setVectorsAsm:
+	push {r0-r3,lr}
+	
+	ldr                 r1,=(irqhandler2 + 0x0)     @Reset handler
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x0)
+	str r1,[r2]
+	
+	ldr                 r1,=(irqhandler2 + 0x4)     @Undefined instr. handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x4)
+	str r1,[r2]
+	
+	ldr                 r1,=(irqhandler2 + 0x8)     @SWI handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x8)
+	str r1,[r2]
+	
+	ldr                 r1,=(irqhandler2 + 0xC)     @Prefetch instr. handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0xC)
+	str r1,[r2]
+	
+	ldr                 r1,=(irqhandler2 + 0x10)     @Data Abort handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x10)
+	str r1,[r2]
+	
+	@0x14 Reserved
+	
+	ldr                 r1,=(irqhandler2 + 0x18)     @IRQ handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x18)
+	str r1,[r2]
+	
+	ldr                 r1,=(irqhandler2 + 0x1C)     @FIQ handler           
+	ldr					r1,[r1]
+	mov                 r2,#(0x00000000 + 0x1C)
+	str r1,[r2]
+	
+	pop {r0-r3,lr}
+	bx		lr
+
+.pool

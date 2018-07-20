@@ -341,14 +341,13 @@ if(save_decider()==0){
 	iprintf("irqinit\n");
 	anytimejmpfilter = 0;
 	
+	setGBAVectors();
+	iprintf("GBA Vectors 0x00000000 OK \n");
 	pu_Enable();
-	iprintf("emulateedbiosstart\n");
-	emulateedbiosstart();
+	
     iprintf("ndsMode\n");
-
 	ndsMode();
     iprintf("gbaInit\n");
-
 #ifdef capture_and_pars
 	videoBgDisableSub(0);
 	vramSetBankH(VRAM_H_LCD); //only sub

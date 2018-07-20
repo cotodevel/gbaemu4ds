@@ -1,0 +1,36 @@
+Todo:
+
+- impr ex_s.s
+- todo gbainline.h timeshift
+- improve swi code / swi some more asyncsync: 
+- hwreg 0x301 in CPUWriteByte
+- fix cpu pc rel reads/writes		<-- means we need to fix prefetch handler
+- usermode reads firq and mode sw
+- not alined ichfly_readdma_rom
+- fix reads from unreadable mem (homebrews use this for sets) 
+- GSA_SLOWDOWN
+- execute bios code (for BIOS splashscreen) (or actually Stub it, as VBA would do). For both cases a MPU interrupt should happen and deal with game logic (so it doesn't fetch 0x0 unmapped data)
+
+patcher: (prefetcher?)
+- str oldValue
+- 0x1DC0DE
+- decrypter
+
+
+
+Documentation:
+
+19/07/2018
+
+Coto:
+
+this emulator works because: 
+
+1)
+ARM v4 and v5 (ARM7 and ARM9) support the CP15 bus interface:
+
+2)
+ARM allows 32 bytes of placeholder vectors: 1) at 0x00000000 and 2) at 0xffff0000, (by default gbaemu4ds). Thing is: 0xffff0000 is BIOS ROM, gbaemu4ds can't use that code 
+since gba code is ran through a hypervisor. So I manually overwrite the 0x00000000 vectors (for the time being) until a better solution is found. Do note, ARM seem to
+provide a 32byte vector read/writable memory embedded inside the ARM core, of which can be set to 0xffff0000 or 0x00000000 through CP15.
+
