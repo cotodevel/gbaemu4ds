@@ -9,8 +9,12 @@ MEMORY {
        gbaew   : ORIGIN = 0x02000000, LENGTH = 256k
        ewram   : ORIGIN = 0x02100000, LENGTH = 1M
        dtcm    : ORIGIN = 0x027C0000, LENGTH = 16K
-       vectors : ORIGIN = 0x01FF8000, LENGTH = 1K - 256
-       itcm    : ORIGIN = 0x01FF8300, LENGTH = 32K - 1K + 256
+	   
+	   /* ITCM relocated pseudo GBA bios area, that is in ~32MB range (from 0x00000000) any ARMv4 branch opcode supports */
+       vectors : ORIGIN = 0x01FF8000, LENGTH = 512
+       
+	   /* ITCM relocated pseudo GBA bios area, that is in ~32MB range (from 0x00000000) any ARMv4 branch opcode supports */
+	   itcm    : ORIGIN = (0x01FF8000 + 512), LENGTH = 32K - 512
 }
 
 

@@ -34,3 +34,7 @@ ARM allows 32 bytes of placeholder vectors: 1) at 0x00000000 and 2) at 0xffff000
 since gba code is ran through a hypervisor. So I manually overwrite the 0x00000000 vectors (for the time being) until a better solution is found. Do note, ARM seem to
 provide a 32byte vector read/writable memory embedded inside the ARM core, of which can be set to 0xffff0000 or 0x00000000 through CP15.
 
+
+Emulated vectors are 512 bytes, and they run from within a branch armv4 opcode range (32Megabytes of addressing both forward the current PC and backwards).
+These vectors act as a whole BIOS replacement. It means it does not use the NTR abort handler, but the official ARM exception vector methods.
+Check arm9/tgba_arm9.ld file for details.
