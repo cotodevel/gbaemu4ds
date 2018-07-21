@@ -354,7 +354,7 @@ void browseForFile (const vector<string> extensionList) {
 				if(utilIsGBAImage(temppath)) ausgewauhlt = 0;
 				if(utilIsSAV(temppath))ausgewauhlt = 1;
 
-				while(nichtausgewauhlt)
+				while(nichtausgewauhlt == true)
 				{
 					iprintf("\x1b[2J");
 
@@ -370,7 +370,7 @@ void browseForFile (const vector<string> extensionList) {
 						iprintf(filetypsforemu[i]);
 						iprintf("\n");
 					}
-					while(nichtausgewauhlt)
+					while(nichtausgewauhlt == true)
 					{
 						// Power saving loop. Only poll the keys once per frame and sleep the CPU if there is nothing else to do
 						do {
@@ -385,6 +385,8 @@ void browseForFile (const vector<string> extensionList) {
 						{
 							switch(ausgewauhlt)
 							{
+							
+							//filetypsforemu[0]
 							case 0:
 							{
 								getcwd (szFile, MAXPATHLEN);
@@ -393,7 +395,9 @@ void browseForFile (const vector<string> extensionList) {
 								arcvsave = szFile;
 								return;
 							}
-								case 1:
+							
+							//filetypsforemu[1]
+							case 1:
 							{
 								getcwd (szFile, MAXPATHLEN);
 								pathLen = strlen (szFile);
@@ -415,7 +419,8 @@ void browseForFile (const vector<string> extensionList) {
 								return;
 							}
 
-								case 2:
+							//filetypsforemu[2]
+							case 2:
 							{
 								getcwd (savePath, MAXPATHLEN);
 								pathLen = strlen (savePath);
@@ -423,7 +428,9 @@ void browseForFile (const vector<string> extensionList) {
 								nichtausgewauhlt = false;
 								break;
 							}
-								case 3:
+							
+							//filetypsforemu[3]
+							case 3:
 							{
 								getcwd (biosPath, MAXPATHLEN);
 								pathLen = strlen (biosPath);
@@ -431,17 +438,20 @@ void browseForFile (const vector<string> extensionList) {
 								nichtausgewauhlt = false;
 								break;
 							}
-								case 4:
+							
+							//patch file
+							//filetypsforemu[4]
+							case 4:
 							{
 								getcwd (patchPath, MAXPATHLEN);
 								pathLen = strlen (patchPath);
-								strcpy (patchPath + pathLen, entry->name.c_str());
+								strcpy (patchPath + pathLen, entry->name.c_str());	//entry->name.c_str() = filename.pat ; patchPath == fat:/filename.pat
 								nichtausgewauhlt = false;
 								break;
 							}
 							}
 						}
-						if (pressed&KEY_DOWN && ausgewauhlt != 3){ ausgewauhlt++; break;}
+						if (pressed&KEY_DOWN && ausgewauhlt != 4){ ausgewauhlt++; break;}
 						if (pressed&KEY_UP && ausgewauhlt != 0) {ausgewauhlt--; break;}
 					}
 				}
