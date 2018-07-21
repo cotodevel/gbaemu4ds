@@ -3925,14 +3925,16 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
-#endif    if(cpuEEPROMEnabled)
+#endif
+	if(cpuEEPROMEnabled)
       // no need to swap this
       return  eepromRead(address);
     goto unreadable;
   case 14:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
-#endif    if(cpuFlashEnabled | cpuSramEnabled)
+#endif    
+	if(cpuFlashEnabled | cpuSramEnabled)
       // no need to swap this
       return flashRead(address);
     // default
@@ -4033,13 +4035,15 @@ iprintf("r8 %02x\n",address);
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
-#endif    if(cpuEEPROMEnabled)
+#endif    
+	if(cpuEEPROMEnabled)
       return eepromRead(address);
     goto unreadable;
   case 14:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
-#endif    if(cpuSramEnabled | cpuFlashEnabled)
+#endif    
+	if(cpuSramEnabled | cpuFlashEnabled)
       return flashRead(address);
     if(cpuEEPROMSensorEnabled) {
       switch(address & 0x00008f00) {

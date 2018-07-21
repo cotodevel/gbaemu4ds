@@ -4,7 +4,7 @@
 #include <nds.h>
 #define readanom 0x100
 
-#endif __MYDEBUGGER_H__
+#endif
 
 
 #ifdef __cplusplus
