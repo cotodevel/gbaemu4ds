@@ -576,9 +576,21 @@ bool CPUWriteBatteryFile(const char *fileName)
   }
   
   if((gbaSaveType) && (gbaSaveType!=5)) {
-    FILE *file = fopen(fileName, "wb");
-    
-    if(!file) {
+    FILE *filehandle = NULL;
+	//coto: allow savefix support. Means if the read savefile (according to savefix logic) was fixed in memory, 
+	//it is now updated back to file. So the next time the file is read correctly, and not as a saveFix file.
+	
+	if(pendingSaveFix == true){
+		filehandle = fopen(fileName, "w+");
+		pendingSaveFix = false;
+		iprintf("[SaveFix]Write:OK \n");
+		iprintf("File updated. ");
+	}
+	else{
+		filehandle = fopen(fileName, "wb");
+	}
+	
+    if(!filehandle) {
       systemMessage(MSG_ERROR_CREATING_FILE, N_("Error creating file %s"),
                     fileName);
       return false;
@@ -587,26 +599,28 @@ bool CPUWriteBatteryFile(const char *fileName)
     // only save if Flash/Sram in use or EEprom in use
     if(gbaSaveType != 3) {
       if(gbaSaveType == 2) {
-        if(fwrite(flashSaveMemory, 1, flashSize, file) != (size_t)flashSize) {
-          fclose(file);
+        if(fwrite(flashSaveMemory, 1, flashSize, filehandle) != (size_t)flashSize) {
+          fclose(filehandle);
           return false;
         }
       } else {
-        if(fwrite(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-          fclose(file);
+        if(fwrite(flashSaveMemory, 1, 0x10000, filehandle) != 0x10000) {
+          fclose(filehandle);
           return false;
         }
       }
     } else {
-      if(fwrite(eepromData, 1, eepromSize, file) != (size_t)eepromSize) {
-        fclose(file);
+      if(fwrite(eepromData, 1, eepromSize, filehandle) != (size_t)eepromSize) {
+        fclose(filehandle);
         return false;
       }
     }
-    fclose(file);
+    fclose(filehandle);
   }
   return true;
 }
+
+
 bool CPUReadBatteryFile(const char *fileName)
 {
   FILE *file = fopen(fileName, "rb");
@@ -616,9 +630,9 @@ bool CPUReadBatteryFile(const char *fileName)
   
   // check file size to know what we should read
   fseek(file, 0, SEEK_END);
-
   long size = ftell(file);
   fseek(file, 0, SEEK_SET);
+  
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 
   if(size == 512 || size == 0x2000) {
@@ -633,13 +647,36 @@ bool CPUReadBatteryFile(const char *fileName)
         return false;
       }
       flashSetSize(0x20000);
-    } else {
-      if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
-        fclose(file);
-        return false;
-      }
-      flashSetSize(0x10000);
-    }
+    } 
+	else {
+		if(fread(flashSaveMemory, 1, 0x10000, file) != 0x10000) {
+			fclose(file);
+			return false;
+		}
+        
+		//fix pokemon sapphire or ruby savefile if 64K
+		//up to this point the header was read from file
+		if(
+			cpuSaveType == 3 
+			&&
+			(
+				(save_deciderByTitle(GetsIPCSharedGBA()->gbaheader.title, (char*)"POKEMON SAPP",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
+					||
+				(save_deciderByTitle(GetsIPCSharedGBA()->gbaheader.title, (char*)"POKEMON RUBY",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
+			)
+		){
+			flashSetSize(0x20000);
+			memcpy((u8 *)(flashSaveMemory+0x10000), (u8 *)(flashSaveMemory), 0x10000);
+			iprintf("[SaveFix]Performed.\n");
+			iprintf("Please save in-game and save file (Y).");
+			pendingSaveFix = true;
+			SaveSizeBeforeFix = size;
+			SaveSizeAfterFix = 0x20000;
+		}		
+	    else{
+			flashSetSize(0x10000);
+		}
+	}
   }
   fclose(file);
   return true;

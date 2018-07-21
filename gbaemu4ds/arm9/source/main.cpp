@@ -240,17 +240,17 @@ initspeedupfelder();
 	  iprintf("OK\n");
 	  
 	  
-if(save_decider()==0){
-	if(manual_save_type == 6)
-	{
-		myflashsize = 0x20000;
-		cpuSaveType = 3;
+	if(save_decider()==0){
+		if(manual_save_type == 6)
+		{
+			myflashsize = 0x20000;
+			cpuSaveType = 3;
+		}
+		else
+		{
+			cpuSaveType = manual_save_type;
+		}
 	}
-	else
-	{
-		cpuSaveType = manual_save_type;
-	}
-}
 
 	//iprintf("Hello World2!");
 	iprintf("CPUInit\n");

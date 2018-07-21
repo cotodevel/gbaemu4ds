@@ -976,70 +976,97 @@ char* strtolower(char* s) {
 }
 
 
+
+bool pendingSaveFix = false;	//false if already saved new forked save / or game doesn't meet savefix conditions // true if pending a save that was fixed in gba core, but still has not been written/updated to file.
+int  SaveSizeBeforeFix = 0;	//only valid if pendingSaveFix == true
+int  SaveSizeAfterFix = 0;	//only valid if pendingSaveFix == true
+
+
+bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck){
+	if (
+			strncmp( 
+			strtoupper(headerTitleSource), 
+			strtoupper(headerTitleHaystack),
+			SizeToCheck
+			) == 0
+		){
+		return true;
+	}
+	return false;
+}
+
 //coto: if a game is defined here savetype from gamecode will be used
 int save_decider(){
 
-//void * memcpy ( void * destination, const void * source, size_t num );
-int savetype=0;
-char gamecode[6]; 
-memcpy((char*)gamecode,(u8*)&GetsIPCSharedGBA()->gbaheader.gamecode,6);
-
-//iprintf("GameCode is: %s \n",gamecode);
-//iprintf("GameCode is: %s \n",strtoupper(gamecode));
-//iprintf("GameCode is: %s \n",strtolower(gamecode));
-//while(1);
+	//void * memcpy ( void * destination, const void * source, size_t num );
+	int savetype=0;
+	char gamecode[6] = {0};
+	char title[13] = {0};
+	title[12] = '\0';
+	
+	memcpy((char*)gamecode,(u8*)&GetsIPCSharedGBA()->gbaheader.gamecode,sizeof(GetsIPCSharedGBA()->gbaheader.gamecode));
+	memcpy((char*)title,(u8*)&GetsIPCSharedGBA()->gbaheader.title,sizeof(GetsIPCSharedGBA()->gbaheader.title));
+	
+	//iprintf("GameCode is: %s \n",gamecode);
+	//iprintf("GameCode is: %s \n",strtoupper(gamecode));
+	//iprintf("GameCode is: %s \n",strtolower(gamecode));
+	//while(1);
 
     if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"bpre01"), //firered 128K
-        6
+        sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
     {
         
-        //iprintf("firered detected!!!! \n");
-        //while(1);
         savetype = 3; 
     }
     
 	else if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"bpge01"), //greenleaf 128K
-        6
+        sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
     {
         
-        //iprintf("greenleaf detected!!!! \n");
-        //while(1);
         savetype = 3; 
     }
     
     else if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"amze01"), //mario 1 eeprom 64K
-        6
+        sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
     {
         
-        //iprintf("smb1 detected!!!! \n");
-        //while(1);
         savetype = 1; 
     }
     
     else if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"ax4p01"), //mario 3 128K
-        6
+        sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
     {
         
-        //iprintf("smb3 detected!!!! \n");
-        //while(1);
         savetype = 3; 
     }
+	
+	//all pokemon sapphire / pokemon ruby cases are also 128K Flash
+	
+	else if(
+		(save_deciderByTitle(title, (char*)"POKEMON SAPP",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
+		||
+		(save_deciderByTitle(title, (char*)"POKEMON RUBY",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
+	)
+    {
+        savetype = 3; 
+    }
+	
 
     int myflashsize = 0x10000;
 

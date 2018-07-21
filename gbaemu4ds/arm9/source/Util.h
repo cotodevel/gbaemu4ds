@@ -126,7 +126,13 @@ extern u8 lutu32bitcnt(u32 x);
 extern u8 clzero(u32 var);
 extern char* strtoupper(char* s);
 extern char* strtolower(char* s);
+
+extern bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck);
 extern int save_decider();
+
+extern bool pendingSaveFix;	//false if already saved new forked save / or game doesn't meet savefix conditions // true if pending a save that was fixed in gba core, but still has not been written/updated to file.
+extern int  SaveSizeBeforeFix;	//only valid if pendingSaveFix == true
+extern int  SaveSizeAfterFix;	//only valid if pendingSaveFix == true
 
 //static global instance of actual ARM core volatile registers.
 extern reg_pair * myregs;
