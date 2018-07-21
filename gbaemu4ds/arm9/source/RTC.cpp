@@ -16,6 +16,8 @@
 // along with this program; if not, write to the Free Software Foundation,
 // Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+//coto: added RTC support to gbaemu4ds
+
 #include "System.h"
 #include "GBA.h"
 #include "Port.h"
@@ -33,9 +35,6 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
-
-//coto
-//Shared memory region static object
 #include "../../common/gba_ipc.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
@@ -80,8 +79,7 @@ u16 rtcRead(u32 address)
     }
   }
   
-  //return READ16LE((&rom[address & 0x1FFFFFE])); //no
-  return 0;
+  return CPUReadHalfWord(address & 0x1FFFFFE);	//return READ16LE((&rom[address & 0x1FFFFFE])); //indirect read in gbaemu4ds case
 }
 
 static u8 toBCD(u8 value)
@@ -154,7 +152,7 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.state = DATA;
                 */
                 
-                //coto: own IPC.
+                //coto: use IPC wrap around NDS RTC bits.
                 rtcClockData.dataLen = 7;
                 rtcClockData.data[0] = toBCD(gba_get_yearbytertc());
                 rtcClockData.data[1] = toBCD(gba_get_monthrtc());
@@ -183,7 +181,7 @@ bool rtcWrite(u32 address, u16 value)
                 rtcClockData.state = DATA;
                 */
                 
-                //coto: own IPC.
+                //coto: use IPC wrap around NDS RTC bits.
                 rtcClockData.dataLen = 3;
                 rtcClockData.data[0] = toBCD(gba_get_hourrtc());
                 rtcClockData.data[1] = toBCD(gba_get_minrtc());
