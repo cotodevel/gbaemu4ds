@@ -18,6 +18,8 @@
 
 //coto: added RTC support to gbaemu4ds
 
+#include "ichflysettings.h"
+
 #include "System.h"
 #include "GBA.h"
 #include "Port.h"
@@ -36,6 +38,7 @@
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
 #include "../../common/gba_ipc.h"
+#include "disk_fs/fatfileextract.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 
@@ -79,7 +82,31 @@ u16 rtcRead(u32 address)
     }
   }
   
-  return CPUReadHalfWord(address & 0x1FFFFFE);	//return READ16LE((&rom[address & 0x1FFFFFE])); //indirect read in gbaemu4ds case
+  
+  //return READ16LE((&rom[address & 0x1FFFFFE])); //indirect read in gbaemu4ds case
+  
+  #ifdef uppern_read_emulation
+	if((address&0x1FFFFFE) > romSize)
+	{
+		if(ichflyfilestreamsize > (address&0x1FFFFFE))
+		{
+			//fseek (ichflyfilestream , address&0x1FFFFFE , SEEK_SET);
+			//fread (&value,1,2,ichflyfilestream);
+			//ichfly_readfrom(ichflyfilestream,(address&0x1FFFFFE),(char*)&value,2);
+			return (u16)ichfly_readu16(address&0x1FFFFFE);
+		}
+		else
+		{
+			return (u16)0;
+		}
+	}
+	else
+	{
+		return (u16)(READ16LE(((u16 *)&rom[address & 0x1FFFFFE])));
+	}
+#else
+    return (u16)(READ16LE(((u16 *)&rom[address & 0x1FFFFFE])));
+#endif
 }
 
 static u8 toBCD(u8 value)

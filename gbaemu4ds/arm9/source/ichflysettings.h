@@ -38,7 +38,7 @@
 //#define printsavewrite
 
 //#define print_uppern_read_emulation
-//#define ichflyDebugdumpon
+#define ichflyDebugdumpon	//dump file to fat:/gbadump.bin on ARM / Thumb undefined exception
 //#define countpagefalts
 //#define showdebug
 

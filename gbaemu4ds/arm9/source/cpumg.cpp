@@ -155,37 +155,30 @@ int lastdebugsize = 6;
 int durchlauf = 0;
 void debugDump()
 {
-#ifdef ichflyDebugdumpon
-// 	Log("dbgDump\n");
-// 	return;
-	//readbankedextra(cpuGetSPSR());
 
+#ifdef ichflyDebugdumpon
 	int i;
 	for(i = 0; i <= 15; i++) {
-		Log("R%d=%X ", i, exRegs[i]);
+		//Log("R%d=%X ", i, exRegs[i]);
 	} 
-	Log("\n");
-	Log("sp %X \n",spirq);
+	//Log("\n");
+	//Log("sp %X \n",spirq);
 
-	/*if((exRegs[13] &0xFF000000) != 0x3000000)
-	{
-		REG_IME = IME_DISABLE;
-		while(1);
-	}*/
-DC_FlushAll();
-	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu else we may cause an endless loop
+	//cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu else we may cause an endless loop
+	//DC_FlushAll();
+	
 
 	for(i = 0; i < 4; i++) {
-		Log("+%02X: %08X %08X %08X\n", i*3*4, ((u32*)exRegs[13])[i*3], ((u32*)exRegs[13])[i*3+1], ((u32*)exRegs[13])[i*3+2]);
+		//Log("+%02X: %08X %08X %08X\n", i*3*4, ((u32*)exRegs[13])[i*3], ((u32*)exRegs[13])[i*3+1], ((u32*)exRegs[13])[i*3+2]);
 	}
 
-	pu_Enable(); //back to normal code
-DC_FlushAll();
-	Log("SPSR %08x ",BIOSDBG_SPSR);
-	Log("CPSR %08x\n",cpuGetCPSR());
-	//Log("irqBank %08x",readbankedsp(0x12));
-	Log("irqBank %08x %08x\n",readbankedlr(0x12),readbankedsp(0x12));
-	Log("userBank %08x %08x\n",readbankedlr(0x1F),readbankedsp(0x1F));
+	//pu_Enable(); //back to normal code
+	//DC_FlushAll();
+	//Log("SPSR %08x ",BIOSDBG_SPSR);
+	//Log("CPSR %08x\n",cpuGetCPSR());
+	//Log("irqBank %08x %08x\n",readbankedlr(0x12),readbankedsp(0x12));
+	//Log("userBank %08x %08x\n",readbankedlr(0x1F),readbankedsp(0x1F));
+
 #ifdef lastdebug
 	int ipr = lastdebugcurrent - 1;
 	if(ipr < 0)ipr= lastdebugsize - 1;
@@ -197,21 +190,24 @@ DC_FlushAll();
 	}
 	Log("run %08X\n",lasttime[lastdebugcurrent]); //last
 #endif
-	Log("IEF: %08X\n",CPUReadMemoryreal(0x4000200));
-	  u32 joy = ((~REG_KEYINPUT)&0x3ff);
-	if((joy & KEY_B) && (joy & KEY_R) && (joy & KEY_L))
-	{
-					FILE* file = fopen("fat:/gbadump.bin", "wb"); // 396.288 Byte @outdate
-					fwrite((u8*)(0x03000000), 1, 0x8000, file);
-					fwrite(ioMem, 1, 0x400, file);
-					fwrite((u8*)(0x04000000), 1, 0x400, file);//IO
-					fwrite((u8*)(0x05000000), 1, 0x400, file);
-					fwrite((u8*)(0x07000000), 1, 0x800, file);
-					fwrite((u8*)(0x01000000), 1, 0x8000, file);
-					fwrite((u8*)(0x0b000000), 1, 0x4000, file);
-					fwrite((u8*)(0x06000000), 1, 0x18000, file); //can't get this with half dumps
-					fwrite((u8*)(0x02000000), 1, 0x40000, file); //can't get this with half dumps
-	}
+
+	//Log("IEF: %08X\n",CPUReadMemoryreal(0x4000200));
+	FILE* file = fopen("fat:/gbadump.bin", "w+"); // 396.288 Byte @outdate
+	fwrite((u8*)(internalRAM), 1, 0x8000, file);
+	fwrite(ioMem, 1, 0x400, file);	//GBA IO
+	//fwrite((u8*)(0x04000000), 1, 0x400, file);//NDS IO
+	fwrite((u8*)(paletteRAM), 1, 0x400, file);
+	fwrite((u8*)(emultoroam), 1, 0x800, file);
+	//fwrite((u8*)(0x01000000), 1, 0x8000, file);	//no need
+	//fwrite((u8*)(0x0b000000), 1, 0x4000, file);	//no need
+	//fwrite((u8*)(vram), 1, 0x18000, file); //can't get this with half dumps
+	//fwrite((u8*)(workRAM), 1, 0x40000, file); //can't get this with half dumps
+	
+	uint8 outbuf[0x100] = {0};
+	sprintf((char*)outbuf, "SP:%x-LR:%x-PC:%x", exRegs[13], exRegs[14], (exRegs[15] - 8) );
+	fputs((const char *)outbuf, file);
+	fclose(file);
+	
 #endif
 }
 

@@ -207,8 +207,6 @@ u16 rompatch2oldval [4];
 #define debuggerWriteByte(addr, value) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask] = (value)
 
-#define ioMem ((u16*)0x4000000)
-
 #define CHEAT_IS_HEX(a) ( ((a)>='A' && (a) <='F') || ((a) >='0' && (a) <= '9'))
 
 #define CHEAT_PATCH_ROM_16BIT(a,v) \

@@ -1,7 +1,8 @@
 //ichfly all //ARITHMETIC_DATA_OPCODE disabeled
 //armNextPC disabeled 
 
-//
+#include "ichflysettings.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "GBAinline.h"
@@ -6872,25 +6873,31 @@ case 0x121:
 
 
 
-		default:
-
-      Log("Undefined ARM instruction %08x\n", opcode);
-	 
-	/*u32 offset = myregs[15].I - 8;
-	if(offset > 0x02040000) offset = myregs[15].I - 8 - (u32)rom + 0x08000000;
-	disArm(offset - 4,disbuffer,DIS_VIEW_ADDRESS);
-	Log(disbuffer);
-	Log("\r\n");
-	disArm(offset,disbuffer,DIS_VIEW_ADDRESS);
-	Log(disbuffer);
-	Log("\r\n");
-	disArm(offset + 4,disbuffer,DIS_VIEW_ADDRESS);
-	Log(disbuffer);
-	Log("\r\n");*/
-	REG_IME = IME_DISABLE;
-	debugDump();
-	while(1);
-    // END
+	default:{    
+		Log("Undefined ARM instruction[logging]");
+		
+		/*u32 offset = myregs[15].I - 8;
+		if(offset > 0x02040000) offset = myregs[15].I - 8 - (u32)rom + 0x08000000;
+		disArm(offset - 4,disbuffer,DIS_VIEW_ADDRESS);
+		Log(disbuffer);
+		Log("\r\n");
+		disArm(offset,disbuffer,DIS_VIEW_ADDRESS);
+		Log(disbuffer);
+		Log("\r\n");
+		disArm(offset + 4,disbuffer,DIS_VIEW_ADDRESS);
+		Log(disbuffer);
+		Log("\r\n");*/
+		
+		cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu else we may cause an endless loop
+		DC_FlushAll();
+		
+		debugDump();
+		Log("Log OK. Shutdown DS");
+		
+		REG_IME = IME_DISABLE;
+		while(1);
+		// END
+	}
 }
 
 }

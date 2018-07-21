@@ -196,8 +196,7 @@ struct sIPCSharedGBA{
     u16 SOUNDCNT_L;
     u16 SOUNDCNT_H;
         
-    u8 ioMem[0x400];
-	*/
+    */
 
 };
 

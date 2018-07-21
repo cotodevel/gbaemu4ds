@@ -21,7 +21,6 @@
 #define VBA_GLOBALS_H
 
 #include "GBA.h"
-
 #include "ichflysettings.h"
 
 #ifdef lastdebug
@@ -30,6 +29,12 @@ extern int lastdebugcurrent;
 extern int lastdebugsize;
 #endif
 
+#define DISPCAPCNT (*(vu32*)0x4000064)
+#define internalRAM ((u8*)0x03000000)
+#define workRAM ((u8*)0x02000000)
+#define paletteRAM ((u8*)0x05000000)
+#define vram ((u8*)0x06000000)
+#define emultoroam ((u8*)0x07000000)
 
 #define VERBOSE_SWI                  1
 #define VERBOSE_UNALIGNED_MEMORY     2
@@ -42,6 +47,15 @@ extern int lastdebugsize;
 #define VERBOSE_UNDEFINED          256
 #define VERBOSE_AGBPRINT           512
 
+#endif // VBA_GLOBALS_H
+
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef uppern_read_emulation
 extern FILE* ichflyfilestream;
 extern int ichflyfilestreamsize;
@@ -51,7 +65,6 @@ extern u32 pagefehler;
 #endif
 
 extern int romSize;
-
 extern reg_pair reg[45];
 extern bool ioReadable[0x400];
 extern bool N_FLAG;
@@ -81,15 +94,7 @@ extern bool mirroringEnable;
 
 extern u8 *bios;
 extern u8 *rom;
-#define internalRAM ((u8*)0x03000000)
-#define workRAM ((u8*)0x02000000)
-#define paletteRAM ((u8*)0x05000000)
-#define vram ((u8*)0x06000000)
-#define emultoroam ((u8*)0x07000000)
 extern u8 * ioMem;//extern u8 ioMem[0x400];
-
-#define DISPCAPCNT (*(vu32*)0x4000064)
-
 extern u8 currentVRAMcapblock;
 
 extern u16 DISPCNT;
@@ -176,4 +181,6 @@ extern u16 timer1Value;
 extern u16 timer2Value;
 extern u16 timer3Value;
 
-#endif // VBA_GLOBALS_H
+#ifdef __cplusplus
+}
+#endif
