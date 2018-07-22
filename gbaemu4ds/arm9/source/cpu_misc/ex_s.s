@@ -33,6 +33,8 @@ inter_res2:
 	str lr,[pc, #0x10]		
 	b inter_dataAbt
 
+.pool
+
 .global savedsp
 savedsp:
 	.word 0
@@ -48,9 +50,11 @@ spirq:
 spsvc:
 	.word __sp_svc
 
-@irq handler start
+.pool
+
 inter_irq:
-	stmfd  SP!, {R0-R3,R12,LR}		@save registers to SP_irq
+	sub lr,lr,#4
+	stmfd  SP!, {R0-R12,LR}		@save registers to SP_irq
 	
 	ldr	r1,=0x36333333		@MPU is set free to write everything except this area (vectors)
 	mcr	p15, 0, r1, c5, c0, 2
@@ -66,29 +70,20 @@ inter_irq:
 	ldr r2, [r2]
 	ands r1,r1,r2 			@bankedIE (NDS enabled hardware) & IF
 	
-	BEQ	irqexitdirect		@ IF > 0 ? continue serving interrupts
-	
-gba_handler:					
 	ldr	r1, =0x06300033        	@puGba();
 	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
 	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
-@acquire and jump to usr irq handler and go back right after
+	BEQ	irqexit		@ IF > 0 ? GBA IRQ Handler
+
+	@GBA IRQ Handler
 	add    LR,PC,#0            @retadr for USER handler
-	ldr    PC,[R0, #-0x4]      @jump to [03FFFFFC] USER handler
-	b irqexit
-	
-irqexitdirect:	
-	ldr	r1, =0x06300033         @puGba();
-	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
-	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
+	ldr    PC,[R0, #-0x4] 	     @jump to [03FFFFFC] USER handler
 
 irqexit:
-	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
-	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
+	ldmfd  SP!, {R0-R12,PC}^ @restore registers from SP_irq + armv4 format at arm9
 
-@irq handler end
-
+.pool
 	
 inter_swi:
 	@ change the PU to nds mode
@@ -115,9 +110,9 @@ inter_swi:
 	ldr	lr, [lr, #(15 * 4)]
 	subs    pc, lr, #0 @ichfly this is not working	
 
+.pool
 
 inter_prefetchAbt: @ break function todo
-
 	subs    lr, lr, #0x8000000
 	ldr		sp,=rom
 	ldr		sp,[sp]
@@ -126,6 +121,7 @@ inter_prefetchAbt: @ break function todo
 	add		lr,lr,sp
 	subs    pc, lr, #4
 
+.pool
 
 inter_undefined:
 @change the PU to nds mode
@@ -140,7 +136,6 @@ inter_undefined:
 	ldr	sp, =__sp_undef
 	ldr sp, [sp]
 
-	@coto : jump to handler,  make for arm9 is set for -marm ARM code (with interchange THUMB). If you switch back to -mthumb it will be slower & this will have to be BLX
 	BL undefinedExceptionHandler
 
 	@save nds swi stack context
@@ -151,9 +146,9 @@ inter_undefined:
 	ldr	sp, =exRegs
 	ldr sp, [sp,#(4*13)]
 	pop {r0-r12,lr}
-	
 	subs	pc, lr, #4
 
+.pool
 
 inter_dataAbt:
 	
@@ -172,7 +167,6 @@ inter_dataAbt:
 	mrs	r3, cpsr
 	bic	r4, r3, #0x1F
 	and	r1, r5, #0x1F
-	
 	
 	cmp r1,#0x10 @ichfly user is system
 	moveq r1,#0x1F
@@ -233,7 +227,8 @@ exitdirectcpu:
 	
 	subs    pc, lr, #4	
 
-	
+.pool
+
 .section	.dtcm,"ax",%progbits
 
 .global BIOSDBG_SPSR
@@ -244,24 +239,24 @@ BIOSDBG_SPSR:
 MPUPERMBACKUPSET_SWI:
 	.word 0x00000000
 
-	.global exRegs
+.global exRegs
 exRegs:
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
-	.word	0
+	.word	0	@r0     a1
+	.word	0	@r1		a2
+	.word	0	@r2		a3
+	.word	0	@r3		a4
+	.word	0	@r4		s1
+	.word	0	@r5		s2
+	.word	0	@r6		s3
+	.word	0	@r7		s4
+	.word	0	@r8		s5
+	.word	0	@r9		s6
+	.word	0	@r10	sl
+	.word	0	@r11	ip
+	.word	0	@r12	fp
+	.word	0	@r13	sp
+	.word	0	@r14	lr
+	.word	0	@r15	pc
 	
 .pool
 .end
