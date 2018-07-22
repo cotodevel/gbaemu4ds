@@ -44,7 +44,6 @@
 
 bool ichflytest = false;
 
-#include "GBAinline.h"
 #include "Globals.h"
 //#include "Gfx.h" //ichfly not that
 #include "EEprom.h"
@@ -56,6 +55,11 @@ bool ichflytest = false;
 #include "NLS.h"
 #include "elf.h"
 #include "Port.h"
+#include "RTC.h"
+
+#include "fatfileextract.h"
+#include "agbprint.h"
+
 #ifdef PROFILING
 #include "prof/prof.h"
 #endif

@@ -30,7 +30,6 @@
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
-#include "GBAinline.h"
 #include "main.h"
 #include "armdis.h"
 #include "main.h"
@@ -50,7 +49,6 @@
 #include <string.h>
 
 #include "GBA.h"
-#include "GBAinline.h"
 #include "Globals.h"
 #include "EEprom.h"
 #include "Flash.h"
@@ -371,9 +369,6 @@ void BIOScall(int op,  u32 *R)
 		  //VblankHandler(); //todo
 	#endif
 		//if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-#ifdef powerpatches
-		if((REG_DISPSTAT & DISP_IN_VBLANK) || (REG_VCOUNT < 60))frameasyncsync(); //hope it don't need more than 100 Lines this give the emulator more power
-#endif
 		//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 		//send cmd
 		REG_IPC_FIFO_TX = 0x1FFFFFFB; //tell the arm7

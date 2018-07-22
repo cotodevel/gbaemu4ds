@@ -5,15 +5,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "GBAinline.h"
 #include "armdis.h"
 #include "GBA.h"
 #include "fatfile.h"
 #include "fatfileextract.h"
 #include "Util.h"
 #include "cpumg.h"
+#include "Port.h"
 
-#define patchmyregsfromromtoromaddr //parts todo
+#define patchmyregsfromromtoromaddr //parts todo // aka prefetch & Program Counter: relative load/stores fix, todo
 
 #define UPDATE_OLD_myregs \
 if (debugger_last) { \

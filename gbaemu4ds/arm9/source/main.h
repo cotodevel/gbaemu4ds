@@ -8,7 +8,6 @@
 
 #include <nds/arm9/dldi.h>
 #include <stdio.h>
-#define Log(...) iprintf(__VA_ARGS__)
 #define INT_TABLE_SECTION __attribute__((section(".dtcm")))
 
 #define MAXPATHLEN 256 	//libfat directory path length

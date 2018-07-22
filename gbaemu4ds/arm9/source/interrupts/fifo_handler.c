@@ -12,7 +12,6 @@
 #include "../Util.h"
 #include "../System.h"
 #include "../cpumg.h"
-#include "../GBAinline.h"
 #include "../bios.h"
 #include "../mydebuger.h"
 #include "../arm7sound.h"
@@ -138,12 +137,6 @@ void HandleFifo() {
 					//continue;
 				}
 				break;
-				
-				case(0x4100BEEF):{
-					frameasyncsync();
-				}
-				break;
-				
 				case(0x4200BEEF):{
 					if(savePath[0] == 0)sprintf(savePath,"%s.sav",szFile);
 					CPUWriteBatteryFile(savePath);

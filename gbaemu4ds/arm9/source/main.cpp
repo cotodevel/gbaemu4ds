@@ -23,7 +23,6 @@
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
-#include "GBAinline.h"
 #include "bios.h"
 #include "mydebuger.h"
 #include "file_browse.h"

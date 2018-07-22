@@ -1,6 +1,8 @@
 #include <nds.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 #include <nds/memory.h>//#include <memory.h> ichfly
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
@@ -11,8 +13,6 @@
 #include <nds/arm9/videoGL.h>
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
-#include <stdarg.h>
-#include <string.h>
 #include "../../common/cpuglobal.h"
 #include "../../common/gba_ipc.h"
 #include "interrupts/fifo_handler.h"
@@ -22,10 +22,10 @@
 #include "Util.h"
 #include "getopt.h"
 #include "System.h"
+#include "Port.h"
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
-#include "GBAinline.h"
 #include "bios.h"
 #include "mydebuger.h"
 #include "ichflysettings.h"
@@ -174,9 +174,6 @@ In BG modes 4,5, one Frame may be displayed (selected by DISPCNT Bit 4), the oth
 */
 
 
-__attribute__((section(".dtcm")))
-int framewtf = 0;
-
 #ifdef usebuffedVcout
 u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
 u8 VCountdstogba[263]; //(LY)      (0..262)
@@ -291,7 +288,7 @@ void HblankHandler(void) {
     UPDATE_REG(0x04, DISPSTAT);
 	
     CPUCheckDMA(2, 0x0f);
-REG_IF = IRQ_HBLANK;
+	REG_IF = IRQ_HBLANK;
 
 }
 
@@ -309,14 +306,14 @@ void VblankHandler(void) {
 	
 	//handles DS-DS Comms
 	sint32 currentDSWNIFIMode = doMULTIDaemonStage1();
-		
+	
 	DISPSTAT |= (REG_DISPSTAT & 0x3);
 	DISPSTAT |= 0x1;	//vblank
 	DISPSTAT &= 0xFFFd; //remove hblank
 	UPDATE_REG(0x04, DISPSTAT);
 
 	CPUCheckDMA(1, 0x0f); //V-Blank
-
+	dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);	//32 KBytes OBJ Tiles GBA copy into DS OBJ Mem (sprites)
 	
 #ifdef showdebug
 	iprintf("\x1b[2J");
@@ -361,17 +358,15 @@ void VblankHandler(void) {
 		currentVRAMcapblock = 0;
 	}
 #else
+
+
 #ifdef skipper
 	if(skipval == skipperval)
 	{
 		skipval = 0;
 #endif
 		DISPCAPCNT = 0x8030000F | (1 << 16);
-		u8 *pointertobild = (u8 *)(0x6820000);
-		for(int iy = 0; iy <160; iy++){
-			dmaCopy( (void*)pointertobild, (void*)0x6200000/*bgGetGfxPtr(bgrouid)*/+512*(iy), 480);
-			pointertobild+=512;
-		}
+		
 #ifdef skipper
 	}
 	else
@@ -390,19 +385,7 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 #endif	
   
     P1 = REG_KEYINPUT&0x3ff;
-#ifdef ichflytestkeypossibillity  
-  
-	//copy only sprites since 0x06000000 is already mapped to gba vram
-	if((DISPCNT & 7) < 3)
-	{
-		dmaCopyWords(3,(void*)0x06010000,(void*)0x06400000,0x8000);
-	}
-	else
-	{
-		dmaCopyWords(3,(void*)0x06014000,(void*)0x06404000,0x4000);
-	}
-		
-  
+#ifdef ichflytestkeypossibillity
   // disallow Left+Right or Up+Down of being pressed at the same time
   if((P1 & 0x30) == 0)
     P1 |= 0x10;
@@ -429,19 +412,6 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 	//iprintf("ex %d\n",REG_VCOUNT);
 #endif
 }
-
-
-
-
-
-
-__attribute__((section(".itcm")))
-void frameasyncsync(void) {
-//---------------------------------------------------------------------------------
-	framewtf = 0;
-	dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);
-}
-
 
 
 char* seloptions [4] = {"save save","show mem","Continue","load GBA"};

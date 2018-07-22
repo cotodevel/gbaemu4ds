@@ -26,7 +26,6 @@
 #include "../ichflysettings.h"
 #include "../GBA.h"
 #include "../bios.h"
-#include "../GBAinline.h"
 #include "../Globals.h"
 
 static time_t *punixTime;

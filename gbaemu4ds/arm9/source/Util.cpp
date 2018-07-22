@@ -44,7 +44,6 @@
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
-#include "GBAinline.h"
 #include "bios.h"
 #include "mydebuger.h"
 #include "file_browse.h"
@@ -62,6 +61,7 @@
 #include "Globals.h"
 #include "RTC.h"
 #include "Port.h"
+#include "fatfile.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
@@ -201,6 +201,21 @@ bool utilWritePNGFile(const char *fileName, int w, int h, u8 *pix)
 }
 */
 extern bool cpuIsMultiBoot;
+
+
+// swaps a 16-bit value
+__attribute__((section(".itcm")))
+u16 swap16(u16 v)
+{
+	return (v<<8)|(v>>8);
+}
+
+// swaps a 32-bit value
+__attribute__((section(".itcm")))
+u32 swap32(u32 v)
+{
+	return (v<<24)|((v<<8)&0xff0000)|((v>>8)&0xff00)|(v>>24);
+}
 
 
 bool utilIsSAV(const char * file)

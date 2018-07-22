@@ -26,7 +26,6 @@
 #include "getopt.h"
 #include "System.h"
 #include "cpumg.h"
-#include "GBAinline.h"
 #include "bios.h"
 #include "mydebuger.h"
 #include "arm7sound.h"
@@ -117,11 +116,6 @@ recdel++;
 				iprintf("arm7 %08X\r\n",REG_IPC_FIFO_RX);
 				continue;
 			}
-			if(src == 0x4100BEEF)
-			{
-				frameasyncsync();
-				continue;
-			}
 			if(src == 0x4200BEEF)
 			{
 				if(savePath[0] == 0)sprintf(savePath,"%s.sav",szFile);
@@ -178,10 +172,6 @@ void arm7dmareqandcheat()
 			{
 				cheatsCheckKeys();
 				VblankHandler();
-			}
-			if(src == 0x4100BEEF)
-			{
-				frameasyncsync();
 			}
 			if(src == 0x4200BEEF)
 			{

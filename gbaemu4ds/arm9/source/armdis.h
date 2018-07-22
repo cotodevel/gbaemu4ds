@@ -24,6 +24,8 @@
 #ifndef __ARMDIS_H__
 #define __ARMDIS_H__
 
+#include <nds.h>
+
 #define DIS_VIEW_ADDRESS 1
 #define DIS_VIEW_CODE 2
 

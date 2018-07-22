@@ -393,8 +393,6 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 		case WaitforVblancarmcmd: //wait
 			if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
 			{
-				//REG_IPC_FIFO_TX = 0x4100BEEF; //send cmd 0x4100BEEF
-				SendArm9Command(0x4100BEEF,0x0,0x0,0x0);
 #ifdef anyarmcom
 				*amr7sendcom = *amr7sendcom + 1;
 #endif

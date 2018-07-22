@@ -61,26 +61,58 @@ bool armState = true;
 __attribute__((section(".dtcm")))
 bool armIrqEnable = true;
 
+__attribute__((section(".dtcm")))
 u32 armNextPC = 0x00000000;
+
+__attribute__((section(".dtcm")))
 int armMode = 0x1f;
+
+__attribute__((section(".dtcm")))
 u32 stop = 0x08000568;
+
+__attribute__((section(".dtcm")))
 int saveType = 0;
+
+__attribute__((section(".dtcm")))
 bool useBios = false;
+
+__attribute__((section(".dtcm")))
 bool skipBios = false;
 
 __attribute__((section(".dtcm")))
 int frameSkip = 1;
 
+__attribute__((section(".dtcm")))
 bool speedup = false;
+
+__attribute__((section(".dtcm")))
 bool synchronize = true;
+
+__attribute__((section(".dtcm")))
 bool cpuDisableSfx = false;
+
+__attribute__((section(".dtcm")))
 bool cpuIsMultiBoot = false;
+
+__attribute__((section(".dtcm")))
 bool parseDebug = true;
+
+__attribute__((section(".dtcm")))
 int layerSettings = 0xff00;
+
+__attribute__((section(".dtcm")))
 int layerEnable = 0xff00;
+
+__attribute__((section(".dtcm")))
 bool speedHack = false;
+
+__attribute__((section(".dtcm")))
 int cpuSaveType = 0;
+
+__attribute__((section(".dtcm")))
 bool cheatsEnabled = true;
+
+__attribute__((section(".dtcm")))
 bool mirroringEnable = false;
 
 __attribute__((section(".dtcm")))
