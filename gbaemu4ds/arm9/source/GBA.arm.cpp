@@ -2198,322 +2198,317 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   }
 }
 
-void CPUReset()
-{
+void CPUReset(){
 
+	if(gbaSaveType == 0) {
+		if(eepromInUse){
+			gbaSaveType = 3;
+		}
+		else{
+			switch(saveType) {
+				case 1:
+					gbaSaveType = 1;
+				break;
+				case 2:
+					gbaSaveType = 2;
+				break;
+			}
+		}
+	}
+	rtcReset();
+	
+	// clean registers
+	memset(&reg[0], 0, sizeof(reg));
+	// clean OAM
+	//memset(emultoroam, 0, 0x400);
+	// clean palette
+	//memset(paletteRAM, 0, 0x400);
+	// clean picture
+	//memset(pix, 0, 4*160*240);
+	// clean vram
+	//memset(vram, 0, 0x20000);
+	// clean io memory
+	memset(ioMem, 0, 0x400);
+	
+	// clean Work Ram (fast and slow memory)
+	memset(workRAM, 0, 256 * 1024);
+	
+	WRAM_CR = 0; //32K (0x03000000) wram @ ARM9
+	// clean gba Work RAM
+	memset(internalRAM, 0, 32 * 1024);
+	
+	//DISPCNT  = 0x0000;
+	DISPSTAT = 0x0000;
+	VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
+	BG0CNT   = 0x0000;
+	BG1CNT   = 0x0000;
+	BG2CNT   = 0x0000;
+	BG3CNT   = 0x0000;
+	BG0HOFS  = 0x0000;
+	BG0VOFS  = 0x0000;
+	BG1HOFS  = 0x0000;
+	BG1VOFS  = 0x0000;
+	BG2HOFS  = 0x0000;
+	BG2VOFS  = 0x0000;
+	BG3HOFS  = 0x0000;
+	BG3VOFS  = 0x0000;
+	BG2PA    = 0x0100;
+	BG2PB    = 0x0000;
+	BG2PC    = 0x0000;
+	BG2PD    = 0x0100;
+	BG2X_L   = 0x0000;
+	BG2X_H   = 0x0000;
+	BG2Y_L   = 0x0000;
+	BG2Y_H   = 0x0000;
+	BG3PA    = 0x0100;
+	BG3PB    = 0x0000;
+	BG3PC    = 0x0000;
+	BG3PD    = 0x0100;
+	BG3X_L   = 0x0000;
+	BG3X_H   = 0x0000;
+	BG3Y_L   = 0x0000;
+	BG3Y_H   = 0x0000;
+	WIN0H    = 0x0000;
+	WIN1H    = 0x0000;
+	WIN0V    = 0x0000;
+	WIN1V    = 0x0000;
+	WININ    = 0x0000;
+	WINOUT   = 0x0000;
+	MOSAIC   = 0x0000;
+	BLDMOD   = 0x0000;
+	COLEV    = 0x0000;
+	COLY     = 0x0000;
+	DM0SAD_L = 0x0000;
+	DM0SAD_H = 0x0000;
+	DM0DAD_L = 0x0000;
+	DM0DAD_H = 0x0000;
+	DM0CNT_L = 0x0000;
+	DM0CNT_H = 0x0000;
+	DM1SAD_L = 0x0000;
+	DM1SAD_H = 0x0000;
+	DM1DAD_L = 0x0000;
+	DM1DAD_H = 0x0000;
+	DM1CNT_L = 0x0000;
+	DM1CNT_H = 0x0000;
+	DM2SAD_L = 0x0000;
+	DM2SAD_H = 0x0000;
+	DM2DAD_L = 0x0000;
+	DM2DAD_H = 0x0000;
+	DM2CNT_L = 0x0000;
+	DM2CNT_H = 0x0000;
+	DM3SAD_L = 0x0000;
+	DM3SAD_H = 0x0000;
+	DM3DAD_L = 0x0000;
+	DM3DAD_H = 0x0000;
+	DM3CNT_L = 0x0000;
+	DM3CNT_H = 0x0000;
+	TM0D     = 0x0000;
+	TM0CNT   = 0x0000;
+	TM1D     = 0x0000;
+	TM1CNT   = 0x0000;
+	TM2D     = 0x0000;
+	TM2CNT   = 0x0000;
+	TM3D     = 0x0000;
+	TM3CNT   = 0x0000;
+	P1       = 0x03FF;
+	IE       = 0x0000;
+	IF       = 0x0000;
+	IME      = 0x0000;
 
-  if(gbaSaveType == 0) {
-    if(eepromInUse)
-      gbaSaveType = 3;
-    else
-      switch(saveType) {
-      case 1:
-        gbaSaveType = 1;
-        break;
-      case 2:
-        gbaSaveType = 2;
-        break;
-      }
-  }
-  rtcReset();
+	armMode = 0x1F;
 
+	/*if(cpuIsMultiBoot) {
+	reg[13].I = 0x03007F00;
+	reg[15].I = 0x02000000;
+	reg[16].I = 0x00000000;
+	reg[R13_IRQ].I = 0x03007FA0;
+	reg[R13_SVC].I = 0x03007FE0;
+	armIrqEnable = true;
+	} else {
+	if(useBios && !skipBios) {
+	  reg[15].I = 0x00000000;
+	  armMode = 0x13;
+	  armIrqEnable = false;  
+	} else {
+	  reg[13].I = 0x03007F00;
+	  reg[15].I = 0x08000000;
+	  reg[16].I = 0x00000000;
+	  reg[R13_IRQ].I = 0x03007FA0;
+	  reg[R13_SVC].I = 0x03007FE0;
+	  armIrqEnable = true;      
+	}    
+	}
+	armState = true;
+	C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;*/
+	armState = true;
+	UPDATE_REG(0x00, DISPCNT);
+	UPDATE_REG(0x06, VCOUNT);
+	UPDATE_REG(0x20, BG2PA);
+	UPDATE_REG(0x26, BG2PD);
+	UPDATE_REG(0x30, BG3PA);
+	UPDATE_REG(0x36, BG3PD);
+	UPDATE_REG(0x130, P1);
+	UPDATE_REG(0x88, 0x200);
 
-  // clean registers
-  memset(&reg[0], 0, sizeof(reg));
-  // clean OAM
-  //memset(emultoroam, 0, 0x400);
-  // clean palette
-  //memset(paletteRAM, 0, 0x400);
-  // clean picture
-  //memset(pix, 0, 4*160*240);
-  // clean vram
-  //memset(vram, 0, 0x20000);
-  // clean io memory
-  memset(ioMem, 0, 0x400);
+	// disable FIQ
+	//reg[16].I |= 0x40;
 
+	//CPUUpdateCPSR();
 
+	//armNextPC = reg[15].I;
+	//reg[15].I += 4;
 
+	// reset internal state
+	//holdState = false;
+	//holdType = 0;
 
+	biosProtected[0] = 0x00;
+	biosProtected[1] = 0xf0;
+	biosProtected[2] = 0x29;
+	biosProtected[3] = 0xe1;
 
-  //DISPCNT  = 0x0000;
-  DISPSTAT = 0x0000;
-  VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
-  BG0CNT   = 0x0000;
-  BG1CNT   = 0x0000;
-  BG2CNT   = 0x0000;
-  BG3CNT   = 0x0000;
-  BG0HOFS  = 0x0000;
-  BG0VOFS  = 0x0000;
-  BG1HOFS  = 0x0000;
-  BG1VOFS  = 0x0000;
-  BG2HOFS  = 0x0000;
-  BG2VOFS  = 0x0000;
-  BG3HOFS  = 0x0000;
-  BG3VOFS  = 0x0000;
-  BG2PA    = 0x0100;
-  BG2PB    = 0x0000;
-  BG2PC    = 0x0000;
-  BG2PD    = 0x0100;
-  BG2X_L   = 0x0000;
-  BG2X_H   = 0x0000;
-  BG2Y_L   = 0x0000;
-  BG2Y_H   = 0x0000;
-  BG3PA    = 0x0100;
-  BG3PB    = 0x0000;
-  BG3PC    = 0x0000;
-  BG3PD    = 0x0100;
-  BG3X_L   = 0x0000;
-  BG3X_H   = 0x0000;
-  BG3Y_L   = 0x0000;
-  BG3Y_H   = 0x0000;
-  WIN0H    = 0x0000;
-  WIN1H    = 0x0000;
-  WIN0V    = 0x0000;
-  WIN1V    = 0x0000;
-  WININ    = 0x0000;
-  WINOUT   = 0x0000;
-  MOSAIC   = 0x0000;
-  BLDMOD   = 0x0000;
-  COLEV    = 0x0000;
-  COLY     = 0x0000;
-  DM0SAD_L = 0x0000;
-  DM0SAD_H = 0x0000;
-  DM0DAD_L = 0x0000;
-  DM0DAD_H = 0x0000;
-  DM0CNT_L = 0x0000;
-  DM0CNT_H = 0x0000;
-  DM1SAD_L = 0x0000;
-  DM1SAD_H = 0x0000;
-  DM1DAD_L = 0x0000;
-  DM1DAD_H = 0x0000;
-  DM1CNT_L = 0x0000;
-  DM1CNT_H = 0x0000;
-  DM2SAD_L = 0x0000;
-  DM2SAD_H = 0x0000;
-  DM2DAD_L = 0x0000;
-  DM2DAD_H = 0x0000;
-  DM2CNT_L = 0x0000;
-  DM2CNT_H = 0x0000;
-  DM3SAD_L = 0x0000;
-  DM3SAD_H = 0x0000;
-  DM3DAD_L = 0x0000;
-  DM3DAD_H = 0x0000;
-  DM3CNT_L = 0x0000;
-  DM3CNT_H = 0x0000;
-  TM0D     = 0x0000;
-  TM0CNT   = 0x0000;
-  TM1D     = 0x0000;
-  TM1CNT   = 0x0000;
-  TM2D     = 0x0000;
-  TM2CNT   = 0x0000;
-  TM3D     = 0x0000;
-  TM3CNT   = 0x0000;
-  P1       = 0x03FF;
-  IE       = 0x0000;
-  IF       = 0x0000;
-  IME      = 0x0000;
+	lcdTicks = (useBios && !skipBios) ? 1008 : 208;
+	timer0On = false;
+	timer0Ticks = 0;
+	timer0Reload = 0;
+	timer0ClockReload  = 0;
+	timer1On = false;
+	timer1Ticks = 0;
+	timer1Reload = 0;
+	timer1ClockReload  = 0;
+	timer2On = false;
+	timer2Ticks = 0;
+	timer2Reload = 0;
+	timer2ClockReload  = 0;
+	timer3On = false;
+	timer3Ticks = 0;
+	timer3Reload = 0;
+	timer3ClockReload  = 0;
+	dma0Source = 0;
+	dma0Dest = 0;
+	dma1Source = 0;
+	dma1Dest = 0;
+	dma2Source = 0;
+	dma2Dest = 0;
+	dma3Source = 0;
+	dma3Dest = 0;
+	cpuSaveGameFunc = flashSaveDecide;
+	//renderLine = mode0RenderLine;
+	fxOn = false;
+	windowOn = false;
+	frameCount = 0;
+	saveType = 0;
+	//layerEnable = DISPCNT & layerSettings;
 
-  armMode = 0x1F;
+	//CPUUpdateRenderBuffers(true);
+
+	for(int i = 0; i < 256; i++) {
+	map[i].address = (u8 *)&dummyAddress;
+	map[i].mask = 0;
+	}
+
+	map[0].address = bios;
+	map[0].mask = 0x3FFF;
+	map[2].address = workRAM;
+	map[2].mask = 0x3FFFF;
+	map[3].address = internalRAM;
+	map[3].mask = 0x7FFF;
+	map[4].address = ioMem;
+	map[4].mask = 0x3FF;
+	map[5].address = paletteRAM;
+	map[5].mask = 0x3FF;
+	map[6].address = vram;
+	map[6].mask = 0x1FFFF;
+	map[7].address = emultoroam;
+	map[7].mask = 0x3FF;
+	map[8].address = rom;
+	map[8].mask = 0x1FFFFFF;
+	map[9].address = rom;
+	map[9].mask = 0x1FFFFFF;  
+	map[10].address = rom;
+	map[10].mask = 0x1FFFFFF;
+	map[12].address = rom;
+	map[12].mask = 0x1FFFFFF;
+	map[14].address = flashSaveMemory;
+	map[14].mask = 0xFFFF;
+
+	eepromReset();
+	flashReset();
   
-  /*if(cpuIsMultiBoot) {
-    reg[13].I = 0x03007F00;
-    reg[15].I = 0x02000000;
-    reg[16].I = 0x00000000;
-    reg[R13_IRQ].I = 0x03007FA0;
-    reg[R13_SVC].I = 0x03007FE0;
-    armIrqEnable = true;
-  } else {
-    if(useBios && !skipBios) {
-      reg[15].I = 0x00000000;
-      armMode = 0x13;
-      armIrqEnable = false;  
-    } else {
-      reg[13].I = 0x03007F00;
-      reg[15].I = 0x08000000;
-      reg[16].I = 0x00000000;
-      reg[R13_IRQ].I = 0x03007FA0;
-      reg[R13_SVC].I = 0x03007FE0;
-      armIrqEnable = true;      
-    }    
-  }
-  armState = true;
-  C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;*/
-  armState = true;
-  UPDATE_REG(0x00, DISPCNT);
-  UPDATE_REG(0x06, VCOUNT);
-  UPDATE_REG(0x20, BG2PA);
-  UPDATE_REG(0x26, BG2PD);
-  UPDATE_REG(0x30, BG3PA);
-  UPDATE_REG(0x36, BG3PD);
-  UPDATE_REG(0x130, P1);
-  UPDATE_REG(0x88, 0x200);
+	//soundReset(); //ichfly sound
 
-  // disable FIQ
-  //reg[16].I |= 0x40;
-  
-  //CPUUpdateCPSR();
-  
-  //armNextPC = reg[15].I;
-  //reg[15].I += 4;
+	//CPUUpdateWindow0();
+	//CPUUpdateWindow1();
 
-  // reset internal state
-  //holdState = false;
-  //holdType = 0;
-  
-  biosProtected[0] = 0x00;
-  biosProtected[1] = 0xf0;
-  biosProtected[2] = 0x29;
-  biosProtected[3] = 0xe1;
-  
-  lcdTicks = (useBios && !skipBios) ? 1008 : 208;
-  timer0On = false;
-  timer0Ticks = 0;
-  timer0Reload = 0;
-  timer0ClockReload  = 0;
-  timer1On = false;
-  timer1Ticks = 0;
-  timer1Reload = 0;
-  timer1ClockReload  = 0;
-  timer2On = false;
-  timer2Ticks = 0;
-  timer2Reload = 0;
-  timer2ClockReload  = 0;
-  timer3On = false;
-  timer3Ticks = 0;
-  timer3Reload = 0;
-  timer3ClockReload  = 0;
-  dma0Source = 0;
-  dma0Dest = 0;
-  dma1Source = 0;
-  dma1Dest = 0;
-  dma2Source = 0;
-  dma2Dest = 0;
-  dma3Source = 0;
-  dma3Dest = 0;
-  cpuSaveGameFunc = flashSaveDecide;
-  //renderLine = mode0RenderLine;
-  fxOn = false;
-  windowOn = false;
-  frameCount = 0;
-  saveType = 0;
-  //layerEnable = DISPCNT & layerSettings;
+	// make sure registers are correctly initialized if not using BIOS
+	/*if(!useBios) {
+	if(cpuIsMultiBoot)
+	  BIOS_RegisterRamReset(0xfe);
+	else
+	  BIOS_RegisterRamReset(0xff);
+	} else {
+	if(cpuIsMultiBoot)
+	  BIOS_RegisterRamReset(0xfe);
+	}*/ //ararar
 
-  //CPUUpdateRenderBuffers(true);
-  
-  for(int i = 0; i < 256; i++) {
-    map[i].address = (u8 *)&dummyAddress;
-    map[i].mask = 0;
-  }
+	switch(cpuSaveType) {
+		case 0: // automatic
+			cpuSramEnabled = true;
+			cpuFlashEnabled = true;
+			cpuEEPROMEnabled = true;
+			cpuEEPROMSensorEnabled = false;
+			saveType = gbaSaveType = 0;
+		break;
+		case 1: // EEPROM
+			cpuSramEnabled = false;
+			cpuFlashEnabled = false;
+			cpuEEPROMEnabled = true;
+			cpuEEPROMSensorEnabled = false;
+			saveType = gbaSaveType = 3;
+			// EEPROM usage is automatically detected
+		break;
+		case 2: // SRAM
+			cpuSramEnabled = true;
+			cpuFlashEnabled = false;
+			cpuEEPROMEnabled = false;
+			cpuEEPROMSensorEnabled = false;
+			cpuSaveGameFunc = sramDelayedWrite; // to insure we detect the write
+			saveType = gbaSaveType = 1;
+		break;
+		case 3: // FLASH
+			cpuSramEnabled = false;
+			cpuFlashEnabled = true;
+			cpuEEPROMEnabled = false;
+			cpuEEPROMSensorEnabled = false;
+			cpuSaveGameFunc = flashDelayedWrite; // to insure we detect the write
+			saveType = gbaSaveType = 2;
+		break;
+		case 4: // EEPROM+Sensor
+			cpuSramEnabled = false;
+			cpuFlashEnabled = false;
+			cpuEEPROMEnabled = true;
+			cpuEEPROMSensorEnabled = true;
+			// EEPROM usage is automatically detected
+			saveType = gbaSaveType = 3;
+		break;
+		case 5: // NONE
+			cpuSramEnabled = false;
+			cpuFlashEnabled = false;
+			cpuEEPROMEnabled = false;
+			cpuEEPROMSensorEnabled = false;
+			// no save at all
+			saveType = gbaSaveType = 5;
+		break;
+	} 
 
+	//ARM_PREFETCH;
 
+	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+	cpuDmaHack = false;
 
-
-  map[0].address = bios;
-  map[0].mask = 0x3FFF;
-  map[2].address = workRAM;
-  map[2].mask = 0x3FFFF;
-  map[3].address = internalRAM;
-  map[3].mask = 0x7FFF;
-  map[4].address = ioMem;
-  map[4].mask = 0x3FF;
-  map[5].address = paletteRAM;
-  map[5].mask = 0x3FF;
-  map[6].address = vram;
-  map[6].mask = 0x1FFFF;
-  map[7].address = emultoroam;
-  map[7].mask = 0x3FF;
-  map[8].address = rom;
-  map[8].mask = 0x1FFFFFF;
-  map[9].address = rom;
-  map[9].mask = 0x1FFFFFF;  
-  map[10].address = rom;
-  map[10].mask = 0x1FFFFFF;
-  map[12].address = rom;
-  map[12].mask = 0x1FFFFFF;
-  map[14].address = flashSaveMemory;
-  map[14].mask = 0xFFFF;
-
-
-
-  eepromReset();
-  flashReset();
-  
-  //soundReset(); //ichfly sound
-
-  //CPUUpdateWindow0();
-  //CPUUpdateWindow1();
-
-  // make sure registers are correctly initialized if not using BIOS
-  /*if(!useBios) {
-    if(cpuIsMultiBoot)
-      BIOS_RegisterRamReset(0xfe);
-    else
-      BIOS_RegisterRamReset(0xff);
-  } else {
-    if(cpuIsMultiBoot)
-      BIOS_RegisterRamReset(0xfe);
-  }*/ //ararar
-
-  switch(cpuSaveType) {
-  case 0: // automatic
-    cpuSramEnabled = true;
-    cpuFlashEnabled = true;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 0;
-    break;
-  case 1: // EEPROM
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 3;
-    // EEPROM usage is automatically detected
-    break;
-  case 2: // SRAM
-    cpuSramEnabled = true;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    cpuSaveGameFunc = sramDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 1;
-    break;
-  case 3: // FLASH
-    cpuSramEnabled = false;
-    cpuFlashEnabled = true;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    cpuSaveGameFunc = flashDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 2;
-    break;
-  case 4: // EEPROM+Sensor
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = true;
-    cpuEEPROMSensorEnabled = true;
-    // EEPROM usage is automatically detected
-    saveType = gbaSaveType = 3;
-    break;
-  case 5: // NONE
-    cpuSramEnabled = false;
-    cpuFlashEnabled = false;
-    cpuEEPROMEnabled = false;
-    cpuEEPROMSensorEnabled = false;
-    // no save at all
-    saveType = gbaSaveType = 5;
-    break;
-  } 
-
-  //ARM_PREFETCH;
-
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
-  cpuDmaHack = false;
-
-  //lastTime = systemGetClock();
-
-  //SWITicks = 0;
-  rtcEnable(true); //coto: nds7 clock 
+	//lastTime = systemGetClock();
+	//SWITicks = 0;
+	rtcEnable(true); //coto: nds7 clock 
 }
 
 #ifdef SDL

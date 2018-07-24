@@ -253,7 +253,6 @@ void gbaInit(bool slow)
 	pu_SetCodeCachability(   0b00111110);
 	pu_GetWriteBufferability(0b00100010);	
 	
-	WRAM_CR = 0; //swap wram in
 	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
 	pu_SetRegion(1, 0x027C0000 | PU_PAGE_16K | 1);	//dtcm helper: enable I/Dtcm caches in DTCM region: gives speedup
 	pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);	//ewram mirror gba #1, nds mode mpu traps this region: #1: 0x02040000 ~ 0x0207ffff / speedup access by MPU

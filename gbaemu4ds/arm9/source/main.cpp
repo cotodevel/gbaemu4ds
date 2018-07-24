@@ -76,59 +76,37 @@ int main( int argc, char **argv) {
 	
 	ARMV5toARMV4Mode();	//so undefined resolver deals with proper armv4 opcodes and we iron out patches // for upcoming prefetch logic
 	
-  biosPath[0] = 0;
-  savePath[0] = 0;
-  patchPath[0] = 0;
+	biosPath[0] = 0;
+	savePath[0] = 0;
+	patchPath[0] = 0;
 
-//---------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------
 	//set the mode for 2 text layers and two extended background layers
 	//videoSetMode(MODE_5_2D); 
-  videoSetModeSub(MODE_5_2D);	
+	videoSetModeSub(MODE_5_2D);	
 	//defaultExceptionHandler();	//for debug befor gbainit
 
-//ori
-/*
-	//set the first two banks as background memory and the third as sub background memory
-	//D is not used..if you need a bigger background then you will need to map
-	//more vram banks consecutivly (VRAM A-D are all 0x20000 bytes in size)
-	vramSetPrimaryBanks(
-	VRAM_A_MAIN_BG_0x06000000,//for gba 
-	VRAM_B_LCD, 
-	VRAM_C_SUB_BG_0x06200000,
-	VRAM_D_MAIN_BG_0x06020000
-	); //needed for main emulator
-	
+	vramSetPrimaryBanks(	
+	VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode	//Mode 1/2/3/4 special bitmap/rotscale modes
+	VRAM_B_LCD, //6820000h-683FFFFh	getVRAMHeapStart(); here
+	VRAM_C_LCD,	//6840000h-685FFFFh
+	VRAM_D_LCD	//6860000h-687FFFFh
+	);
+
 	vramSetBanks_EFG(
-	VRAM_E_MAIN_SPRITE//for gba sprite,
-	VRAM_F_LCD,
+	VRAM_E_MAIN_SPRITE,        //E       64K   2    -     6400000h
+	VRAM_F_LCD,                	//F       16K   0    -     6890000h-6893FFFh
 	VRAM_G_LCD
 	);
-	vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screen 
+	vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screan 
 	vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
-*/
 
-//coto: mode1 ok
-vramSetPrimaryBanks(	
-VRAM_A_MAIN_BG_0x06000000,      //Mode0 Tile/Map mode	//Mode 1/2/3/4 special bitmap/rotscale modes
-VRAM_B_LCD, //6820000h-683FFFFh	getVRAMHeapStart(); here
-VRAM_C_LCD,	//6840000h-685FFFFh
-VRAM_D_LCD	//6860000h-687FFFFh
-);
-
-vramSetBanks_EFG(
-VRAM_E_MAIN_SPRITE,        //E       64K   2    -     6400000h
-VRAM_F_LCD,                	//F       16K   0    -     6890000h-6893FFFh
-VRAM_G_LCD
-);
-vramSetBankH(VRAM_H_SUB_BG); //only sub //for prints to lowern screan 
-vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
-
-#ifdef advanced_irq_check
-	irqSet(IRQ_HBLANK,HblankHandler); //todo async
-#ifdef forceHBlankirqs
-	irqEnable(IRQ_HBLANK);
-#endif
-#endif
+	#ifdef advanced_irq_check
+		irqSet(IRQ_HBLANK,HblankHandler); //todo async
+	#ifdef forceHBlankirqs
+		irqEnable(IRQ_HBLANK);
+	#endif
+	#endif
 	
 	__irqSet(IRQ_FIFO_NOT_EMPTY,HandleFifo,irqTable); //todo async
 	irqEnable(IRQ_FIFO_NOT_EMPTY);
@@ -139,27 +117,27 @@ vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 
 	DISPCNT  = 0x0080;
 
-//rootenabelde[2] = fatMountSimple  ("sd", &__io_dsisd); //DSi//sems to be inited by fatInitDefault
- //fatInitDefault();
- //nitroFSInit();
-bool temptest = true;
+	//rootenabelde[2] = fatMountSimple  ("sd", &__io_dsisd); //DSi//sems to be inited by fatInitDefault
+	 //fatInitDefault();
+	 //nitroFSInit();
+	bool temptest = true;
 
-//data protbuff
-#ifdef arm9advsound
-REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
+	//data protbuff
+	#ifdef arm9advsound
+	REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
 
-#ifdef anyarmcom
-*(u32*)arm7exchangefild = (u32)&amr7sendcom;
-*(u32*)(arm7exchangefild + 4) = (u32)&amr7senddma1;
-*(u32*)(arm7exchangefild + 8) = (u32)&amr7senddma2;
-*(u32*)(arm7exchangefild + 12) = (u32)&amr7recmuell;
-*(u32*)(arm7exchangefild + 16) = (u32)&amr7directrec;
-*(u32*)(arm7exchangefild + 20) = (u32)&amr7indirectrec;
-*(u32*)(arm7exchangefild + 24) = (u32)&amr7fehlerfeld[0];
-#endif
+	#ifdef anyarmcom
+	*(u32*)arm7exchangefild = (u32)&amr7sendcom;
+	*(u32*)(arm7exchangefild + 4) = (u32)&amr7senddma1;
+	*(u32*)(arm7exchangefild + 8) = (u32)&amr7senddma2;
+	*(u32*)(arm7exchangefild + 12) = (u32)&amr7recmuell;
+	*(u32*)(arm7exchangefild + 16) = (u32)&amr7directrec;
+	*(u32*)(arm7exchangefild + 20) = (u32)&amr7indirectrec;
+	*(u32*)(arm7exchangefild + 24) = (u32)&amr7fehlerfeld[0];
+	#endif
 
-REG_IPC_FIFO_TX = arm7amr9buffer = (u32)arm7exchangefild; //buffer for arm7
-#endif
+	REG_IPC_FIFO_TX = arm7amr9buffer = (u32)arm7exchangefild; //buffer for arm7
+	#endif
 	iprintf("Init Fat...");
     if(fatInitDefault()){
         iprintf("OK\n");
@@ -174,71 +152,63 @@ REG_IPC_FIFO_TX = arm7amr9buffer = (u32)arm7exchangefild; //buffer for arm7
 			i++;
 		}
     }
-//main menü ende aber bleibe im while
-//dirfolder("nitro:/");	
-bool nichtausgewauhlt = true;
+	//main menü ende aber bleibe im while
+	//dirfolder("nitro:/");	
+	bool nichtausgewauhlt = true;
+		
+	//screen settings
+	REG_POWERCNT &= ~(POWER_3D_CORE | POWER_MATRIX);	//poweroff 3d
+	if(argv[5][0] == '1')
+	{
+		lcdSwap();
+	}
+
+		
+	iprintf("\x1b[2J");
+	//main menü
+
+	strcpy(szFile,argv[1]);
+	strcpy(savePath,argv[2]);
+	strcpy(biosPath,argv[3]);
+	strcpy(patchPath,argv[4]);
+	if(argv[11][0] == '1')cpuIsMultiBoot = true;
+	else cpuIsMultiBoot = false;
+	int myflashsize = 0x10000;
+
+	u32 manual_save_type = (u32)strtol(argv[6],NULL,16);
+	frameskip = (u32)strtol(argv[7],NULL,16);
+	arm9VCOUNTsyncline =(int)strtol(argv[9],NULL,16);
+	bool slow;
+	if(argv[10][0] == '1')slow = true;
+	else slow = false;
+	if(argv[8][0] == '1')
+	{
+		REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
+		REG_IPC_FIFO_TX = 0;
+	}
 	
-//screen settings
-REG_POWERCNT &= ~(POWER_3D_CORE | POWER_MATRIX);	//poweroff 3d
-if(argv[5][0] == '1')
-{
-	lcdSwap();
-}
-
-	
-iprintf("\x1b[2J");
-//main menü
-
-//while(1)iprintf("o");
-
-
-strcpy(szFile,argv[1]);
-strcpy(savePath,argv[2]);
-strcpy(biosPath,argv[3]);
-strcpy(patchPath,argv[4]);
-if(argv[11][0] == '1')cpuIsMultiBoot = true;
-else cpuIsMultiBoot = false;
-int myflashsize = 0x10000;
-
-u32 manual_save_type = (u32)strtol(argv[6],NULL,16);
-frameskip = (u32)strtol(argv[7],NULL,16);
-arm9VCOUNTsyncline =(int)strtol(argv[9],NULL,16);
-bool slow;
-if(argv[10][0] == '1')slow = true;
-else slow = false;
-if(argv[8][0] == '1')
-{
-	REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
-	REG_IPC_FIFO_TX = 0;
-}
-
 	//test the FIFO if NDS cmds and GBA cmds work .. ok they work
 	//REG_IPC_FIFO_TX = FIFO_DEBUG;
 	//REG_IPC_FIFO_TX = 0;
 	
 	bool extraram =false; 
-#ifdef usebuffedVcout
-initspeedupfelder();
-#endif
-
-  iprintf("ARM9 @ARMv4 ok");
-  iprintf("\x1b[2J");
-  parseDebug = true;
+	#ifdef usebuffedVcout
+	initspeedupfelder();
+	#endif
+	
+	iprintf("\x1b[2J");
+	parseDebug = true;
     bool failed = false;
  
+	iprintf("ARM9 @ARMv4 ok: CPULoadRom...");
+    failed = !CPULoadRom(szFile,extraram);
 
-	iprintf("CPULoadRom...");
-
-      failed = !CPULoadRom(szFile,extraram);
-	  
-	  if(failed)
-	  {
+	if(failed){
 		printf("failed");
 		while(1);
-	  }
-	  iprintf("OK\n");
-	  
-	  
+	}
+	iprintf("OK\n");
+	
 	if(save_decider()==0){
 		if(manual_save_type == 6)
 		{
@@ -250,8 +220,7 @@ initspeedupfelder();
 			cpuSaveType = manual_save_type;
 		}
 	}
-
-	//iprintf("Hello World2!");
+	
 	iprintf("CPUInit\n");
 	CPUInit(biosPath, useBios,extraram);
 	
@@ -311,7 +280,6 @@ initspeedupfelder();
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
 	BIOS_RegisterRamReset(0xFF);
 	
-	
 	printf("Press A for Nifi");
 	printf("Press B for Idle");
 	while(1) {
@@ -328,10 +296,7 @@ initspeedupfelder();
 		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 	}
 	
-	iprintf("dmaCopy\n");
-	dmaCopy( (void*)rom,(void*)0x2000000, 0x40000);
 	iprintf("arm7init\n");
-	VblankHandler();
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
 	REG_IPC_FIFO_TX = (u32)arm9VCOUNTsyncline;
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
@@ -341,13 +306,10 @@ initspeedupfelder();
 	anytimejmpfilter = 0;
 	
 	setGBAVectors();
-	iprintf("GBA Vectors 0x00000000 OK \n");
-	pu_Enable();
-	
-    iprintf("ndsMode\n");
 	ndsMode();
-    iprintf("gbaInit\n");
-#ifdef capture_and_pars
+	iprintf("Vectors @ 0x00000000 \n");
+    pu_Enable();
+	#ifdef capture_and_pars
 	videoBgDisableSub(0);
 	vramSetBankH(VRAM_H_LCD); //only sub
 	vramSetBankI(VRAM_I_LCD); //only sub
@@ -355,22 +317,15 @@ initspeedupfelder();
 
 	bgSetRotateScale(iback,0,0x0F0,0x0D6);
 	bgUpdate();
-#endif
-	
+	#endif
 	
 	gbaInit(slow);
-#ifndef capture_and_pars
-	iprintf("gbaMode\n");
-#endif
 	gbaMode();
-#ifndef capture_and_pars
-	iprintf("jump to (%08X):%x",rom,*rom);
-#endif
-  
+	iprintf("GBA mode. Jumping to %x \n",rom);
+	cpu_ArmJumpforstackinit((u32)rom, 0);
+	
 	while(true){
 		REG_IF = IRQ_HBLANK;
-		cpu_ArmJumpforstackinit((u32)rom, 0);
 	}
 	return 0;
-
 }
