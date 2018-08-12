@@ -18,17 +18,15 @@ PS: If you are a coder, use always differencing and merging tools. These really 
 - broken mode 1 support. You will see games that use mode1 correctly or glitched.
 - Soft reset works: Either in-game soft-reset method (A+B+SELECT+START) or gbaemu4ds menu (LEFT+UP+A+B) -> "reset GBA"
 
-
 Instructions:
 
 How to build: 
- - Open msys2 console, head to hbmenu folder, write "make clean", then "make", then copy the hbmenu.nds to root directory in SD card.
- - Same msys2 console: Head to gbaemu4ds folder write "make clean", then "make", then copy the gbaemu4ds.nds file inside root/gbaemu4ds/ directory in SD card. (MUST BE THIS DIRECTORY)
- - Or just copy /release folder contents in root directory in SD card, and launch hbmenu.nds
+ - Open msys2 console: Head to gbaemu4ds folder write "make clean", then "make", then copy the gbaemu4ds.nds file to any directory in SD card.
+ - Or just copy /release folder gbaemu4ds.nds in root directory in SD card, and launch it. The card must have a DLDI that allows to read/write for it to work (NTR Mode).
 
 
 How to boot: 
- - Follow the on-screen instructions. If you are unsure just choose the file and press A until the game boots. If the game boots.
+ - copy gba homebrew/files to SD root/gba folder , and run gbaemu4ds.nds, and a simple file directory will read the gba folder contents. Press start to choose the file and that's it.
  
  
  Coto.
