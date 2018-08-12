@@ -15,7 +15,8 @@
 #define WIFI9_SETUP_GBAEMU4DS 	(u32)(0xff1100ae)
 #define DSWIFI_DEINIT_WIFI 	(u32)(0xff1100af)
 #define FIFO_DEBUG 	(u32)(0xff1100b0)
-
+#define GBAEMU4DS_SND_START 	(u32)(0xff1100b1)
+#define GBAEMU4DS_SND_STOP 	(u32)(0xff1100b2)
 typedef struct
 {
 	u32 entryPoint;

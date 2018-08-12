@@ -1389,6 +1389,7 @@ bool reloadGBA(char * filename, u32 manual_save_type){
 	bgUpdate();
 	#endif
 	
+	SendArm7Command(GBAEMU4DS_SND_START,0x0,0x0,0x0);
 	gbaInit(false);
 	gbaMode();
 	cpu_ArmJumpforstackinit((u32)rom, 0);

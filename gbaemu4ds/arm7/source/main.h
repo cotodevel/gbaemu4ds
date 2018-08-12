@@ -61,6 +61,7 @@ extern void lid_open_irq_handler();
 extern void lid_closing_handler();
 
 extern void newvalwrite(u32 addr, u32 val, u32 cmd0);
+extern bool arm7EmuStarted;
 
 #ifdef __cplusplus
 }

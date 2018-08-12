@@ -9,7 +9,7 @@
 #include "../../common/gba_ipc.h"
 
 u16 arm7VCOUNTsyncline = 0xFFFF;
-
+bool arm7EmuStarted = false;
 #ifdef anyarmcom
 u32* amr7sendcom = 0;
 u32* amr7senddma1 = 0;
@@ -239,10 +239,21 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 {
 	bool NDSCmd = false;
 	switch(cmd0){
+		case(GBAEMU4DS_SND_START):{
+			arm7EmuStarted = true;
+			NDSCmd = true;
+		}
+		break;
+		case(GBAEMU4DS_SND_STOP):{
+			arm7EmuStarted = false;
+			NDSCmd = true;
+		}
+		break;
 		case(FIFO_DEBUG):{
 			SendArm9Command(FIFO_DEBUG,0x0,0x0,0x0);
 			NDSCmd = true;
 		}
+		break;
 		//raise sleepmode from arm9 with custom IRQs
 		case(FIFO_SWI_SLEEPMODE_PHASE1):{
 			lid_closing_handler();
@@ -761,6 +772,10 @@ void updatetakt()
 
 void checkstart()
 {
+	if(arm7EmuStarted == false){
+		return ;
+	}
+
 	//DMA 1
 	if(DMA1DAD_L == 0x00A0 && DMA1DAD_H == 0x0400 && (DMA1CNT_H & 0x8000))
 	{
