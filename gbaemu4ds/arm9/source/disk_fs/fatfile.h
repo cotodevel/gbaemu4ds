@@ -120,11 +120,12 @@ extern u32 current_pointer;
 
 extern u32* allocedfild;	//u32 allocedfild[buffslots]
 
-extern u8* greatownfilebuffer;
+extern u8* gbafsbuffer;
 
 extern void generatefilemap(int size);
 extern void getandpatchmap(int offsetgba,int offsetthisfile);
 
+extern int latestsectortableSize;
 #ifdef __cplusplus
 }
 #endif

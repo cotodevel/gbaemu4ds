@@ -75,8 +75,8 @@ extern void utilGetBaseName(const char *, char *);
 //extern IMAGE_TYPE utilFindType(const char *);
 extern u8 *utilLoad(const char *,
                     u8 *,
-                    int ,bool);
-
+                    int
+				);
 extern void utilPutDword(u8 *, u32);
 extern void utilPutWord(u8 *, u16);
 extern void utilWriteData(gzFile, variable_desc *);
@@ -151,6 +151,8 @@ extern uint32 * vramHeapFree(uint32 vramBlock,uint32 StartAddr,int size);
 extern void patchit(int romSize2);
 extern u16 swap16(u16 v);
 extern u32 swap32(u32 v);
+
+extern bool reloadGBA(char * filename, u32 manual_save_type);
 
 #ifdef __cplusplus
 }

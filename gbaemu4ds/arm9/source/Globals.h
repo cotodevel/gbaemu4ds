@@ -58,10 +58,9 @@ extern int lastdebugsize;
 extern "C" {
 #endif
 
-#ifdef uppern_read_emulation
 extern FILE* ichflyfilestream;
 extern int ichflyfilestreamsize;
-#endif
+
 #ifdef countpagefalts
 extern u32 pagefehler;
 #endif

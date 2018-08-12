@@ -62,6 +62,7 @@
 #include "RTC.h"
 #include "Port.h"
 #include "fatfile.h"
+#include "dswnifi_lib.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
@@ -849,79 +850,72 @@ void patchit(int romSize2)
 		fclose(patchf);
 }
 
-u8 *utilLoad(const char *file, //ichfly todo
-             u8 *data,
-             int size,bool extram)
-{
-  u8 *image = data;
+u8 *utilLoad(const char *file, u8 *data,int size){
+  
+	if(ichflyfilestream != NULL){
+		fclose(ichflyfilestream);
+		ichflyfilestreamsize = 0;
+	}
+	
+	u8 *image = data;
+	FILE *f = fopen(file, "rb");
 
+	if(!f) {
+		systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), file);
+		return NULL;
+	}
 
-  FILE *f = fopen(file, "rb");
+	fseek(f,0,SEEK_END);
+	int fileSize = ftell(f);
+	fseek(f,0,SEEK_SET);
 
-  if(!f) {
-    systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), file);
-    return NULL;
-  }
+	generatefilemap(fileSize);
 
-  fseek(f,0,SEEK_END);
-  int fileSize = ftell(f);
-  fseek(f,0,SEEK_SET);
+	if(data == NULL)
+	{
+		romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+		rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);
+		image = data = rom;
+		size = romSize;
+	}
+	size_t read = fileSize <= size ? fileSize : size;
+	size_t r= 0x80000;
 
-  generatefilemap(fileSize);
-
-  if(data == NULL)
-  {
-	  romSize = 0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
-	  rom = (u8 *)(sbrk(0) + 0x2000/*8K for futur alloc*/);              //rom = (u8 *)0x02180000; //old
-	  image = data = rom;
-	  size = romSize;
-  }
-  size_t read = fileSize <= size ? fileSize : size;
-
-
-  size_t r= 0x80000;
-
-  //workaround read
-  /*int seek = 0;
-  while(r == 0x80000)
-  {
-	fseek(f,seek,SEEK_SET);
-	if(read > 0x80000)r = fread(image, 1, 0x80000, f); //512 KByte chucks
-	else r = fread(image, 1, read, f);
-	read -= r;
-	image += r;
-	seek += r;
-	fclose(f);
-	f = fopen(file, "rb"); //close and open
-  }*/
+	//workaround read
+	/*int seek = 0;
+	while(r == 0x80000)
+	{
+		fseek(f,seek,SEEK_SET);
+		if(read > 0x80000)r = fread(image, 1, 0x80000, f); //512 KByte chucks
+		else r = fread(image, 1, read, f);
+		read -= r;
+		image += r;
+		seek += r;
+		fclose(f);
+		f = fopen(file, "rb"); //close and open
+	}*/
 
 	r = fread(image, 1, read, f);
-	
 	//set up header
     memcpy((u8*)&GetsIPCSharedGBA()->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
     
-#ifndef uppern_read_emulation
-  fclose(f);
-#else
-  ichflyfilestream = f;
-#endif
+	
+	ichflyfilestream = f;
 
-  if(r != read) {
-    systemMessage(MSG_ERROR_READING_IMAGE,
-                  N_("Error reading image %s"), file);
-	while(1);
-  }  
-#ifdef uppern_read_emulation
-  ichflyfilestreamsize = fileSize;
-#endif
-  //size = fileSize;
-  
-  if(patchPath[0] != 0)patchit(romSize);
-
-
-  return image;
+	if(r != read) {
+		systemMessage(MSG_ERROR_READING_IMAGE,N_("Error reading image %s"), file);
+		while(1);
+	}
+	
+	ichflyfilestreamsize = fileSize;
+	
+	//size = fileSize;
+	if(patchPath[0] != 0){
+		patchit(romSize);
+	}
+	
+	return image;
 }
-
 
 
 //VA + ( DTCMTOP - (stack_size)*4) - dtcm_reservedcode[end_of_usedDTCMstorage] (we use for the emu)  in a loop of CACHE_LINE size
@@ -1270,3 +1264,132 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 */
+
+//sets up the environment / supports being called multiple times
+
+bool reloadGBA(char * filename, u32 manual_save_type){
+	
+	DISPCNT  = 0x0080;
+	
+	if(bios){
+		free(bios);
+	}
+	
+	int sectortableSize16Morless = 262160;
+	if((sectortabel) && (latestsectortableSize > sectortableSize16Morless)){
+		free(sectortabel);
+	}
+	
+	if(gbafsbuffer){
+		free(gbafsbuffer);
+	}
+	
+	int myflashsize = 0x10000;
+	
+	bool failed = !CPULoadRom(szFile);
+
+	if(failed){
+		printf("failed");
+		while(1);
+	}
+	iprintf("OK\n");
+	
+	if(save_decider()==0){
+		if(manual_save_type == 6)
+		{
+			myflashsize = 0x20000;
+			cpuSaveType = 3;
+		}
+		else
+		{
+			cpuSaveType = manual_save_type;
+		}
+	}
+	
+	useBios = false;
+	iprintf("CPUInit\n");
+	CPUInit(biosPath, useBios);
+	
+	iprintf("CPUReset\n");
+	CPUReset();
+
+	int filepathlen = strlen(szFile);
+	char  fn_noext[filepathlen] = {0};
+	memcpy(fn_noext,szFile,filepathlen-3);
+
+	//detect savefile (filename.sav)
+	sprintf(fn_noext,"%ssav",fn_noext);
+	FILE * frh = fopen(fn_noext,"r");
+
+	//if(frh)
+	//    iprintf("current save path: %s DO exists",fn_noext);
+	//else
+	//    iprintf("current save path: %s DONT exists",fn_noext);  
+	//while(1);
+
+	//coto: added create new savefile
+	if(!frh){
+		iprintf("no savefile found, creating new one... \n");
+		//append "sav"
+		
+		//void * memcpy ( void * destination, const void * source, size_t num );
+		
+		//char * strcat ( char * destination, const char * source );
+		
+		savePath[0] = 0;
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		CPUWriteBatteryFile(savePath);
+		//void * memset ( void * ptr, int value, size_t num );
+	}
+	else{
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		if(CPUReadBatteryFile(savePath))
+		{
+			if(cpuSaveType == 0)iprintf("SaveReadOK![AUTO]\n");
+			if(cpuSaveType == 1)iprintf("SaveReadOK![EEPROM]\n");
+			if(cpuSaveType == 2)iprintf("SaveReadOK![SRAM]\n");
+			if(cpuSaveType == 3)iprintf("SaveReadOK![FLASHROM]\n");
+			if(cpuSaveType == 4)iprintf("SaveReadOK![EEPROM+SENSOR]\n");
+			if(cpuSaveType == 5)iprintf("SaveReadOK![NONE]\n");			
+		}
+		else
+		{
+			iprintf("failed reading: %s\n",savePath);
+			while(1);
+		}
+		fclose(frh);
+	}
+	
+	REG_IME = IME_ENABLE;
+	
+	iprintf("BIOS_RegisterRamReset\n");
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
+	BIOS_RegisterRamReset(0xFF);
+	
+	iprintf("arm7init\n");
+	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
+	REG_IPC_FIFO_TX = (u32)arm9VCOUNTsyncline;
+	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+		u32 src = REG_IPC_FIFO_RX;
+	}
+	iprintf("irqinit\n");
+	anytimejmpfilter = 0;
+	
+	setGBAVectors();
+	ndsMode();
+	iprintf("Vectors @ 0x00000000 \n");
+    pu_Enable();
+	#ifdef capture_and_pars
+	videoBgDisableSub(0);
+	vramSetBankH(VRAM_H_LCD); //only sub
+	vramSetBankI(VRAM_I_LCD); //only sub
+	int iback = bgInitSub(3, BgType_ExRotation, BgSize_B16_256x256, 0,0);
+
+	bgSetRotateScale(iback,0,0x0F0,0x0D6);
+	bgUpdate();
+	#endif
+	
+	gbaInit(false);
+	gbaMode();
+	cpu_ArmJumpforstackinit((u32)rom, 0);
+}

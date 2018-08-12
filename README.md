@@ -16,6 +16,7 @@ PS: If you are a coder, use always differencing and merging tools. These really 
 - RTC support
 - cleanup gbaemu4ds source code. Definitely needs more code cleanup.
 - broken mode 1 support. You will see games that use mode1 correctly or glitched.
+- Soft reset works: Either in-game soft-reset method (A+B+SELECT+START) or gbaemu4ds menu (LEFT+UP+A+B) -> "reset GBA"
 
 
 Instructions:

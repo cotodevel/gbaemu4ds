@@ -18,7 +18,7 @@ u8 ichfly_readu8(unsigned int pos) //need lockup
 	sectortabel[allocedfild[current_pointer]] = 0x0; //reset
 
 	allocedfild[current_pointer] = mappoffset*2; //set new slot
-	asd = greatownfilebuffer + current_pointer * chucksize;
+	asd = gbafsbuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 
 	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
@@ -47,7 +47,7 @@ u16 ichfly_readu16(unsigned int pos) //need lockup
 	sectortabel[allocedfild[current_pointer]] = 0x0; //clear old slot
 
 	allocedfild[current_pointer] = mappoffset*2; //set new slot
-	asd = greatownfilebuffer + current_pointer * chucksize;
+	asd = gbafsbuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 	
 	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
@@ -76,7 +76,7 @@ u32 ichfly_readu32(unsigned int pos) //need lockup
 	sectortabel[allocedfild[current_pointer]] = 0x0;
 
 	allocedfild[current_pointer] = mappoffset*2; //set new slot
-	asd = greatownfilebuffer + current_pointer * chucksize;
+	asd = gbafsbuffer + current_pointer * chucksize;
 	sectortabel[mappoffset*2] = (u32)asd;
 
 	readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
@@ -130,7 +130,7 @@ void ichfly_readdma_rom(u32 pos,u8 *ptr,u32 c,int readal) //need lockup only ali
 			sectortabel[allocedfild[current_pointer]] = 0x0;
 
 			allocedfild[current_pointer] = mappoffset*2; //set new slot
-			asd = (u32*)(greatownfilebuffer + current_pointer * chucksize);
+			asd = (u32*)(gbafsbuffer + current_pointer * chucksize);
 			sectortabel[mappoffset*2] = (u32)asd;
 
 			readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);
@@ -180,7 +180,7 @@ pagefehler++;
 			sectortabel[allocedfild[current_pointer]] = 0x0;
 
 			allocedfild[current_pointer] = mappoffset*2; //set new slot
-			asd = (u16*)(greatownfilebuffer + current_pointer * chucksize);
+			asd = (u16*)(gbafsbuffer + current_pointer * chucksize);
 			sectortabel[mappoffset*2] = (u32)asd;
 
 			readSectorslocked(sectortabel[mappoffset*2 + 1], chucksizeinsec, asd);

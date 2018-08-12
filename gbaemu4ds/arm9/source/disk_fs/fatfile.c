@@ -1229,7 +1229,9 @@ u32 current_pointer = 0;
 u32* allocedfild = NULL;	//relocate to vram: //u32 allocedfild[buffslots]
 
 __attribute__((section(".dtcm")))
-u8* greatownfilebuffer;
+u8* gbafsbuffer = NULL;
+
+int latestsectortableSize = 0;
 
 void generatefilemap(int size)
 {
@@ -1241,8 +1243,11 @@ void generatefilemap(int size)
 	partition = file->partition;
 	partitionlocked = partition;
 	int sectortableSize = (int)(((size/chucksize) + 1)*8);
+	latestsectortableSize = sectortableSize;
 	readSectorslocked = file->partition->disc->readSectors;
 	iprintf("generating file map (size %d Byte)",sectortableSize);
+	
+	
 	
 	//use vram to prevent waitstates in ewram if file is 16M or less
 	int sectortableSize16Morless = 262160;
@@ -1250,11 +1255,18 @@ void generatefilemap(int size)
 		sectortabel =(u8*)malloc(sectortableSize); //alloc for size every Sector has one u32
 	}
 	else{
-		sectortabel =(u8*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),sectortableSize16Morless);
+		if(sectortabel == NULL){
+			sectortabel =(u8*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),sectortableSize16Morless);
+		}
+		memset(sectortabel,0,sectortableSize16Morless);
 	}
 	
-	allocedfild = (u32*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),buffslots * sizeof(u32));	//relocate to vram: //u32 allocedfild[buffslots]
-	greatownfilebuffer =(u8*)malloc(chucksize * buffslots);
+	if(allocedfild == NULL){
+		allocedfild = (u32*)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),buffslots * sizeof(u32));	//relocate to vram: //u32 allocedfild[buffslots]
+	}
+	memset(allocedfild,0,buffslots * sizeof(u32));
+	
+	gbafsbuffer =(u8*)malloc(chucksize * buffslots);
 
 	clusCount = size/partition->bytesPerCluster;
 	cluster = file->startCluster;

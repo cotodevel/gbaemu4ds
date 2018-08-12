@@ -435,6 +435,8 @@ extern sint32 	get_itcm_size();
 extern uint32 	_vector_start;
 extern uint32 	_vector_end;
 
+extern uint32 	__gbarom_start;
+extern uint32 	__gbarom_end;
 
 
 #endif

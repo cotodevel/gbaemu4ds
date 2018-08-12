@@ -5,7 +5,7 @@ ENTRY(_start)
 MEMORY {
 
        rom     : ORIGIN = 0x08000000, LENGTH = 32M
-       gbarom  : ORIGIN = 0x02180000, LENGTH = 2M + 768k
+       gbarom  : ORIGIN = 0x02180000, LENGTH = 2M
        gbaew   : ORIGIN = 0x02000000, LENGTH = 256k
        ewram   : ORIGIN = 0x02100000, LENGTH = 1M
        dtcm    : ORIGIN = 0x027C0000, LENGTH = 16K

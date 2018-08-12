@@ -414,7 +414,7 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 }
 
 
-char* seloptions [4] = {"save save","show mem","Continue","reset GBA"};
+char* seloptions [4] = {"save save","show mem","Continue","load GBA"};
 
 void pausemenue()
 {
@@ -480,25 +480,15 @@ void pausemenue()
 					REG_IE = IE | IRQ_FIFO_NOT_EMPTY; //irq on
 					while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))u32 src = REG_IPC_FIFO_RX; //get sync irqs back
 					return; //and return
-				case 3:{
+					break;
+					case 3:{
 						ndsMode();
-						REG_IME = 0;
+						CPUInit(biosPath, useBios);
+						CPUReset();
+						REG_IME = IME_ENABLE;
 						cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
-						while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){	//rudimentary spinlock
-							u32 src = REG_IPC_FIFO_RX;
-						}
 						BIOS_RegisterRamReset(0xFF);
-						TIMER0_CR = 0; //timer on
-						TIMER1_CR = 0;
-						TIMER2_CR = 0;
-						TIMER3_CR = 0;
-						REG_IE = IRQ_HBLANK | IRQ_FIFO_NOT_EMPTY;
-						SendArm7Command(set_callline,(u32)tempvcount,0,0);	//cmd
-						REG_VCOUNT = tempvcount;
 						pu_Enable();
-						gbaInit(false);
-						REG_IME = 1;
-						//SendArm7Command(GBAEMU4DS_SND_START,0x0);
 						gbaMode();
 						asm("swi 0x0");
 					}

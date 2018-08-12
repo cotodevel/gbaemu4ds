@@ -34,7 +34,6 @@
 #include "GBA.h"
 #include "Sound.h"
 #include "Util.h"
-#include "cpumg.h"
 #include "getopt.h"
 #include "System.h"
 #include "ichflysettings.h"
@@ -57,6 +56,7 @@ bool ichflytest = false;
 #include "elf.h"
 #include "Port.h"
 #include "RTC.h"
+#include "cpumg.h"
 
 #include "fatfileextract.h"
 #include "agbprint.h"
@@ -687,91 +687,88 @@ bool CPUReadBatteryFile(const char *fileName)
   return true;
 }
 
-int CPULoadRom(const char *szFile,bool extram)
+//re-callable support: OK
+int CPULoadRom(const char *szFile)
 {
+	bios = (u8 *)malloc(0x4000);
+	if(bios == NULL) {
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),"BIOS");
+		//CPUCleanUp();
+		return 0;
+	} 
 
-  bios = (u8 *)calloc(1,0x4000);
-  if(bios == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "BIOS");
-    //CPUCleanUp();
-    return 0;
-  }    
-
-  systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
+	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
   
 	rom = 0;
 	romSize = 0x40000;
-  /*workRAM = (u8*)0x02000000;(u8 *)calloc(1, 0x40000);
-  if(workRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "WRAM");
-    return 0;
-  }*/
-#ifdef loadindirect
-  u8 *whereToLoad = rom;
-  if(cpuIsMultiBoot)whereToLoad = workRAM;
-
-		if(!utilLoad(szFile,
-						  whereToLoad,
-						  romSize,extram))
+	/*workRAM = (u8*)0x02000000;(u8 *)calloc(1, 0x40000);
+	if(workRAM == NULL) {
+		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),"WRAM");
+		return 0;
+	}*/
+	#ifdef loadindirect
+		u8 *whereToLoad = rom;
+		if(cpuIsMultiBoot){
+			whereToLoad = workRAM;
+		}
+		if(!utilLoad(szFile,whereToLoad,romSize))
 		{
 			return 0;
 		}
-#else
-rom = (u8*)puzzleorginal_bin;  //rom = (u8*)puzzleorginal_bin;
-#endif
 
-  /*internalRAM = (u8 *)0x03000000;//calloc(1,0x8000);
-  if(internalRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IRAM");
-    //CPUCleanUp();
-    return 0;
-  }*/
-  /*paletteRAM = (u8 *)0x05000000;//calloc(1,0x400);
-  if(paletteRAM == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PRAM");
-    //CPUCleanUp();
-    return 0;
-  }*/      
-  /*vram = (u8 *)0x06000000;//calloc(1, 0x20000);
-  if(vram == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "VRAM");
-    //CPUCleanUp();
-    return 0;
-  }*/      
-  /*emultoroam = (u8 *)0x07000000;calloc(1, 0x400); //ichfly test
-  if(emultoroam == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "emultoroam");
-    //CPUCleanUp();
-    return 0;
-  }      
-  pix = (u8 *)calloc(1, 4 * 241 * 162);
-  if(pix == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "PIX");
-    //CPUCleanUp();
-    return 0;
-  }  */
-  /*ioMem = (u8 *)calloc(1, 0x400);
-  if(ioMem == NULL) {
-    systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-                  "IO");
-    //CPUCleanUp();
-    return 0;
-  }*/      
+	#else
+	rom = (u8*)puzzleorginal_bin;  //rom = (u8*)puzzleorginal_bin;
+	#endif
 
-  flashInit();
-  eepromInit();
-
-  //CPUUpdateRenderBuffers(true);
-
-  return romSize;
+	/*internalRAM = (u8 *)0x03000000;//calloc(1,0x8000);
+	if(internalRAM == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "IRAM");
+	//CPUCleanUp();
+	return 0;
+	}*/
+	/*paletteRAM = (u8 *)0x05000000;//calloc(1,0x400);
+	if(paletteRAM == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "PRAM");
+	//CPUCleanUp();
+	return 0;
+	}*/      
+	/*vram = (u8 *)0x06000000;//calloc(1, 0x20000);
+	if(vram == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "VRAM");
+	//CPUCleanUp();
+	return 0;
+	}*/      
+	/*emultoroam = (u8 *)0x07000000;calloc(1, 0x400); //ichfly test
+	if(emultoroam == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "emultoroam");
+	//CPUCleanUp();
+	return 0;
+	}      
+	pix = (u8 *)calloc(1, 4 * 241 * 162);
+	if(pix == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "PIX");
+	//CPUCleanUp();
+	return 0;
+	}  */
+	/*ioMem = (u8 *)calloc(1, 0x400);
+	if(ioMem == NULL) {
+	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
+				  "IO");
+	//CPUCleanUp();
+	return 0;
+	}*/
+	
+	flashInit();
+	eepromInit();
+	//CPUUpdateRenderBuffers(true);
+	return romSize;	
 }
+
 #ifdef WORDS_BIGENDIAN
 static void CPUSwap(volatile u32 *a, volatile u32 *b)
 {
@@ -846,8 +843,6 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 	{
 		if(s & 0x08000000)
 		{
-#ifdef uppern_read_emulation
-
 			if(((s&0x1FFFFFF) + c*4) > romSize) //slow
 			{
 #ifdef print_uppern_read_emulation
@@ -860,34 +855,17 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 				}
 				if(transfer32)
 				{
-#ifdef ownfilebuffer
 					//iprintf("4 %08X %08X %08X %08X ",s,d,c,*(u32 *)d);
 					ichfly_readdma_rom((u32)(s&0x1FFFFFF),(u8 *)d,c,4);
 					//iprintf("exit%08X ",*(u32 *)d);
 					//while(1);
-#else
-					//doDMAslow(s, d, si, di, c, transfer32);
-					fseek (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
-					//iprintf("seek %08X\r\n",s&0x1FFFFFF);
-					int dkdkdkdk = fread ((void*)d,1,c * 4,ichflyfilestream); // fist is buggy
-					//iprintf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
-#endif
 				}
 				else
 				{
-#ifdef ownfilebuffer
 					//iprintf("2 %08X %08X %08X %04X ",s,d,c,*(u16 *)d);
 					ichfly_readdma_rom((u32)(s&0x1FFFFFF),(u8 *)d,c,2);
 					//iprintf("exit%04X ",*(u16 *)d);
 					//while(1);
-#else
-					//iprintf("teeees");
-					//doDMAslow(s, d, si, di, c, transfer32);
-					fseek (ichflyfilestream , (s&0x1FFFFFF) , SEEK_SET);
-					//iprintf("seek %08X\r\n",s&0x1FFFFFF);
-					int dkdkdkdk = fread ((void*)d,1,c * 2,ichflyfilestream);
-					//iprintf("(%08X %08X %08X) ret %08X\r\n",d,c,ichflyfilestream,dkdkdkdk);
-#endif
 				}
 				//doDMAslow(s, d, si, di, c, transfer32); //very slow way
 				return;
@@ -896,10 +874,6 @@ void  doDMA(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veralt
 			{
 				s = (u32)(rom +  (s & 0x01FFFFFF));
 			}
-
-#else
-			s = (u32)(rom +  (s & 0x01FFFFFF));
-#endif
 		}
 		//while(dmaBusy(3)); // ichfly wait for dma 3 not needed
 		DMA3_SRC = s;
@@ -2103,7 +2077,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 u8 cpuBitsSet[256];
 u8 cpuLowestBitSet[256];
 
-void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
+void CPUInit(const char *biosFileName, bool useBiosFile)
 {
 #ifdef WORDS_BIGENDIAN
   if(!cpuBiosSwapped) {
@@ -2116,14 +2090,17 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   gbaSaveType = 0;
   eepromInUse = 0;
   saveType = 0;
-  useBios = false;
-  ioMem=(u8 *)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),0x400);	//map (gba) ioMem
+  
+	if(ioMem == NULL){
+		ioMem=(u8 *)vramHeapAlloc(vramBlockB,getVRAMHeapStart(),0x400);	//map (gba) ioMem
+	}
+	memset(ioMem,0,0x400);
+	
+  
   
   if(useBiosFile) {
     int size = 0x4000;
-    if(utilLoad(biosFileName,
-                bios,
-                size,extram)) {
+    if(utilLoad(biosFileName,bios,size)) {
       if(size == 0x4000)
         useBios = true;
       else
@@ -2132,7 +2109,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   }
   
   if(!useBios) {
-    memcpy(bios, myROM, sizeof(myROM));
+	memcpy(bios, myROM, sizeof(myROM));
   }
 
   int i = 0;
@@ -2233,6 +2210,7 @@ void CPUReset(){
 	
 	// clean Work Ram (fast and slow memory)
 	memset(workRAM, 0, 256 * 1024);
+	
 	
 	int ctxREG_IME = REG_IME;
 	REG_IME = IME_DISABLE;
@@ -3196,7 +3174,6 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
   case 10:
   case 11:
   case 12:
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFC) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3218,9 +3195,6 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	{
 		value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
 	}
-#else
-    value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
-#endif
     break;
   case 13:
     if(cpuEEPROMEnabled)
@@ -3397,7 +3371,6 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
       value = rtcRead(address);
     else
 	{
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3419,9 +3392,6 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	{
 		value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 	}
-#else
-    value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
-#endif
 	}
     break;    
   case 13:
@@ -3561,7 +3531,6 @@ iprintf("r8 %02x\n",address);
   case 11:
   case 12:
 
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3584,9 +3553,6 @@ iprintf("r8 %02x\n",address);
 	{
 		return rom[address & 0x1FFFFFF];
 	}
-#else
-    return rom[address & 0x1FFFFFF];
-#endif        
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
@@ -3737,7 +3703,6 @@ u32 CPUReadMemoryrealpu(u32 address)
   case 10:
   case 11:
   case 12:
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFC) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3759,9 +3724,6 @@ u32 CPUReadMemoryrealpu(u32 address)
 	{
 		value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
 	}
-#else
-    value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
-#endif
     break;
   case 13:
 #ifdef printsaveread
@@ -3904,7 +3866,6 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
       value = rtcRead(address);
     else
 	{
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3926,9 +3887,6 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	{
 		value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 	}
-#else
-    value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
-#endif
 	}
     break;    
   case 13:
@@ -4015,7 +3973,6 @@ iprintf("r8 %02x\n",address);
   case 11:
   case 12:
 
-#ifdef uppern_read_emulation
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -4038,9 +3995,7 @@ iprintf("r8 %02x\n",address);
 	{
 		return rom[address & 0x1FFFFFF];
 	}
-#else
-    return rom[address & 0x1FFFFFF];
-#endif        
+
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);

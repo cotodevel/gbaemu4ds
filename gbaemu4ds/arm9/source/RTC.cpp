@@ -72,20 +72,18 @@ bool rtcIsEnabled()
 
 u16 rtcRead(u32 address)
 {
-  if(rtcEnabled) {
-    if(address == 0x80000c8)
-      return rtcClockData.byte2;
-    else if(address == 0x80000c6)
-      return rtcClockData.byte1;
-    else if(address == 0x80000c4) {
-      return rtcClockData.byte0;
-    }
-  }
-  
-  
-  //return READ16LE((&rom[address & 0x1FFFFFE])); //indirect read in gbaemu4ds case
-  
-  #ifdef uppern_read_emulation
+	if(rtcEnabled) {
+		if(address == 0x80000c8)
+			return rtcClockData.byte2;
+		else if(address == 0x80000c6)
+			return rtcClockData.byte1;
+		else if(address == 0x80000c4) {
+			return rtcClockData.byte0;
+		}
+	}
+    
+	//return READ16LE((&rom[address & 0x1FFFFFE])); //indirect read in gbaemu4ds case
+	
 	if((address&0x1FFFFFE) > romSize)
 	{
 		if(ichflyfilestreamsize > (address&0x1FFFFFE))
@@ -104,9 +102,6 @@ u16 rtcRead(u32 address)
 	{
 		return (u16)(READ16LE(((u16 *)&rom[address & 0x1FFFFFE])));
 	}
-#else
-    return (u16)(READ16LE(((u16 *)&rom[address & 0x1FFFFFE])));
-#endif
 }
 
 static u8 toBCD(u8 value)

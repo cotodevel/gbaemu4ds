@@ -94,7 +94,6 @@ extern void ARMV5toARMV4Mode();
 extern void ARMV4toARMV5Mode();
 extern void CP15Vectors0x00000000();
 extern void CP15Vectors0xFFFF0000();
-extern void resettostartup();
 extern void IntrMain();
 extern void testasm(u32* feld);
 extern int main( int argc, char **argv);

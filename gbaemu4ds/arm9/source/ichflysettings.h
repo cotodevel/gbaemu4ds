@@ -1,11 +1,7 @@
 //functions
 #define arm9advsound			//gbaemu4ds sound
 
-#define uppern_read_emulation	//addresses higher than romsize (in ewram). (stream from slot 1)
-
-#define ownfilebuffer			//gbaemu4ds fs driver
-
-//extra settings for ownfilebuffer
+//extra settings for gbaemu4ds fs driver (gbafsbuffer) buffer + addresses higher than romsize (in ewram). (stream from slot 1)
 #define chucksizeinsec 1 //1,2,4,8
 #define buffslots 255
 #define chucksize 0x200*chucksizeinsec
