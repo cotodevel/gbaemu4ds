@@ -34,6 +34,7 @@
 #include "GBA.h"
 #include "Sound.h"
 #include "Util.h"
+#include "cpumg.h"
 #include "getopt.h"
 #include "System.h"
 #include "ichflysettings.h"
@@ -2233,9 +2234,18 @@ void CPUReset(){
 	// clean Work Ram (fast and slow memory)
 	memset(workRAM, 0, 256 * 1024);
 	
+	int ctxREG_IME = REG_IME;
+	REG_IME = IME_DISABLE;
+	
+	u32 ctxCP15Cnt = cpu_GetCP15Cnt();
+	cpu_SetCP15Cnt(ctxCP15Cnt & ~0x1); //disable pu while configurating pu
+	
 	WRAM_CR = 0; //32K (0x03000000) wram @ ARM9
 	// clean gba Work RAM
 	memset(internalRAM, 0, 32 * 1024);
+	
+	cpu_SetCP15Cnt(ctxCP15Cnt);
+	REG_IME = ctxREG_IME;
 	
 	//DISPCNT  = 0x0000;
 	DISPSTAT = 0x0000;

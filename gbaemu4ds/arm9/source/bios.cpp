@@ -1054,14 +1054,15 @@ void BIOS_SoftReset()
   u8 b = internalRAM[0x7ffa];
 
   memset(&internalRAM[0x7e00], 0, 0x200);
-
+	
   if(b) {
     armNextPC = 0x02000000;
     exRegs[15] = 0x02000004;
   } else {
-    armNextPC = 0x08000000;
-    exRegs[15] = 0x08000004;
+    armNextPC = (u32)rom;
+    exRegs[15] = (u32)rom;
   }
+  cpu_ArmJumpforstackinit((u32)rom, 0);
 }
 
 void BIOS_Sqrt()

@@ -321,11 +321,9 @@ int main( int argc, char **argv) {
 	
 	gbaInit(slow);
 	gbaMode();
-	iprintf("GBA mode. Jumping to %x \n",rom);
 	cpu_ArmJumpforstackinit((u32)rom, 0);
 	
 	while(true){
-		REG_IF = IRQ_HBLANK;
 	}
 	return 0;
 }
