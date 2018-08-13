@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <nds/memory.h>//#include <memory.h> ichfly
+#include <nds/memory.h>
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 #include <nds/bios.h>
@@ -29,13 +29,14 @@
 #include "bios.h"
 #include "mydebuger.h"
 #include "ichflysettings.h"
-#include "arm7sound.h"
 #include "main.h"
 #include "wifi_arm9.h"
 #include "../../common/dswnifi.h"
 #include "dswifi_arm9/dswnifi_lib.h"
 #include <nds/disc_io.h>
+#include <nds/interrupts.h>
 #include <dirent.h>
+
 
 __attribute__((section(".dtcm")))
 u16 DISPCNT = 0; 	//u16 DISPCNT  = 0x0080;

@@ -39,6 +39,11 @@ typedef struct {
   int size;
 } variable_desc;
 
+extern u16 READ16LE(u16 * x);
+extern u32 READ32LE(u32 * x);
+extern void WRITE16LE(u16 * x,u16 v);
+extern void WRITE32LE(u32 * x, u32 v);
+
 //fs dir
 #define entriesPerList (int)(30)
 
@@ -93,7 +98,7 @@ extern int utilGzClose(gzFile file);
 extern long utilGzMemTell(gzFile file);
 extern void utilGBAFindSave(const u8 *, const int);
 extern void utilUpdateSystemColorMaps();
-extern int anytimejmpfilter;
+extern u32 anytimejmpfilter;
 
 
 extern u32 CPUReadMemoryrealpu(u32 address);
@@ -158,6 +163,7 @@ extern void reloadGBAHypervisor();
 extern bool reloadGBA(char * filename, u32 manual_save_type);
 extern bool ShowBrowser();
 extern char * bufNames[entriesPerList][512];
+
 
 #ifdef __cplusplus
 }

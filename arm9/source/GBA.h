@@ -21,6 +21,8 @@
 #define VBA_GBA_H
 
 #include <nds.h>
+#include <nds/interrupts.h>
+
 #include "System.h"
 #include "ichflysettings.h"
 
@@ -277,7 +279,8 @@ extern int timer3Ticks;
 extern int timer3ClockReload;
 extern int cpuTotalTicks;
 
-void Logsd(const char *defaultMsg,...);
+extern void Logsd(const char *defaultMsg,...);
+extern void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
 
 #ifdef __cplusplus
 }

@@ -22,7 +22,6 @@
 #include <stdlib.h>
 
 #include "libnds_internal.h"
-#include "../arm7sound.h"
 #include "../ichflysettings.h"
 #include "../GBA.h"
 #include "../bios.h"

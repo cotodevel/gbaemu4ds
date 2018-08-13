@@ -14,7 +14,6 @@
 #include "../cpumg.h"
 #include "../bios.h"
 #include "../mydebuger.h"
-#include "../arm7sound.h"
 #include "../main.h"
 
 //Coto:

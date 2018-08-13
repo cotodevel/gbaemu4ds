@@ -28,7 +28,6 @@
 #include "cpumg.h"
 #include "bios.h"
 #include "mydebuger.h"
-#include "arm7sound.h"
 #include "Cheats.h"
 #include "main.h"
 

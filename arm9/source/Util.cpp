@@ -50,7 +50,6 @@
 #include "bios.h"
 #include "mydebuger.h"
 #include "file_browse.h"
-#include "arm7sound.h"
 #include "main.h"
 #include "Sound.h"
 #include <unistd.h>    // for sbrk()
@@ -1523,4 +1522,26 @@ void reloadGBAHypervisor(){
 	
 	//GBA subsystem that can be re-launched
 	reloadGBA(szFile,manual_save_type);
+}
+
+//little-endian GBA == little-endian NDS
+
+__attribute__((section(".itcm")))
+u16 READ16LE(u16 * x){
+  return *((u16 *)x);
+}
+
+__attribute__((section(".itcm")))
+u32 READ32LE(u32 * x){
+  return *((u32 *)x);
+}
+
+__attribute__((section(".itcm")))
+void WRITE16LE(u16 * x,u16 v){
+  *((u16 *)x) = (v);
+}
+
+__attribute__((section(".itcm")))
+void WRITE32LE(u32 * x, u32 v){
+  *((u32 *)x) = (v);
 }

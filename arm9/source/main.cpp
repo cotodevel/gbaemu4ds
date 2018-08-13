@@ -26,7 +26,6 @@
 #include "bios.h"
 #include "mydebuger.h"
 #include "file_browse.h"
-#include "arm7sound.h"
 #include "main.h"
 #include "ipc/touch_ipc.h"
 #include "dswifi_arm9/dswnifi_lib.h"

@@ -20,17 +20,6 @@
 #ifndef VBA_PORT_H
 #define VBA_PORT_H
 
-//little-endian GBA == little-endian NDS
-#define READ16LE(x) \
-  *((u16 *)x)
-#define READ32LE(x) \
-  *((u32 *)x)
-#define WRITE16LE(x,v) \
-  *((u16 *)x) = (v)
-#define WRITE32LE(x,v) \
-  *((u32 *)x) = (v)
-
 #define Log(...) iprintf(__VA_ARGS__)
-
 
 #endif	//VBA_PORT_H end

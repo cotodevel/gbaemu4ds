@@ -30,6 +30,7 @@
 #include "GBA.h"
 #include "armdis.h"
 #include "elf.h"
+#include "Util.h"
 
 struct Opcodes {
   u32 mask;
