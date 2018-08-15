@@ -19,9 +19,21 @@
 
 #ifndef VBA_AGBPRINT_H
 #define VBA_AGBPRINT_H
+
+#endif
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void agbPrintEnable(bool);
 extern bool agbPrintIsEnabled();
 extern void agbPrintReset();
 extern bool agbPrintWrite(u32, u16);
 extern void agbPrintFlush();
+
+#ifdef __cplusplus
+}
 #endif

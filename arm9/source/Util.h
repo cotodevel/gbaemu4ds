@@ -39,10 +39,6 @@ typedef struct {
   int size;
 } variable_desc;
 
-extern u16 READ16LE(u16 * x);
-extern u32 READ32LE(u32 * x);
-extern void WRITE16LE(u16 * x,u16 v);
-extern void WRITE32LE(u32 * x, u32 v);
 
 //fs dir
 #define entriesPerList (int)(30)
@@ -164,6 +160,10 @@ extern bool reloadGBA(char * filename, u32 manual_save_type);
 extern bool ShowBrowser();
 extern char * bufNames[entriesPerList][512];
 
+extern u16 READ16LE(u16 * x);
+extern u32 READ32LE(u32 * x);
+extern void WRITE16LE(u16 * x,u16 v);
+extern void WRITE32LE(u32 * x, u32 v);
 
 #ifdef __cplusplus
 }

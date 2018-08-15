@@ -20,8 +20,14 @@
 #ifndef VBA_FLASH_H
 #define VBA_FLASH_H
 
-extern void flashSaveGame(gzFile _gzFile);
-extern void flashReadGame(gzFile _gzFile, int version);
+#endif // VBA_FLASH_H
+
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern u8 flashRead(u32 address);
 extern void flashWrite(u32 address, u8 byte);
 extern void flashDelayedWrite(u32 address, u8 byte);
@@ -32,4 +38,7 @@ extern void flashSetSize(int size);
 extern void flashInit();
 
 extern int flashSize;
-#endif // VBA_FLASH_H
+
+#ifdef __cplusplus
+}
+#endif

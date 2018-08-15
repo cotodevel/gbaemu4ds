@@ -21,6 +21,14 @@
 
 #ifndef VBA_RTC_H
 #define VBA_RTC_H
+
+#endif
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern u16 rtcRead(u32 address);
 extern bool rtcWrite(u32 address, u16 value);
 extern void rtcEnable(bool);
@@ -30,4 +38,6 @@ extern void rtcReset();
 extern void rtcReadGame(gzFile file);
 extern void rtcSaveGame(gzFile file);
 
+#ifdef __cplusplus
+}
 #endif

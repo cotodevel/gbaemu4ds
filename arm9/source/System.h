@@ -41,6 +41,17 @@
 
 #define __DOUTBUFSIZE 256
 
+
+#define SYSTEM_SAVE_UPDATED 30
+#define SYSTEM_SAVE_NOT_UPDATED 0
+
+#endif //VBA_SYSTEM_H
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* ichfly test todo
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -139,8 +150,8 @@ extern int systemVerbose;
 extern int systemFrameSkip;
 extern int systemSaveUpdateCounter;
 extern int systemSpeed;
+extern void debuggerOutput(char * buf, u32 val);
 
-#define SYSTEM_SAVE_UPDATED 30
-#define SYSTEM_SAVE_NOT_UPDATED 0
-
-#endif //VBA_SYSTEM_H
+#ifdef __cplusplus
+}
+#endif

@@ -111,8 +111,7 @@ int systemGetSensorY()
   return 0;
 }
 
-void debuggerOutput(char *, u32)
-{
+void debuggerOutput(char * buf, u32 val){
 }
 
 void (*dbgOutput)(char *, u32) = debuggerOutput;

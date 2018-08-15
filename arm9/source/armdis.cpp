@@ -29,7 +29,6 @@
 #include "Port.h"
 #include "GBA.h"
 #include "armdis.h"
-#include "elf.h"
 #include "Util.h"
 
 struct Opcodes {

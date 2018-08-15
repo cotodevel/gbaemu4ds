@@ -57,7 +57,6 @@
 #include "bios.h"
 #include "Cheats.h"
 #include "NLS.h"
-#include "elf.h"
 #include "Util.h"
 #include "Port.h"
 #include "agbprint.h"

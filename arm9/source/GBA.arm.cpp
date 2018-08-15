@@ -53,7 +53,6 @@ bool ichflytest = false;
 #include "bios.h"
 #include "Cheats.h"
 #include "NLS.h"
-#include "elf.h"
 #include "Port.h"
 #include "RTC.h"
 #include "cpumg.h"

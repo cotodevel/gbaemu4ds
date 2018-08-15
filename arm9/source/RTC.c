@@ -49,7 +49,7 @@ typedef struct {
   u8 command;
   int dataLen;
   int bits;
-  RTCSTATE state;
+  enum RTCSTATE state;
   u8 data[12];
   // reserved variables for future
   u8 reserved[12];
