@@ -131,7 +131,7 @@ bool debugger_last;
 #endif
 
 __attribute__((section(".dtcm")))
-int lcdTicks = (useBios && !skipBios) ? 1008 : 208;
+int lcdTicks = 0;
 __attribute__((section(".dtcm")))
 u8 timerOnOffDelay = 0;
 __attribute__((section(".dtcm")))
@@ -211,7 +211,7 @@ int capturePrevious = 0;
 __attribute__((section(".dtcm")))
 int captureNumber = 0;
 __attribute__((section(".dtcm")))
-const int TIMER_TICKS[4] = {
+int TIMER_TICKS[4] = {
   0,
   6,
   8,
@@ -223,17 +223,17 @@ __attribute__((section(".dtcm")))
 u32  objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
 
 __attribute__((section(".dtcm")))
-const u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
+u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
 __attribute__((section(".dtcm")))
-const u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
+u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
 __attribute__((section(".dtcm")))
-const u8 gamepakWaitState0[2] = { 2, 1 };
+u8 gamepakWaitState0[2] = { 2, 1 };
 __attribute__((section(".dtcm")))
-const u8 gamepakWaitState1[2] = { 4, 1 };
+u8 gamepakWaitState1[2] = { 4, 1 };
 __attribute__((section(".dtcm")))
-const u8 gamepakWaitState2[2] = { 8, 1 };
+u8 gamepakWaitState2[2] = { 8, 1 };
 __attribute__((section(".dtcm")))
-const bool isInRom [16]=
+bool isInRom [16]=
   { false, false, false, false, false, false, false, false,
     true, true, true, true, true, true, false, false };              
 
