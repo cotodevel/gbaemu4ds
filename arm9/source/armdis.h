@@ -29,7 +29,41 @@
 #define DIS_VIEW_ADDRESS 1
 #define DIS_VIEW_CODE 2
 
-int disThumb(u32 offset, char *dest, int flags);
-int disArm(u32 offset, char *dest, int flags);
+struct Opcodes {
+  u32 mask;
+  u32 cval;
+  char *mnemonic;
+};
+
+#define debuggerReadMemory(addr) \
+  READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+
+#define debuggerReadHalfWord(addr) \
+  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+
+#define debuggerReadByte(addr) \
+  map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
+
 
 #endif // __ARMDIS_H__
+
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+extern int disThumb(u32 offset, char *dest, int flags);
+extern int disArm(u32 offset, char *dest, int flags);
+
+extern struct Opcodes armOpcodes[];
+extern struct Opcodes thumbOpcodes[];
+extern char *armMultLoadStore[12];
+extern char *shifts[5];
+extern char *conditions[16];
+extern char *regs[16];
+extern char *decVals[16];
+extern char hdig[];
+
+#ifdef __cplusplus
+}
+#endif

@@ -31,43 +31,29 @@
 #include "armdis.h"
 #include "Util.h"
 
-struct Opcodes {
-  u32 mask;
-  u32 cval;
-  char *mnemonic;
-};
 
-#define debuggerReadMemory(addr) \
-  READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+char hdig[] = "0123456789abcdef";
 
-#define debuggerReadHalfWord(addr) \
-  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
-
-#define debuggerReadByte(addr) \
-  map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
-
-const char hdig[] = "0123456789abcdef";
-
-const char *decVals[16] = {
+char *decVals[16] = {
   "0","1","2","3","4","5","6","7","8",
   "9","10","11","12","13","14","15"
 };
 
-const char *regs[16] = {
+char *regs[16] = {
   "r0","r1","r2","r3","r4","r5","r6","r7",
   "r8","r9","r10","r11","r12","sp","lr","pc"
 };
 
-const char *conditions[16] = {
+char *conditions[16] = {
   "eq","ne","cs","cc","mi","pl","vs","vc",
   "hi","ls","ge","lt","gt","le","","nv"
 };
 
-const char *shifts[5] = {
+char *shifts[5] = {
   "lsl","lsr","asr","ror","rrx"
 };
 
-const char *armMultLoadStore[12] = {
+char *armMultLoadStore[12] = {
   // non-stack
   "da","ia","db","ib",
   // stack store
@@ -76,7 +62,7 @@ const char *armMultLoadStore[12] = {
   "fa","fd","ea","ed"
 };
 
-const Opcodes thumbOpcodes[] = {
+struct Opcodes thumbOpcodes[] = {
   // Format 1
   {0xf800, 0x0000, "lsl %r0, %r3, %o"},
   {0xf800, 0x0800, "lsr %r0, %r3, %o"},
@@ -162,7 +148,7 @@ const Opcodes thumbOpcodes[] = {
   {0x0000, 0x0000, "[ ??? ]"}
 };
 
-const Opcodes armOpcodes[] = {
+struct Opcodes armOpcodes[] = {
   // Undefined
   {0x0e000010, 0x06000010, "[ undefined ]"},
   // Branch instructions
@@ -237,7 +223,7 @@ char* addHex(char *dest, int siz, u32 val){
 int disArm(u32 offset, char *dest, int flags){
   u32 opcode = debuggerReadMemory(offset);
         
-  const Opcodes *sp = armOpcodes;
+  const struct Opcodes *sp = armOpcodes;
   while( sp->cval != (opcode & sp->mask) )
     sp++;
 
@@ -551,7 +537,7 @@ int disArm(u32 offset, char *dest, int flags){
 int disThumb(u32 offset, char *dest, int flags){
   u32 opcode = debuggerReadHalfWord(offset);
         
-  const Opcodes *sp = thumbOpcodes;
+  const struct Opcodes *sp = thumbOpcodes;
   int ret = 2;
   while( sp->cval != (opcode & sp->mask) )
     sp++;
