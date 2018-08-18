@@ -50,7 +50,6 @@ bool ichflytest = false;
 #include "Sound.h"
 #include "Sram.h"
 #include "bios.h"
-#include "Cheats.h"
 #include "NLS.h"
 #include "RTC.h"
 #include "cpumg.h"

@@ -27,7 +27,6 @@
 #include "cpumg.h"
 #include "bios.h"
 #include "mydebuger.h"
-#include "Cheats.h"
 #include "main.h"
 
 #ifdef anyarmcom
@@ -168,7 +167,7 @@ void arm7dmareqandcheat()
 		{
 			if(src == 0x3F00BEEF)
 			{
-				cheatsCheckKeys();
+				//cheatsCheckKeys();
 				VblankHandler();
 			}
 			if(src == 0x4200BEEF)

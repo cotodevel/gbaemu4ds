@@ -53,7 +53,6 @@
 #include "Sound.h"
 #include "Sram.h"
 #include "bios.h"
-#include "Cheats.h"
 #include "NLS.h"
 #include "Util.h"
 #include "agbprint.h"

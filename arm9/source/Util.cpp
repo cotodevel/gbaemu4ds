@@ -433,12 +433,12 @@ void patchit(int romSize2)
 			break;
 		case 1:
 			{
-			fread((void*)&cheatsNumber,1,0x4,patchf);
+			//fread((void*)&cheatsNumber,1,0x4,patchf);
 			int offset;
 			fread((void*)&offset,1,0x4,patchf);
 			int coo5 = ftell(patchf);
 			fseek(patchf,offset,SEEK_SET);
-			fread((void*)cheatsList,1,cheatsNumber*28,patchf);
+			//fread((void*)cheatsList,1,cheatsNumber*28,patchf);
 			fseek(patchf,coo5,SEEK_SET);
 			__irqSet(IRQ_FIFO_NOT_EMPTY,arm7dmareqandcheat,irqTable);
 #ifdef debugpatch
