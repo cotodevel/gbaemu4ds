@@ -159,6 +159,7 @@ extern u16 READ16LE(u16 * x);
 extern u32 READ32LE(u32 * x);
 extern void WRITE16LE(u16 * x,u16 v);
 extern void WRITE32LE(u32 * x, u32 v);
+extern void UPDATE_REG(u16 address, u16 value);
 
 #ifdef __cplusplus
 }

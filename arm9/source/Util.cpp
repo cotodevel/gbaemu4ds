@@ -1241,3 +1241,9 @@ __attribute__((section(".itcm")))
 void WRITE32LE(u32 * x, u32 v){
   *((u32 *)x) = (v);
 }
+
+__attribute__((section(".itcm")))
+void UPDATE_REG(u16 address, u16 value)
+{
+	*(u16 *)&ioMem[address] = value;
+}

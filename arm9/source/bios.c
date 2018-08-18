@@ -910,18 +910,6 @@ void BIOS_RegisterRamReset(u32 flags)
   }
 }
 
-/* //stick to original implementation
-void BIOS_RegisterRamReset()
-{
-#ifdef DEV_VERSION
-    log("RegisterRamReset: 0x%08x\n",
-        exRegs[0]);
-#endif
-
-  BIOS_RegisterRamReset(exRegs[0]);
-}
-*/
-
 void BIOS_RLUnCompVram()
 {
 #ifdef DEV_VERSION

@@ -66,20 +66,12 @@ bool ichflytest = false;
 #include "../../common/gba_ipc.h"
 
 __attribute__((section(".dtcm")))
-int SWITicks = 0;
-__attribute__((section(".dtcm")))
-int IRQTicks = 0;
-
-__attribute__((section(".dtcm")))
-int layerEnableDelay = 0;
-__attribute__((section(".dtcm")))
 bool busPrefetch = false;
 __attribute__((section(".dtcm")))
 bool busPrefetchEnable = false;
 __attribute__((section(".dtcm")))
 u32 busPrefetchCount = 0;
-__attribute__((section(".dtcm")))
-int cpuDmaTicksToUpdate = 0;
+
 __attribute__((section(".dtcm")))
 int cpuDmaCount = 0;
 __attribute__((section(".dtcm")))
@@ -89,13 +81,9 @@ u32 cpuDmaLast = 0;
 __attribute__((section(".dtcm")))
 int dummyAddress = 0;
 __attribute__((section(".dtcm")))
-bool cpuBreakLoop = false;
-__attribute__((section(".dtcm")))
 int cpuNextEvent = 0;
 __attribute__((section(".dtcm")))
 int gbaSaveType = 0; // used to remember the save type on reset
-__attribute__((section(".dtcm")))
-bool intState = false;
 __attribute__((section(".dtcm")))
 bool stopState = false;
 __attribute__((section(".dtcm")))
@@ -130,8 +118,6 @@ u8 freezeOAM[0x400];
 bool debugger_last;
 #endif
 
-__attribute__((section(".dtcm")))
-int lcdTicks = 0;
 __attribute__((section(".dtcm")))
 u8 timerOnOffDelay = 0;
 __attribute__((section(".dtcm")))
@@ -191,64 +177,11 @@ u32 dma3Source = 0;
 __attribute__((section(".dtcm")))
 u32 dma3Dest = 0;
 void (*cpuSaveGameFunc)(u32,u8) = flashSaveDecide;
-//void (*renderLine)() = mode0RenderLine;
-__attribute__((section(".dtcm")))
-bool fxOn = false;
-__attribute__((section(".dtcm")))
-bool windowOn = false;
-__attribute__((section(".dtcm")))
-int frameCount = 0;
-__attribute__((section(".dtcm")))
-char buffer[1024];
-FILE *out = NULL;
-__attribute__((section(".dtcm")))
-int count = 0;
-
-__attribute__((section(".dtcm")))
-int capture = 0;
-__attribute__((section(".dtcm")))
-int capturePrevious = 0;
-__attribute__((section(".dtcm")))
-int captureNumber = 0;
-__attribute__((section(".dtcm")))
-int TIMER_TICKS[4] = {
-  0,
-  6,
-  8,
-  10
-};
-
 
 __attribute__((section(".dtcm")))
 u32  objTilesAddress [3] = {0x010000, 0x014000, 0x014000};
 
-__attribute__((section(".dtcm")))
-u8 gamepakRamWaitState[4] = { 4, 3, 2, 8 };
-__attribute__((section(".dtcm")))
-u8 gamepakWaitState[4] =  { 4, 3, 2, 8 };
-__attribute__((section(".dtcm")))
-u8 gamepakWaitState0[2] = { 2, 1 };
-__attribute__((section(".dtcm")))
-u8 gamepakWaitState1[2] = { 4, 1 };
-__attribute__((section(".dtcm")))
-u8 gamepakWaitState2[2] = { 8, 1 };
-__attribute__((section(".dtcm")))
-bool isInRom [16]=
-  { false, false, false, false, false, false, false, false,
-    true, true, true, true, true, true, false, false };              
-
-__attribute__((section(".dtcm")))
-u8 memoryWait[16] =
-  { 0, 0, 2, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0 };
-__attribute__((section(".dtcm")))
-u8 memoryWait32[16] =
-  { 0, 0, 5, 0, 0, 1, 1, 0, 7, 7, 9, 9, 13, 13, 4, 0 };
-__attribute__((section(".dtcm")))
-u8 memoryWaitSeq[16] =
-  { 0, 0, 2, 0, 0, 0, 0, 0, 2, 2, 4, 4, 8, 8, 4, 0 };
-__attribute__((section(".dtcm")))
-u8 memoryWaitSeq32[16] =
-  { 0, 0, 5, 0, 0, 1, 1, 0, 5, 5, 9, 9, 17, 17, 4, 0 };
+FILE *out = NULL;
 
 // The videoMemoryWait constants are used to add some waitstates
 // if the opcode access video memory data outside of vblank/hblank
@@ -439,126 +372,6 @@ u32 myROM[] = {
 0x09FFC000,
 0x03007FE0
 };
-/*
-variable_desc saveGameStruct[] = {
-  { &DISPCNT  , sizeof(u16) },
-  { &DISPSTAT , sizeof(u16) },
-  { &VCOUNT   , sizeof(u16) },
-  { &BG0CNT   , sizeof(u16) },
-  { &BG1CNT   , sizeof(u16) },
-  { &BG2CNT   , sizeof(u16) },
-  { &BG3CNT   , sizeof(u16) },
-  { &BG0HOFS  , sizeof(u16) },
-  { &BG0VOFS  , sizeof(u16) },
-  { &BG1HOFS  , sizeof(u16) },
-  { &BG1VOFS  , sizeof(u16) },
-  { &BG2HOFS  , sizeof(u16) },
-  { &BG2VOFS  , sizeof(u16) },
-  { &BG3HOFS  , sizeof(u16) },
-  { &BG3VOFS  , sizeof(u16) },
-  { &BG2PA    , sizeof(u16) },
-  { &BG2PB    , sizeof(u16) },
-  { &BG2PC    , sizeof(u16) },
-  { &BG2PD    , sizeof(u16) },
-  { &BG2X_L   , sizeof(u16) },
-  { &BG2X_H   , sizeof(u16) },
-  { &BG2Y_L   , sizeof(u16) },
-  { &BG2Y_H   , sizeof(u16) },
-  { &BG3PA    , sizeof(u16) },
-  { &BG3PB    , sizeof(u16) },
-  { &BG3PC    , sizeof(u16) },
-  { &BG3PD    , sizeof(u16) },
-  { &BG3X_L   , sizeof(u16) },
-  { &BG3X_H   , sizeof(u16) },
-  { &BG3Y_L   , sizeof(u16) },
-  { &BG3Y_H   , sizeof(u16) },
-  { &WIN0H    , sizeof(u16) },
-  { &WIN1H    , sizeof(u16) },
-  { &WIN0V    , sizeof(u16) },
-  { &WIN1V    , sizeof(u16) },
-  { &WININ    , sizeof(u16) },
-  { &WINOUT   , sizeof(u16) },
-  { &MOSAIC   , sizeof(u16) },
-  { &BLDMOD   , sizeof(u16) },
-  { &COLEV    , sizeof(u16) },
-  { &COLY     , sizeof(u16) },
-  { &DM0SAD_L , sizeof(u16) },
-  { &DM0SAD_H , sizeof(u16) },
-  { &DM0DAD_L , sizeof(u16) },
-  { &DM0DAD_H , sizeof(u16) },
-  { &DM0CNT_L , sizeof(u16) },
-  { &DM0CNT_H , sizeof(u16) },
-  { &DM1SAD_L , sizeof(u16) },
-  { &DM1SAD_H , sizeof(u16) },
-  { &DM1DAD_L , sizeof(u16) },
-  { &DM1DAD_H , sizeof(u16) },
-  { &DM1CNT_L , sizeof(u16) },
-  { &DM1CNT_H , sizeof(u16) },
-  { &DM2SAD_L , sizeof(u16) },
-  { &DM2SAD_H , sizeof(u16) },
-  { &DM2DAD_L , sizeof(u16) },
-  { &DM2DAD_H , sizeof(u16) },
-  { &DM2CNT_L , sizeof(u16) },
-  { &DM2CNT_H , sizeof(u16) },
-  { &DM3SAD_L , sizeof(u16) },
-  { &DM3SAD_H , sizeof(u16) },
-  { &DM3DAD_L , sizeof(u16) },
-  { &DM3DAD_H , sizeof(u16) },
-  { &DM3CNT_L , sizeof(u16) },
-  { &DM3CNT_H , sizeof(u16) },
-  { &TM0D     , sizeof(u16) },
-  { &TM0CNT   , sizeof(u16) },
-  { &TM1D     , sizeof(u16) },
-  { &TM1CNT   , sizeof(u16) },
-  { &TM2D     , sizeof(u16) },
-  { &TM2CNT   , sizeof(u16) },
-  { &TM3D     , sizeof(u16) },
-  { &TM3CNT   , sizeof(u16) },
-  { &P1       , sizeof(u16) },
-  { &IE       , sizeof(u16) },
-  { &IF       , sizeof(u16) },
-  { &IME      , sizeof(u16) },
-  { &holdState, sizeof(bool) },
-  { &holdType, sizeof(int) },
-  { &lcdTicks, sizeof(int) },
-  { &timer0On , sizeof(bool) },
-  { &timer0Ticks , sizeof(int) },
-  { &timer0Reload , sizeof(int) },
-  { &timer0ClockReload  , sizeof(int) },
-  { &timer1On , sizeof(bool) },
-  { &timer1Ticks , sizeof(int) },
-  { &timer1Reload , sizeof(int) },
-  { &timer1ClockReload  , sizeof(int) },
-  { &timer2On , sizeof(bool) },
-  { &timer2Ticks , sizeof(int) },
-  { &timer2Reload , sizeof(int) },
-  { &timer2ClockReload  , sizeof(int) },
-  { &timer3On , sizeof(bool) },
-  { &timer3Ticks , sizeof(int) },
-  { &timer3Reload , sizeof(int) },
-  { &timer3ClockReload  , sizeof(int) },
-  { &dma0Source , sizeof(u32) },
-  { &dma0Dest , sizeof(u32) },
-  { &dma1Source , sizeof(u32) },
-  { &dma1Dest , sizeof(u32) },
-  { &dma2Source , sizeof(u32) },
-  { &dma2Dest , sizeof(u32) },
-  { &dma3Source , sizeof(u32) },
-  { &dma3Dest , sizeof(u32) },
-  { &fxOn, sizeof(bool) },
-  { &windowOn, sizeof(bool) },
-  { &N_FLAG , sizeof(bool) },
-  { &C_FLAG , sizeof(bool) },
-  { &Z_FLAG , sizeof(bool) },
-  { &V_FLAG , sizeof(bool) },
-  { &armState , sizeof(bool) },
-  { &armIrqEnable , sizeof(bool) },
-  { &armNextPC , sizeof(u32) },
-  { &armMode , sizeof(int) },
-  { &saveType , sizeof(int) },
-  { NULL, 0 } 
-};
-*/
 
 __attribute__((section(".dtcm")))
 int romSize = 0x200000; //test normal 0x2000000 current 1/10 oh no only 2.4 MB
@@ -1457,9 +1270,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x50:
     BLDMOD = value & 0x3FFF;
     UPDATE_REG(0x50, BLDMOD);
-    //fxOn = ((BLDMOD>>6)&3) != 0;
-    //CPUUpdateRender();
-	if((DISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
+    if((DISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
 	else
 	{
 		int tempBLDMOD = BLDMOD & ~0x404;
@@ -2314,7 +2125,6 @@ void CPUReset(){
 	biosProtected[2] = 0x29;
 	biosProtected[3] = 0xe1;
 
-	lcdTicks = (useBios && !skipBios) ? 1008 : 208;
 	timer0On = false;
 	timer0Ticks = 0;
 	timer0Reload = 0;
@@ -2340,15 +2150,8 @@ void CPUReset(){
 	dma3Source = 0;
 	dma3Dest = 0;
 	cpuSaveGameFunc = flashSaveDecide;
-	//renderLine = mode0RenderLine;
-	fxOn = false;
-	windowOn = false;
-	frameCount = 0;
 	saveType = 0;
-	//layerEnable = DISPCNT & layerSettings;
-
-	//CPUUpdateRenderBuffers(true);
-
+	
 	for(int i = 0; i < 256; i++) {
 	map[i].address = (u8 *)&dummyAddress;
 	map[i].mask = 0;
@@ -2447,14 +2250,8 @@ void CPUReset(){
 			saveType = gbaSaveType = 5;
 		break;
 	} 
-
-	//ARM_PREFETCH;
-
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
 	cpuDmaHack = false;
-
-	//lastTime = systemGetClock();
-	//SWITicks = 0;
 	rtcEnable(true); //coto: nds7 clock 
 }
 

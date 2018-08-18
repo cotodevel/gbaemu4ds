@@ -10,8 +10,6 @@
 	while(1);\
 }\
 
-//#define DEV_VERSION
-
 #define B8(h,g,f,e,d,c,b,a) ((a)|((b)<<1)|((c)<<2)|((d)<<3)|((e)<<4)|((f)<<5)|((g)<<6)|((h)<<7))
 
 #endif /*__CPU_H__*/
@@ -21,26 +19,12 @@
 extern "C"{
 #endif
 
-// void cpu_GbaMemPerm();
-// void cpu_NdsMemPerm();
-// extern void cpu_GbaSetIwram();
-
-//extern "C" void exMain(); 
-//#define BIOSDBG_CP15 *((volatile u32*)0x027FFD8C)
-//#define BIOSDBG_SPSR *((volatile u32*)0x027FFD90)
-//#define BIOSDBG_R12  *((volatile u32*)0x027FFD94)
-//#define BIOSDBG_PC   *((volatile u32*)0x027FFD98)
-
-
 extern u32 savedsp;
 extern u32 savedlr;
 extern int spirq;
 
-// extern void puSetMemPerm(u32 perm);
 extern void pu_Enable();
-// extern void puSetGbaIWRAM();
 extern void pu_SetRegion(u32 region, u32 value);
-
 extern void pu_SetDataPermissions(u32 v);
 extern void pu_SetCodePermissions(u32 v);
 extern void  pu_SetDataCachability(u32 v);
