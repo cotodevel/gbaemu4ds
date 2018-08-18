@@ -38,7 +38,6 @@
 #include "common.h"
 #include "partition.h"
 #include "directory.h"
-#include "../ichflysettings.h"
 
 #define FILE_MAX_SIZE ((uint32_t)0xFFFFFFFF)	// 4GiB - 1B
 
@@ -110,22 +109,6 @@ extern int _FAT_syncToDisc (FILE_STRUCT* file);
 extern int	FAT_getAttr(const char *file);
 extern int	FAT_setAttr(const char *file, uint8_t attr );
 
-extern u32 *sectortabel;
-extern void * lastopen;
-extern void * lastopenlocked;
-
-extern PARTITION* partitionlocked;
-extern FN_MEDIUM_READSECTORS	readSectorslocked;
-extern u32 current_pointer;
-
-extern u32* allocedfild;	//u32 allocedfild[buffslots]
-
-extern u8* gbafsbuffer;
-
-extern void generatefilemap(int size);
-extern void getandpatchmap(int offsetgba,int offsetthisfile);
-
-extern int latestsectortableSize;
 #ifdef __cplusplus
 }
 #endif

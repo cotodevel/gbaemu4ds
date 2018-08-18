@@ -27,6 +27,23 @@ extern u16 ichfly_readu16(unsigned int pos);
 extern u32 ichfly_readu32(unsigned int pos);
 extern void ichfly_readdma_rom(u32 pos,u8 *ptr,u32 c,int readal);
 
+extern u32 *sectortabel;
+extern void * lastopen;
+extern void * lastopenlocked;
+
+extern PARTITION* partitionlocked;
+extern FN_MEDIUM_READSECTORS	readSectorslocked;
+extern u32 current_pointer;
+
+extern u32* allocedfild;	//u32 allocedfild[buffslots]
+
+extern u8* gbafsbuffer;
+
+extern void generatefilemap(int size);
+extern void getandpatchmap(int offsetgba,int offsetthisfile);
+
+extern int latestsectortableSize;
+
 #ifdef __cplusplus
 }
 #endif

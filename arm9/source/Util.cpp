@@ -62,6 +62,7 @@
 #include "RTC.h"
 #include "fatfile.h"
 #include "dswnifi_lib.h"
+#include "disk_fs/ichflyfs.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp

@@ -36,7 +36,7 @@
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
 #include "../../common/gba_ipc.h"
-#include "disk_fs/fatfileextract.h"
+#include "disk_fs/ichflyfs.h"
 
 enum RTCSTATE { IDLE, COMMAND, DATA, READDATA };
 

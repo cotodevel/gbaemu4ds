@@ -8,7 +8,7 @@
 #include "armdis.h"
 #include "GBA.h"
 #include "fatfile.h"
-#include "fatfileextract.h"
+#include "ichflyfs.h"
 #include "Util.h"
 #include "cpumg.h"
 
