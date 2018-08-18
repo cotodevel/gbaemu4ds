@@ -15,8 +15,8 @@
 
 #include "../ichflysettings.h"
 
-#include "../System.h"
 #include "../Globals.h"
+#include "../GBA.h"
 
 #ifdef __cplusplus
 extern "C"{

@@ -24,7 +24,6 @@
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
-#include "System.h"
 #include "cpumg.h"
 #include "bios.h"
 #include "mydebuger.h"

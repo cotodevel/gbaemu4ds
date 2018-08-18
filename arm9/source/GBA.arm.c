@@ -35,7 +35,6 @@
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
-#include "System.h"
 #include "ichflysettings.h"
 
 #ifndef loadindirect
@@ -53,7 +52,6 @@ bool ichflytest = false;
 #include "bios.h"
 #include "Cheats.h"
 #include "NLS.h"
-#include "Port.h"
 #include "RTC.h"
 #include "cpumg.h"
 
@@ -64,6 +62,59 @@ bool ichflytest = false;
 #include "prof/prof.h"
 #endif
 #include "../../common/gba_ipc.h"
+
+char __outstr[__DOUTBUFSIZE];
+
+// Required vars, used by the emulator core
+//
+int  systemRedShift;
+int  systemGreenShift;
+int  systemBlueShift;
+int  systemColorDepth;
+int  systemDebug;
+int  systemVerbose;
+int  systemSaveUpdateCounter;
+int  systemFrameSkip;
+bool systemSoundOn;
+
+int  emulating;
+bool debugger;
+int  RGB_LOW_BITS_MASK;
+
+// Extra vars, only used for the GUI
+//
+int systemRenderedFrames;
+int systemFPS;
+
+void systemMessage(int _iId, const char * _csFormat, ...)
+{
+	va_list args;
+	int len;
+	va_start(args, _csFormat);
+	len=vsnprintf(__outstr,__DOUTBUFSIZE,_csFormat,args);
+	va_end(args);
+	iprintf(__outstr);
+	va_end(args);
+}
+void systemUpdateMotionSensor()
+{
+}
+
+int systemGetSensorX()
+{
+  return 0;
+}
+
+int systemGetSensorY()
+{
+  return 0;
+}
+
+void debuggerOutput(char * buf, u32 val){
+}
+
+void (*dbgOutput)(char *, u32) = debuggerOutput;
+
 
 __attribute__((section(".dtcm")))
 bool busPrefetch = false;

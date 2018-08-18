@@ -21,7 +21,7 @@
 #ifndef VBA_SOUND_H
 #define VBA_SOUND_H
 
-#include "System.h"
+#include "GBA.h"
 
 #define gzFile void* //ichfly
 
@@ -52,23 +52,7 @@
 #define FIFOA_H 0xa2
 #define FIFOB_L 0xa4
 #define FIFOB_H 0xa6
-/*
-void soundTick();
-void soundShutdown();
-bool soundInit();
-void soundPause();
-void soundResume();
-void soundEnable(int);
-void soundDisable(int);
-int  soundGetEnable();
-void soundReset();
-void soundSaveGame(gzFile file);
-void soundReadGame(gzFile file, int);
-void soundEvent(u32, u8);
-void soundEvent(u32, u16);
-void soundTimerOverflow(int);
-void soundSetQuality(int);
-*/
+
 extern int SOUND_CLOCK_TICKS;
 extern int soundTicks;
 extern int soundPaused;

@@ -20,7 +20,7 @@
 #ifndef VBA_CHEATSEARCH_H
 #define VBA_CHEATSEARCH_H
 
-#include "System.h"
+#include "GBA.h"
 
 struct CheatSearchBlock {
   int size;

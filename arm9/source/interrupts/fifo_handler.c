@@ -10,7 +10,6 @@
 #include "../GBA.h"
 #include "../Sound.h"
 #include "../Util.h"
-#include "../System.h"
 #include "../cpumg.h"
 #include "../bios.h"
 #include "../mydebuger.h"

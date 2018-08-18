@@ -11,7 +11,6 @@
 #include "fatfileextract.h"
 #include "Util.h"
 #include "cpumg.h"
-#include "Port.h"
 
 #define patchmyregsfromromtoromaddr //parts todo // aka prefetch & Program Counter: relative load/stores fix, todo
 

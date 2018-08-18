@@ -43,7 +43,6 @@
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
-#include "System.h"
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
@@ -55,14 +54,12 @@
 #include <unistd.h>    // for sbrk()
 #include <fat.h>
 #include "ichflysettings.h"
-#include "System.h"
 #include "NLS.h"
 #include "Util.h"
 #include "Flash.h"
 #include "GBA.h"
 #include "Globals.h"
 #include "RTC.h"
-#include "Port.h"
 #include "fatfile.h"
 #include "dswnifi_lib.h"
 

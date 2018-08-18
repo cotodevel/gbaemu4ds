@@ -19,7 +19,6 @@
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
-#include "System.h"
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"

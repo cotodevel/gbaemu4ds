@@ -21,7 +21,6 @@
 
 #include "GBA.h"
 #include "Globals.h"
-#include "Port.h"
 #include "Util.h"
 
 #define debuggerWriteHalfWord(addr, value) \

@@ -3,7 +3,6 @@
 
 #include <filesystem.h>
 #include "getopt.h"
-#include "System.h"
 #include <fat.h>
 #include <dirent.h>
 
@@ -26,7 +25,6 @@
 #include "Sound.h"
 #include "Util.h"
 #include "getopt.h"
-#include "System.h"
 #include <fat.h>
 #include <dirent.h>
 #include "cpumg.h"
@@ -58,7 +56,6 @@
 #include "Cheats.h"
 #include "NLS.h"
 #include "Util.h"
-#include "Port.h"
 #include "agbprint.h"
 #include "../../../common/gba_ipc.h"
 #include "../../../common/cpuglobal.h"
