@@ -559,18 +559,11 @@ int CPULoadRom(const char *szFile)
 		return 0;
 	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-	rom = 0;
-	romSize = 0x40000;
-	u8 *whereToLoad = rom;
-	if(cpuIsMultiBoot){
-		whereToLoad = workRAM;
-	}
+	rom = 0;	//init rom
 	if(ichflyfilestream != NULL){
 		fclose(ichflyfilestream);
 		ichflyfilestreamsize = 0;
 	}
-	u8 *data = whereToLoad;
-	u8 *image = data;
 	FILE *f = fopen(szFile, "rb");
 	if(!f) {
 		systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), szFile);
@@ -580,15 +573,17 @@ int CPULoadRom(const char *szFile)
 	int fileSize = ftell(f);
 	fseek(f,0,SEEK_SET);
 	generatefilemap(fileSize);
-	if(data == NULL)
-	{
-		romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
-		rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);
-		image = data = rom;
-	}
+	romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);	
 	size_t read = fileSize <= romSize ? fileSize : romSize;
 	size_t r= 0x80000;
-	r = fread(image, 1, read, f);
+	if(cpuIsMultiBoot == true){	//MultiBoot cart?
+		//read binary into workRAM and point the rom to WorkRAM so it executes there
+		rom=workRAM;
+	}
+	else{	//Single Cart, Normal Boot
+		r = fread(rom, 1, read, f);
+	}
 	//set up header
     memcpy((u8*)&GetsIPCSharedGBA()->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
 	ichflyfilestream = f;
@@ -597,28 +592,17 @@ int CPULoadRom(const char *szFile)
 		while(1);
 	}
 	ichflyfilestreamsize = fileSize;
-	
 	flashInit();
 	eepromInit();
-	//CPUUpdateRenderBuffers(true);
 	return romSize;	
 }
 
-#ifdef WORDS_BIGENDIAN
-static void CPUSwap(volatile u32 *a, volatile u32 *b)
-{
-  volatile u32 c = *b;
-  *b = *a;
-  *a = c;
-}
-#else
 void CPUSwap(u32 *a, u32 *b)
 {
   u32 c = *b;
   *b = *a;
   *a = c;
 }
-#endif
 
 __attribute__((section(".itcm")))
 void  doDMAslow(u32 s, u32 d, u32 si, u32 di, u32 c, int transfer32) //ichfly veraltet
