@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "System.h"
 
-#include <nds/memory.h>//#include <memory.h> ichfly
+#include <nds/memory.h>
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 #include <nds/bios.h>
@@ -33,19 +33,7 @@
 #include <nds/arm9/trig_lut.h>
 #include <nds/arm9/sassert.h>
 
-//#include <SDL.h> //ichfly realy todo
-//#include <SDL_thread.h>
-
 char __outstr[__DOUTBUFSIZE];
-
-/*#include "../GBA.h"
-#include "../gb/GB.h"
-#include "../gb/gbGlobals.h"
-#include "../Util.h"
-#include "../Sound.h"*/
-
-//#include "window.h"
-//#include "intl.h"
 
 // Required vars, used by the emulator core
 //
@@ -68,34 +56,15 @@ int  RGB_LOW_BITS_MASK;
 int systemRenderedFrames;
 int systemFPS;
 
-// Sound stuff
-//
-/*const  int         iSoundSamples  = 2048;
-const  int         iSoundTotalLen = iSoundSamples * 4;
-static u8          auiSoundBuffer[iSoundTotalLen];
-static int         iSoundLen;
-static SDL_cond *  pstSoundCond;
-static SDL_mutex * pstSoundMutex;
-
-inline VBA::Window * GUI()
-{
-  return VBA::Window::poGetInstance();
-}
-*/
 void systemMessage(int _iId, const char * _csFormat, ...)
 {
 	va_list args;
 	int len;
-
 	va_start(args, _csFormat);
 	len=vsnprintf(__outstr,__DOUTBUFSIZE,_csFormat,args);
 	va_end(args);
-
-  iprintf(__outstr);//GUI()->vPopupErrorV(_(_csFormat), args);
-
-  va_end(args);
-  
-  
+	iprintf(__outstr);
+	va_end(args);
 }
 void systemUpdateMotionSensor()
 {
