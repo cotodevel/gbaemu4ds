@@ -692,75 +692,47 @@ int CPULoadRom(const char *szFile)
 	bios = (u8 *)malloc(0x4000);
 	if(bios == NULL) {
 		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),"BIOS");
-		//CPUCleanUp();
 		return 0;
-	} 
-
+	}
 	systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-  
 	rom = 0;
 	romSize = 0x40000;
-	/*workRAM = (u8*)0x02000000;(u8 *)calloc(1, 0x40000);
-	if(workRAM == NULL) {
-		systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),"WRAM");
-		return 0;
-	}*/
-	#ifdef loadindirect
-		u8 *whereToLoad = rom;
-		if(cpuIsMultiBoot){
-			whereToLoad = workRAM;
-		}
-		if(!utilLoad(szFile,whereToLoad,romSize))
-		{
-			return 0;
-		}
-
-	#else
-	rom = (u8*)puzzleorginal_bin;  //rom = (u8*)puzzleorginal_bin;
-	#endif
-
-	/*internalRAM = (u8 *)0x03000000;//calloc(1,0x8000);
-	if(internalRAM == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "IRAM");
-	//CPUCleanUp();
-	return 0;
-	}*/
-	/*paletteRAM = (u8 *)0x05000000;//calloc(1,0x400);
-	if(paletteRAM == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "PRAM");
-	//CPUCleanUp();
-	return 0;
-	}*/      
-	/*vram = (u8 *)0x06000000;//calloc(1, 0x20000);
-	if(vram == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "VRAM");
-	//CPUCleanUp();
-	return 0;
-	}*/      
-	/*emultoroam = (u8 *)0x07000000;calloc(1, 0x400); //ichfly test
-	if(emultoroam == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "emultoroam");
-	//CPUCleanUp();
-	return 0;
-	}      
-	pix = (u8 *)calloc(1, 4 * 241 * 162);
-	if(pix == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "PIX");
-	//CPUCleanUp();
-	return 0;
-	}  */
-	/*ioMem = (u8 *)calloc(1, 0x400);
-	if(ioMem == NULL) {
-	systemMessage(MSG_OUT_OF_MEMORY, N_("Failed to allocate memory for %s"),
-				  "IO");
-	//CPUCleanUp();
-	return 0;
-	}*/
+	u8 *whereToLoad = rom;
+	if(cpuIsMultiBoot){
+		whereToLoad = workRAM;
+	}
+	if(ichflyfilestream != NULL){
+		fclose(ichflyfilestream);
+		ichflyfilestreamsize = 0;
+	}
+	u8 *data = whereToLoad;
+	u8 *image = data;
+	FILE *f = fopen(szFile, "rb");
+	if(!f) {
+		systemMessage(MSG_ERROR_OPENING_IMAGE, N_("Error opening image %s"), szFile);
+		return NULL;
+	}
+	fseek(f,0,SEEK_END);
+	int fileSize = ftell(f);
+	fseek(f,0,SEEK_SET);
+	generatefilemap(fileSize);
+	if(data == NULL)
+	{
+		romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+		rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);
+		image = data = rom;
+	}
+	size_t read = fileSize <= romSize ? fileSize : romSize;
+	size_t r= 0x80000;
+	r = fread(image, 1, read, f);
+	//set up header
+    memcpy((u8*)&GetsIPCSharedGBA()->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
+	ichflyfilestream = f;
+	if(r != read) {
+		systemMessage(MSG_ERROR_READING_IMAGE,N_("Error reading image %s"), szFile);
+		while(1);
+	}
+	ichflyfilestreamsize = fileSize;
 	
 	flashInit();
 	eepromInit();
@@ -2095,18 +2067,6 @@ void CPUInit(const char *biosFileName, bool useBiosFile)
 	}
 	memset(ioMem,0,0x400);
 	
-  
-  
-  if(useBiosFile) {
-    int size = 0x4000;
-    if(utilLoad(biosFileName,bios,size)) {
-      if(size == 0x4000)
-        useBios = true;
-      else
-        systemMessage(MSG_INVALID_BIOS_FILE_SIZE, N_("Invalid BIOS file size"));
-    }
-  }
-  
   if(!useBios) {
 	memcpy(bios, myROM, sizeof(myROM));
   }

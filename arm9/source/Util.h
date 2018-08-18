@@ -76,10 +76,6 @@ extern bool utilIsGzipFile(const char *);
 extern bool utilIsRarFile(const char *);
 extern void utilGetBaseName(const char *, char *);
 //extern IMAGE_TYPE utilFindType(const char *);
-extern u8 *utilLoad(const char *,
-                    u8 *,
-                    int
-				);
 extern void utilPutDword(u8 *, u32);
 extern void utilPutWord(u8 *, u16);
 extern void utilWriteData(gzFile, variable_desc *);
