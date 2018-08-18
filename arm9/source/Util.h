@@ -155,7 +155,6 @@ extern void patchit(int romSize2);
 extern u16 swap16(u16 v);
 extern u32 swap32(u32 v);
 
-extern void reloadGBAHypervisor();
 extern bool reloadGBA(char * filename, u32 manual_save_type);
 extern bool ShowBrowser();
 extern char * bufNames[entriesPerList][512];

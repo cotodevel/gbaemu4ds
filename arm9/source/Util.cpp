@@ -1495,35 +1495,6 @@ bool ShowBrowser(){
 	return lcdSwapS;
 }
 
-void reloadGBAHypervisor(){
-	SendArm7Command(GBAEMU4DS_SND_STOP,0x0);
-	bool doLcdSwap = ShowBrowser();
-	
-	//gba init (non gba system related, but hypervisor init)
-	
-	//screen settings
-	if(doLcdSwap == true)
-	{
-		lcdSwap();
-	}
-	
-	cpuIsMultiBoot = false;
-	u32 manual_save_type = 0;
-	
-	//test the FIFO if NDS cmds and GBA cmds work .. ok they work
-	//REG_IPC_FIFO_TX = FIFO_DEBUG;
-	//REG_IPC_FIFO_TX = 0;
-	
-	//one-way GBA subsystem initializers
-	
-	#ifdef usebuffedVcout
-	initspeedupfelder();
-	#endif
-	
-	//GBA subsystem that can be re-launched
-	reloadGBA(szFile,manual_save_type);
-}
-
 //little-endian GBA == little-endian NDS
 
 __attribute__((section(".itcm")))
