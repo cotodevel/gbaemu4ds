@@ -335,6 +335,7 @@ extern int systemFrameSkip;
 extern int systemSaveUpdateCounter;
 extern int systemSpeed;
 extern void debuggerOutput(char * buf, u32 val);
+extern void vcounthandler(void);
 
 #ifdef __cplusplus
 }

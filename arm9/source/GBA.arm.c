@@ -2815,44 +2815,23 @@ void CPUWriteByte(u32 address, u8 b)
 }
 
 __attribute__((section(".itcm")))
-void updateVC()
-{
-		u32 temp = REG_VCOUNT;
-		u32 temp2 = REG_DISPSTAT;
-		//iprintf("Vcountreal: %08x\n",temp);
-		u16 help3;
-#ifdef usebuffedVcout
-		VCOUNT = VCountdstogba[temp];
-#else
-		if(temp < 192)
-		{
-			VCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
-			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
-		}
-		else
-		{
-			VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
-			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
-		}
-#endif
-		DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
-		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
-		//{
-			DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
-		//}
-		//if(VCOUNT > 160 && VCOUNT != 227)DISPSTAT |= 1;//V-Blanc
-		UPDATE_REG(0x06, VCOUNT);
+void vcounthandler(void){
+		
+		DISPSTAT |= (REG_DISPSTAT & 0x3);
+		VCOUNT = REG_VCOUNT&0xff;
+		
 		if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
 		{
 			DISPSTAT |= 0x4;
-			/*if(DISPSTAT & 0x20) {
-			  IF |= 4;
-			  UPDATE_REG(0x202, IF);
-			}*/
+            
+        
 		}
+		else{
+			DISPSTAT &= 0xFFFb; //remove vcount
+		}
+		//io update
+		UPDATE_REG(0x06, VCOUNT);
 		UPDATE_REG(0x04, DISPSTAT);
-		//iprintf("Vcountreal: %08x\n",temp);
-		//iprintf("DISPSTAT: %08x\n",temp2);
 }
 
 __attribute__((section(".itcm")))
@@ -2917,7 +2896,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		vcounthandler();
 	}
 	
 	
@@ -3108,7 +3087,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
   
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		vcounthandler();
 	}
 	
 	if(address==0x04000006){
@@ -3279,7 +3258,7 @@ iprintf("r8 %02x\n",address);
   
   	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		vcounthandler();
 	}
 	
 	if(address==0x04000006){
@@ -3393,50 +3372,6 @@ iprintf("r8 %02x\n",address);
 }
 
 
-
-
-__attribute__((section(".itcm")))
-void updateVCsub()
-{
-		u32 temp = REG_VCOUNT;
-		u32 temp2 = REG_DISPSTAT;
-		//iprintf("Vcountreal: %08x\n",temp);
-		u16 help3;
-#ifdef usebuffedVcout
-		VCOUNT = VCountdstogba[temp];
-#else
-		if(temp < 192)
-		{
-			VCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
-			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
-		}
-		else
-		{
-			VCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
-			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
-		}
-#endif
-		DISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
-		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
-		//{
-			DISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
-		//}
-		//if(VCOUNT > 160 && VCOUNT != 227)DISPSTAT |= 1;//V-Blanc
-		UPDATE_REG(0x06, VCOUNT);
-		if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
-		{
-			DISPSTAT |= 0x4;
-			/*if(DISPSTAT & 0x20) {
-			  IF |= 4;
-			  UPDATE_REG(0x202, IF);
-			}*/
-		}
-		UPDATE_REG(0x04, DISPSTAT);
-		//iprintf("Vcountreal: %08x\n",temp);
-		//iprintf("DISPSTAT: %08x\n",temp2);
-}
-
-
 __attribute__((section(".itcm")))
 u32 CPUReadMemoryrealpu(u32 address)
 {
@@ -3473,7 +3408,7 @@ u32 CPUReadMemoryrealpu(u32 address)
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		vcounthandler();
 	}
     
 	if(address==0x04000006){
@@ -3629,7 +3564,7 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
   
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		vcounthandler();
 	}
 	
 	if(address==0x04000006){
@@ -3742,7 +3677,7 @@ iprintf("r8 %02x\n",address);
   
   	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		vcounthandler();
 	}
 	
 	if(address==0x04000006){
