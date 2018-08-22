@@ -3,6 +3,7 @@ Todo:
 - impr ex_s.s
 - todo gbainline.h timeshift
 - improve swi code / swi some more asyncsync: 
+- allow GBAEmu4ds to use IRQ_HBLANK, IRQ_VBLANK and IRQ_VCOUNTER through hardware interrupts rather than patching them (that causes a massive slowdown)
 - hwreg 0x301 in CPUWriteByte
 - fix cpu pc rel reads/writes		<-- means we need to fix prefetch handler
 - usermode reads firq and mode sw

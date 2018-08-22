@@ -1825,7 +1825,7 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x202:
 	//REG_IF = value; //ichfly update at read outdated
 	//IF = REG_IF;
-	REG_IF = value;
+	REG_IF = IF = value;
     break;
   case 0x204:
     { //ichfly can't emulate that
@@ -2893,14 +2893,8 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-
-	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-	
-	
 	if(address==0x04000006){
+		vcounthandler();
 		value = VCOUNT;
 		break;
 	}
@@ -3084,13 +3078,8 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 			return value;
 		}
 	}
-  
-	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-	
 	if(address==0x04000006){
+		vcounthandler();
 		value = VCOUNT;
 		break;
 	}
@@ -3255,13 +3244,8 @@ iprintf("r8 %02x\n",address);
 		//todo timer shift
 		return *(u8 *)(address);
 	}
-  
-  	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-	
 	if(address==0x04000006){
+		vcounthandler();
 		return (u8)VCOUNT;
 		break;
 	}
@@ -3405,13 +3389,8 @@ u32 CPUReadMemoryrealpu(u32 address)
 		IF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, IF);
 	}
-
-	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-    
 	if(address==0x04000006){
+		vcounthandler();
 		value = VCOUNT;
 		break;
 	}
@@ -3562,12 +3541,8 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 		}
 	}
   
-	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-	
 	if(address==0x04000006){
+		vcounthandler();
 		value = VCOUNT;
 		break;
 	}
@@ -3674,13 +3649,8 @@ iprintf("r8 %02x\n",address);
 		//todo timer shift
 		return *(u8 *)(address);
 	}
-  
-  	if(address > 0x4000003 && address < 0x4000008)//ichfly update
-	{
-		vcounthandler();
-	}
-	
 	if(address==0x04000006){
+		vcounthandler();
 		return (u8)VCOUNT;
 		break;
 	}	

@@ -280,15 +280,12 @@ __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
 	Wifi_Sync();
-	
     DISPSTAT |= (REG_DISPSTAT & 0x3);
     DISPSTAT |= 0x2;	//hblank
     DISPSTAT &= 0xFFFe; //remove vblank
     UPDATE_REG(0x04, DISPSTAT);
-	
     CPUCheckDMA(2, 0x0f);
 	REG_IF = IRQ_HBLANK;
-
 }
 
 #ifdef showdebug
@@ -314,75 +311,6 @@ void VblankHandler(void) {
 	CPUCheckDMA(1, 0x0f); //V-Blank
 	dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);	//32 KBytes OBJ Tiles GBA copy into DS OBJ Mem (sprites)
 	
-#ifdef showdebug
-	iprintf("\x1b[2J");
-	iprintf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
-#ifdef anyarmcom
-	extern void showcomdebug();
-	showcomdebug();
-#endif
-
-	counterenters++;
-	if(counterenters == 60)
-	{
-		VBlankIntrWaitentertimesshow = VBlankIntrWaitentertimes;
-		counterenters = 0;
-		VBlankIntrWaitentertimes = 0;
-	}
-#endif
-
-#ifdef capture_and_pars
-#ifndef antyflicker
-	if(currentVRAMcapblock == 0)
-	{
-#ifdef skipper
-	if(skipval == skipperval)
-	{
-		skipval = 0;
-#endif
-		DISPCAPCNT = 0x8030000F | (2 << 16);
-		vramSetBankC(VRAM_C_LCD);
-		currentVRAMcapblock = 1;
-#ifdef skipper
-	}
-	else
-	{
-		skipval++;
-	}
-#endif
-	}
-	else 
-	{
-		vramSetBankC(VRAM_C_SUB_BG_0x06200000);
-		currentVRAMcapblock = 0;
-	}
-#else
-
-
-#ifdef skipper
-	if(skipval == skipperval)
-	{
-		skipval = 0;
-#endif
-		DISPCAPCNT = 0x8030000F | (1 << 16);
-		
-#ifdef skipper
-	}
-	else
-	{
-		skipval++;
-	}
-#endif
-#endif
-	//printf("%08X%08X",*(u32*)0x06800000,*(u32*)0x06820000);
-#endif
-
-#ifdef lastdebug
-lasttime[lastdebugcurrent] = 0x0000000;
-lastdebugcurrent++;
-if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
-#endif	
-  
     P1 = REG_KEYINPUT&0x3ff;
 #ifdef ichflytestkeypossibillity
   // disallow Left+Right or Up+Down of being pressed at the same time
@@ -401,15 +329,6 @@ if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
 		else {ignorenextY -= 1;}
 	}   
     UPDATE_REG(0x130, P1);
-
-#ifdef lastdebug
-lasttime[lastdebugcurrent] = 0x0000001;
-lastdebugcurrent++;
-if(lastdebugcurrent == lastdebugsize)lastdebugcurrent = 0;
-#endif
-#ifdef showdebug
-	//iprintf("ex %d\n",REG_VCOUNT);
-#endif
 }
 
 
