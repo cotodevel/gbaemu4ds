@@ -158,9 +158,6 @@ extern void emuInstrTHUMB(u16 opcode, u32 *R);
 extern void unknowndebugprint(reg_pair *myregs);
 extern void unkommeopcode(u32 opcode, reg_pair *myregs);
 
-extern void updateVCsub();
-extern void updateVC();
-
 extern u8  ichfly_readu8extern(unsigned int pos);
 extern u16 ichfly_readu16extern(unsigned int pos);
 extern u32 ichfly_readu32extern(unsigned int pos);
