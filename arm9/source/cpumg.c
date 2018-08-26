@@ -128,15 +128,6 @@ u32 PU_PAGE_2G		= (0x1E << 1);
 __attribute__((section(".dtcm")))
 u32 PU_PAGE_4G		= (0x1F << 1);
 
-__attribute__((section(".dtcm")))
-u16 gbaIME = 0;
-
-__attribute__((section(".dtcm")))
-u16 gbaDISPCNT = 0;
-
-__attribute__((section(".dtcm")))
-u16 gbaBGxCNT[4] = {0, 0, 0, 0};
-
 char disbuffer[0x2000];
 
 #ifdef lastdebug
@@ -298,7 +289,7 @@ void BIOScall(int op,  u32 *R)
 		break;
 	  case 0x02:
 #ifdef DEV_VERSION
-	    Log("Halt: IE %x\n",IE);
+	    Log("Halt: GBAIE %x\n",GBAIE);
 #endif
 		//holdState = true;
 		//holdType = -1;
@@ -324,7 +315,7 @@ void BIOScall(int op,  u32 *R)
 			//coto: raise sleepmode swi 0x3 gba
 			enterGBASleepMode();
 			
-			//ichflyswiIntrWait(1,(IE & 0x6080));
+			//ichflyswiIntrWait(1,(GBAIE & 0x6080));
 		  break;
 	  case 0x04:
 

@@ -59,22 +59,22 @@ inter_irq:
 	ldr	r1,=0x36333333		@MPU is set free to write everything except this area (vectors)
 	mcr	p15, 0, r1, c5, c0, 2
 	
-	bl IntrMain				@serve IFs that are enabled on IE (NDS IO), r1 alternatively has the remaining IFs from vector table
+	bl IntrMain				@serve IFs that are enabled on GBAIE (NDS IO), r1 alternatively has the remaining IFs from vector table
 							@BL is faster than BLX and IntrMain is ARM code (otherwise this would crash inmediately)
 							
 	
 	mov	r0, #0x04000000		@03FFFFFC || 03007FFC(mirror) is user handler
-	ldr	r1, [r0, #0x214]	@get IF
+	ldr	r1, [r0, #0x214]	@get GBAIF
 	
 	ldr	r2, =anytimejmpfilter
 	ldr r2, [r2]
-	ands r1,r1,r2 			@bankedIE (NDS enabled hardware) & IF
+	ands r1,r1,r2 			@bankedIE (NDS enabled hardware) & GBAIF
 	
 	ldr	r1, =0x06300033        	@puGba();
 	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
 	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
-	BEQ	irqexit		@ IF > 0 ? GBA IRQ Handler
+	BEQ	irqexit		@ GBAIF > 0 ? GBA IRQ Handler
 
 	@GBA IRQ Handler
 	add    LR,PC,#0            @retadr for USER handler

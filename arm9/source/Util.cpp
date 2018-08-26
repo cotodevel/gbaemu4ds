@@ -1018,7 +1018,7 @@ bool reloadGBA(char * filename, u32 manual_save_type){
 	#endif
 	
 	
-	DISPCNT  = 0x0080;
+	GBADISPCNT  = 0x0080;
 	if(bios){
 		free(bios);
 	}

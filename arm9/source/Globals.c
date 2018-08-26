@@ -122,232 +122,232 @@ static u8 *vram = (u8*)0x06000000;
 static u8 *oam = (u8*)0x07000000;*/
 
 __attribute__((section(".dtcm")))
-u16 BG0CNT   = 0x0000;
+u16 GBABG0CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG1CNT   = 0x0000;
+u16 GBABG1CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2CNT   = 0x0000;
+u16 GBABG2CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3CNT   = 0x0000;
+u16 GBABG3CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG0HOFS  = 0x0000;
+u16 GBABG0HOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG0VOFS  = 0x0000;
+u16 GBABG0VOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG1HOFS  = 0x0000;
+u16 GBABG1HOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG1VOFS  = 0x0000;
+u16 GBABG1VOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2HOFS  = 0x0000;
+u16 GBABG2HOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2VOFS  = 0x0000;
+u16 GBABG2VOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3HOFS  = 0x0000;
+u16 GBABG3HOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3VOFS  = 0x0000;
+u16 GBABG3VOFS  = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2PA    = 0x0100;
+u16 GBABG2PA    = 0x0100;
 
 __attribute__((section(".dtcm")))
-u16 BG2PB    = 0x0000;
+u16 GBABG2PB    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2PC    = 0x0000;
+u16 GBABG2PC    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2PD    = 0x0100;
+u16 GBABG2PD    = 0x0100;
 
 __attribute__((section(".dtcm")))
-u16 BG2X_L   = 0x0000;
+u16 GBABG2X_L   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2X_H   = 0x0000;
+u16 GBABG2X_H   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2Y_L   = 0x0000;
+u16 GBABG2Y_L   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG2Y_H   = 0x0000;
+u16 GBABG2Y_H   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3PA    = 0x0100;
+u16 GBABG3PA    = 0x0100;
 
 __attribute__((section(".dtcm")))
-u16 BG3PB    = 0x0000;
+u16 GBABG3PB    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3PC    = 0x0000;
+u16 GBABG3PC    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3PD    = 0x0100;
+u16 GBABG3PD    = 0x0100;
 
 __attribute__((section(".dtcm")))
-u16 BG3X_L   = 0x0000;
+u16 GBABG3X_L   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3X_H   = 0x0000;
+u16 GBABG3X_H   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3Y_L   = 0x0000;
+u16 GBABG3Y_L   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BG3Y_H   = 0x0000;
+u16 GBABG3Y_H   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WIN0H    = 0x0000;
+u16 GBAWIN0H    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WIN1H    = 0x0000;
+u16 GBAWIN1H    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WIN0V    = 0x0000;
+u16 GBAWIN0V    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WIN1V    = 0x0000;
+u16 GBAWIN1V    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WININ    = 0x0000;
+u16 GBAWININ    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 WINOUT   = 0x0000;
+u16 GBAWINOUT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 MOSAIC   = 0x0000;
+u16 GBAMOSAIC   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 BLDMOD   = 0x0000;
+u16 GBABLDMOD   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 COLEV    = 0x0000;
+u16 GBACOLEV    = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 COLY     = 0x0000;
+u16 GBACOLY     = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2SAD_L = 0x0000;
+u16 GBADM2SAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2SAD_H = 0x0000;
+u16 GBADM2SAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2DAD_L = 0x0000;
+u16 GBADM2DAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2DAD_H = 0x0000;
+u16 GBADM2DAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2CNT_L = 0x0000;
+u16 GBADM2CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM2CNT_H = 0x0000;
+u16 GBADM2CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3SAD_L = 0x0000;
+u16 GBADM3SAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3SAD_H = 0x0000;
+u16 GBADM3SAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3DAD_L = 0x0000;
+u16 GBADM3DAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3DAD_H = 0x0000;
+u16 GBADM3DAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3CNT_L = 0x0000;
+u16 GBADM3CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM3CNT_H = 0x0000;
+u16 GBADM3CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM0D     = 0x0000;
+u16 GBATM0D     = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM0CNT   = 0x0000;
+u16 GBATM0CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM1D     = 0x0000;
+u16 GBATM1D     = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM1CNT   = 0x0000;
+u16 GBATM1CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM2D     = 0x0000;
+u16 GBATM2D     = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM2CNT   = 0x0000;
+u16 GBATM2CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM3D     = 0x0000;
+u16 GBATM3D     = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 TM3CNT   = 0x0000;
+u16 GBATM3CNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 P1       = 0xFFFF;
+u16 GBAP1       = 0xFFFF;
 
 __attribute__((section(".dtcm")))
-u16 IE       = 0x0000;
+u16 GBAIE       = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 IF       = 0x0000;
+u16 GBAIF       = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 IME      = 0x0000;
+u16 GBAIME      = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DISPSTAT = 0x0000;
+u16 GBADISPSTAT = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 VCOUNT   = 0x0000;
+u16 GBAVCOUNT   = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0SAD_L = 0x0000;
+u16 GBADM0SAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0SAD_H = 0x0000;
+u16 GBADM0SAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0DAD_L = 0x0000;
+u16 GBADM0DAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0DAD_H = 0x0000;
+u16 GBADM0DAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0CNT_L = 0x0000;
+u16 GBADM0CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM0CNT_H = 0x0000;
+u16 GBADM0CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1SAD_L = 0x0000;
+u16 GBADM1SAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1SAD_H = 0x0000;
+u16 GBADM1SAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1DAD_L = 0x0000;
+u16 GBADM1DAD_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1DAD_H = 0x0000;
+u16 GBADM1DAD_H = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1CNT_L = 0x0000;
+u16 GBADM1CNT_L = 0x0000;
 
 __attribute__((section(".dtcm")))
-u16 DM1CNT_H = 0x0000;
+u16 GBADM1CNT_H = 0x0000;
 
 __attribute__((section(".dtcm")))
 u8 * ioMem = NULL;	//vram [0x400];

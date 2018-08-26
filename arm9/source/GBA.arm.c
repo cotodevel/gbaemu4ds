@@ -711,11 +711,11 @@ __attribute__((section(".itcm")))
 void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 {
   // DMA 0
-  if((DM0CNT_H & 0x8000) && (dmamask & 1)) {
-    if(((DM0CNT_H >> 12) & 3) == reason) {
+  if((GBADM0CNT_H & 0x8000) && (dmamask & 1)) {
+    if(((GBADM0CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((DM0CNT_H >> 7) & 3) {
+      switch((GBADM0CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -725,7 +725,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((DM0CNT_H >> 5) & 3) {
+      switch((GBADM0CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -737,42 +737,42 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       }      
 #ifdef DEV_VERSION
       if(systemVerbose & VERBOSE_DMA0) {
-        int count = (DM0CNT_L ? DM0CNT_L : 0x4000) << 1;
-        if(DM0CNT_H & 0x0400)
+        int count = (GBADM0CNT_L ? GBADM0CNT_L : 0x4000) << 1;
+        if(GBADM0CNT_H & 0x0400)
           count <<= 1;
         iprintf("DMA0: s=%08x d=%08x c=%04x count=%08x\n", dma0Source, dma0Dest, 
-            DM0CNT_H,
+            GBADM0CNT_H,
             count);
       }
 #endif
       doDMA(dma0Source, dma0Dest, sourceIncrement, destIncrement,
-            DM0CNT_L ? DM0CNT_L : 0x4000,
-            DM0CNT_H & 0x0400);
+            GBADM0CNT_L ? GBADM0CNT_L : 0x4000,
+            GBADM0CNT_H & 0x0400);
       cpuDmaHack = true;
 
-      /*if(DM0CNT_H & 0x4000) {
-        IF |= 0x0100;
-        UPDATE_REG(0x202, IF);
+      /*if(GBADM0CNT_H & 0x4000) {
+        GBAIF |= 0x0100;
+        UPDATE_REG(0x202, GBAIF);
         cpuNextEvent = cpuTotalTicks;
       }*/ //ichfly todo
       
-      if(((DM0CNT_H >> 5) & 3) == 3) {
-        dma0Dest = DM0DAD_L | (DM0DAD_H << 16);
+      if(((GBADM0CNT_H >> 5) & 3) == 3) {
+        dma0Dest = GBADM0DAD_L | (GBADM0DAD_H << 16);
       }
       
-      if(!(DM0CNT_H & 0x0200) || (reason == 0)) {
-        DM0CNT_H &= 0x7FFF;
-        UPDATE_REG(0xBA, DM0CNT_H);
+      if(!(GBADM0CNT_H & 0x0200) || (reason == 0)) {
+        GBADM0CNT_H &= 0x7FFF;
+        UPDATE_REG(0xBA, GBADM0CNT_H);
       }
     }
   }
   
   // DMA 1
-  if((DM1CNT_H & 0x8000) && (dmamask & 2)) {
-    if(((DM1CNT_H >> 12) & 3) == reason) {
+  if((GBADM1CNT_H & 0x8000) && (dmamask & 2)) {
+    if(((GBADM1CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((DM1CNT_H >> 7) & 3) {
+      switch((GBADM1CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -782,7 +782,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((DM1CNT_H >> 5) & 3) {
+      switch((GBADM1CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -796,7 +796,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_DMA1) {
           Log("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
-              DM1CNT_H,
+              GBADM1CNT_H,
               16);
         }
 #endif  
@@ -805,43 +805,43 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       } else {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_DMA1) {
-          int count = (DM1CNT_L ? DM1CNT_L : 0x4000) << 1;
-          if(DM1CNT_H & 0x0400)
+          int count = (GBADM1CNT_L ? GBADM1CNT_L : 0x4000) << 1;
+          if(GBADM1CNT_H & 0x0400)
             count <<= 1;
           iprintf("DMA1: s=%08x d=%08x c=%04x count=%08x\n", dma1Source, dma1Dest,
-              DM1CNT_H,
+              GBADM1CNT_H,
               count);
         }
 #endif          
         doDMA(dma1Source, dma1Dest, sourceIncrement, destIncrement,
-              DM1CNT_L ? DM1CNT_L : 0x4000,
-              DM1CNT_H & 0x0400);
+              GBADM1CNT_L ? GBADM1CNT_L : 0x4000,
+              GBADM1CNT_H & 0x0400);
       }
       cpuDmaHack = true;
 
-      /*if(DM1CNT_H & 0x4000) {
-        IF |= 0x0200;
-        UPDATE_REG(0x202, IF);
+      /*if(GBADM1CNT_H & 0x4000) {
+        GBAIF |= 0x0200;
+        UPDATE_REG(0x202, GBAIF);
         cpuNextEvent = cpuTotalTicks;
       }*/ //ichfly todo
       
-      if(((DM1CNT_H >> 5) & 3) == 3) {
-        dma1Dest = DM1DAD_L | (DM1DAD_H << 16);
+      if(((GBADM1CNT_H >> 5) & 3) == 3) {
+        dma1Dest = GBADM1DAD_L | (GBADM1DAD_H << 16);
       }
       
-      if(!(DM1CNT_H & 0x0200) || (reason == 0)) {
-        DM1CNT_H &= 0x7FFF;
-        UPDATE_REG(0xC6, DM1CNT_H);
+      if(!(GBADM1CNT_H & 0x0200) || (reason == 0)) {
+        GBADM1CNT_H &= 0x7FFF;
+        UPDATE_REG(0xC6, GBADM1CNT_H);
       }
     }
   }
   
   // DMA 2
-  if((DM2CNT_H & 0x8000) && (dmamask & 4)) {
-    if(((DM2CNT_H >> 12) & 3) == reason) {
+  if((GBADM2CNT_H & 0x8000) && (dmamask & 4)) {
+    if(((GBADM2CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((DM2CNT_H >> 7) & 3) {
+      switch((GBADM2CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -851,7 +851,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((DM2CNT_H >> 5) & 3) {
+      switch((GBADM2CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -866,7 +866,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         if(systemVerbose & VERBOSE_DMA2) {
           int count = (4) << 2;
           Log("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
-              DM2CNT_H,
+              GBADM2CNT_H,
               count);
         }
 #endif                  
@@ -875,43 +875,43 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       } else {
 #ifdef DEV_VERSION
         if(systemVerbose & VERBOSE_DMA2) {
-          int count = (DM2CNT_L ? DM2CNT_L : 0x4000) << 1;
-          if(DM2CNT_H & 0x0400)
+          int count = (GBADM2CNT_L ? GBADM2CNT_L : 0x4000) << 1;
+          if(GBADM2CNT_H & 0x0400)
             count <<= 1;
           iprintf("DMA2: s=%08x d=%08x c=%04x count=%08x\n", dma2Source, dma2Dest,
-              DM2CNT_H,
+              GBADM2CNT_H,
               count);
         }
 #endif                  
         doDMA(dma2Source, dma2Dest, sourceIncrement, destIncrement,
-              DM2CNT_L ? DM2CNT_L : 0x4000,
-              DM2CNT_H & 0x0400);
+              GBADM2CNT_L ? GBADM2CNT_L : 0x4000,
+              GBADM2CNT_H & 0x0400);
       }
       cpuDmaHack = true;
 
-      /*if(DM2CNT_H & 0x4000) {
-        IF |= 0x0400;
-        UPDATE_REG(0x202, IF);
+      /*if(GBADM2CNT_H & 0x4000) {
+        GBAIF |= 0x0400;
+        UPDATE_REG(0x202, GBAIF);
         cpuNextEvent = cpuTotalTicks;
       }*/ //ichfly todo
 
-      if(((DM2CNT_H >> 5) & 3) == 3) {
-        dma2Dest = DM2DAD_L | (DM2DAD_H << 16);
+      if(((GBADM2CNT_H >> 5) & 3) == 3) {
+        dma2Dest = GBADM2DAD_L | (GBADM2DAD_H << 16);
       }
       
-      if(!(DM2CNT_H & 0x0200) || (reason == 0)) {
-        DM2CNT_H &= 0x7FFF;
-        UPDATE_REG(0xD2, DM2CNT_H);
+      if(!(GBADM2CNT_H & 0x0200) || (reason == 0)) {
+        GBADM2CNT_H &= 0x7FFF;
+        UPDATE_REG(0xD2, GBADM2CNT_H);
       }
     }
   }
 
   // DMA 3
-  if((DM3CNT_H & 0x8000) && (dmamask & 8)) {
-    if(((DM3CNT_H >> 12) & 3) == reason) {
+  if((GBADM3CNT_H & 0x8000) && (dmamask & 8)) {
+    if(((GBADM3CNT_H >> 12) & 3) == reason) {
       u32 sourceIncrement = 4;
       u32 destIncrement = 4;
-      switch((DM3CNT_H >> 7) & 3) {
+      switch((GBADM3CNT_H >> 7) & 3) {
       case 0:
         break;
       case 1:
@@ -921,7 +921,7 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
         sourceIncrement = 0;
         break;
       }
-      switch((DM3CNT_H >> 5) & 3) {
+      switch((GBADM3CNT_H >> 5) & 3) {
       case 0:
         break;
       case 1:
@@ -933,30 +933,30 @@ void  __attribute__ ((hot)) CPUCheckDMA(int reason, int dmamask)
       }      
 #ifdef DEV_VERSION
       if(systemVerbose & VERBOSE_DMA3) {
-        int count = (DM3CNT_L ? DM3CNT_L : 0x10000) << 1;
-        if(DM3CNT_H & 0x0400)
+        int count = (GBADM3CNT_L ? GBADM3CNT_L : 0x10000) << 1;
+        if(GBADM3CNT_H & 0x0400)
           count <<= 1;
         iprintf("DMA3: s=%08x d=%08x c=%04x count=%08x\n", dma3Source, dma3Dest,
-            DM3CNT_H,
+            GBADM3CNT_H,
             count);
       }
 #endif                
       doDMA(dma3Source, dma3Dest, sourceIncrement, destIncrement,
-            DM3CNT_L ? DM3CNT_L : 0x10000,
-            DM3CNT_H & 0x0400);
-      /*if(DM3CNT_H & 0x4000) {
-        IF |= 0x0800;
-        UPDATE_REG(0x202, IF);
+            GBADM3CNT_L ? GBADM3CNT_L : 0x10000,
+            GBADM3CNT_H & 0x0400);
+      /*if(GBADM3CNT_H & 0x4000) {
+        GBAIF |= 0x0800;
+        UPDATE_REG(0x202, GBAIF);
         cpuNextEvent = cpuTotalTicks;
       }*/ //ichfly todo
 
-      if(((DM3CNT_H >> 5) & 3) == 3) {
-        dma3Dest = DM3DAD_L | (DM3DAD_H << 16);
+      if(((GBADM3CNT_H >> 5) & 3) == 3) {
+        dma3Dest = GBADM3DAD_L | (GBADM3DAD_H << 16);
       }
       
-      if(!(DM3CNT_H & 0x0200) || (reason == 0)) {
-        DM3CNT_H &= 0x7FFF;
-        UPDATE_REG(0xDE, DM3CNT_H);
+      if(!(GBADM3CNT_H & 0x0200) || (reason == 0)) {
+        GBADM3CNT_H &= 0x7FFF;
+        UPDATE_REG(0xDE, GBADM3CNT_H);
       }
     }
   }
@@ -980,9 +980,9 @@ void CPUUpdateRegister(u32 address, u16 value)
   switch(address) {
   case 0x00:
     {
-		DISPCNT = value & 0xFFF7;	//ignored bit: 3     gba: Reserved / CGB Mode    (0=GBA, 1=CGB; can be set only by BIOS opcodes)
+		GBADISPCNT = value & 0xFFF7;	//ignored bit: 3     gba: Reserved / CGB Mode    (0=GBA, 1=CGB; can be set only by BIOS opcodes)
 														//ds: BG0 2D/3D Selection (instead CGB Mode) (0=2D, 1=3D)
-		UPDATE_REG(0x00, DISPCNT);
+		UPDATE_REG(0x00, GBADISPCNT);
 		
 		u32 dsValue = 0;
 		dsValue  = value & 0xFF80;
@@ -1028,21 +1028,21 @@ void CPUUpdateRegister(u32 address, u16 value)
     }
     break;
   case 0x04:
-    DISPSTAT = (value & 0xFF38) | (DISPSTAT & 7);
-    UPDATE_REG(0x04, DISPSTAT);
+    GBADISPSTAT = (value & 0xFF38) | (GBADISPSTAT & 7);
+    UPDATE_REG(0x04, GBADISPSTAT);
 
 #ifdef usebuffedVcout
 	{
-	u16 tempDISPSTAT = (u16)((DISPSTAT&0xFF) | ((VCountgbatods[DISPSTAT>>8]) << 8));
+	u16 tempDISPSTAT = (u16)((GBADISPSTAT&0xFF) | ((VCountgbatods[GBADISPSTAT>>8]) << 8));
 #else
 	//8-15  V-Count Setting (LYC)      (0..227)
 	{
-	u16 tempDISPSTAT = DISPSTAT >> 8;
+	u16 tempDISPSTAT = GBADISPSTAT >> 8;
 		//float help = tempDISPSTAT;
 		if(tempDISPSTAT < 160)
 		{
 			tempDISPSTAT = (tempDISPSTAT * 306);//tempDISPSTAT = (help * 1.2);
-			tempDISPSTAT = tempDISPSTAT | (DISPSTAT & 0xFF); //1.15350877; //already seeked
+			tempDISPSTAT = tempDISPSTAT | (GBADISPSTAT & 0xFF); //1.15350877; //already seeked
 			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 		}
 		else
@@ -1050,13 +1050,13 @@ void CPUUpdateRegister(u32 address, u16 value)
 			if(tempDISPSTAT < 220)
 			{
 				tempDISPSTAT = ((tempDISPSTAT - 160) * 266);//tempDISPSTAT = ((help - 160) * 1.04411764);//tempDISPSTAT = ((help - 160) * 1.04411764);
-				tempDISPSTAT = (tempDISPSTAT + 192 * 0x100) | (DISPSTAT & 0xFF); //1.15350877;
+				tempDISPSTAT = (tempDISPSTAT + 192 * 0x100) | (GBADISPSTAT & 0xFF); //1.15350877;
 			}
 			else if(tempDISPSTAT < 228)
 			{
-				tempDISPSTAT = (DISPSTAT & 0x3F) | 0xFF00;
+				tempDISPSTAT = (GBADISPSTAT & 0x3F) | 0xFF00;
 			}
-			else tempDISPSTAT = (DISPSTAT & 0x1F);		
+			else tempDISPSTAT = (GBADISPSTAT & 0x1F);		
 		}
 		
 #endif
@@ -1073,253 +1073,253 @@ void CPUUpdateRegister(u32 address, u16 value)
     // not writable in NDS mode bzw not possible todo
     break;
   case 0x08:
-    BG0CNT = (value & 0xDFCF);
-    UPDATE_REG(0x08, BG0CNT);
-	*(u16 *)(0x4000008) = BG0CNT;
+    GBABG0CNT = (value & 0xDFCF);
+    UPDATE_REG(0x08, GBABG0CNT);
+	*(u16 *)(0x4000008) = GBABG0CNT;
     
 	break;
   case 0x0A:
-    BG1CNT = (value & 0xDFCF);
-    UPDATE_REG(0x0A, BG1CNT);
-    *(u16 *)(0x400000A) = BG1CNT;
+    GBABG1CNT = (value & 0xDFCF);
+    UPDATE_REG(0x0A, GBABG1CNT);
+    *(u16 *)(0x400000A) = GBABG1CNT;
 	
 	break;
   case 0x0C:
-    BG2CNT = (value & 0xFFCF);
-    UPDATE_REG(0x0C, BG2CNT);
-	REG_BG2CNT = BG2CNT;
+    GBABG2CNT = (value & 0xFFCF);
+    UPDATE_REG(0x0C, GBABG2CNT);
+	REG_BG2CNT = GBABG2CNT;
 	
   break;
   case 0x0E:
-    BG3CNT = (value & 0xFFCF);
-    UPDATE_REG(0x0E, BG3CNT);
-	REG_BG3CNT = BG3CNT;
+    GBABG3CNT = (value & 0xFFCF);
+    UPDATE_REG(0x0E, GBABG3CNT);
+	REG_BG3CNT = GBABG3CNT;
 	
 	break;
   case 0x10:
-    BG0HOFS = value & 511;
-    UPDATE_REG(0x10, BG0HOFS);
-    REG_BG0HOFS = BG0HOFS;
+    GBABG0HOFS = value & 511;
+    UPDATE_REG(0x10, GBABG0HOFS);
+    REG_BG0HOFS = GBABG0HOFS;
 	
 	break;
   case 0x12:
-    BG0VOFS = value & 511;
-    UPDATE_REG(0x12, BG0VOFS);
-    REG_BG0VOFS = BG0VOFS;
+    GBABG0VOFS = value & 511;
+    UPDATE_REG(0x12, GBABG0VOFS);
+    REG_BG0VOFS = GBABG0VOFS;
 	
 	break;
   case 0x14:
-    BG1HOFS = value & 511;
-    UPDATE_REG(0x14, BG1HOFS);
-	REG_BG1HOFS = BG1HOFS;
+    GBABG1HOFS = value & 511;
+    UPDATE_REG(0x14, GBABG1HOFS);
+	REG_BG1HOFS = GBABG1HOFS;
     
 	break;
   case 0x16:
-    BG1VOFS = value & 511;
-    UPDATE_REG(0x16, BG1VOFS);
-    REG_BG1VOFS = BG1VOFS;
+    GBABG1VOFS = value & 511;
+    UPDATE_REG(0x16, GBABG1VOFS);
+    REG_BG1VOFS = GBABG1VOFS;
 	
 	break;      
   case 0x18:
-    BG2HOFS = value & 511;
-    UPDATE_REG(0x18, BG2HOFS);
-	REG_BG2HOFS = BG2HOFS; //todo the rest
+    GBABG2HOFS = value & 511;
+    UPDATE_REG(0x18, GBABG2HOFS);
+	REG_BG2HOFS = GBABG2HOFS; //todo the rest
 	
 	break;
   case 0x1A:
-    BG2VOFS = value & 511;
-    UPDATE_REG(0x1A, BG2VOFS);
-    REG_BG2VOFS = BG2VOFS; //todo the rest
+    GBABG2VOFS = value & 511;
+    UPDATE_REG(0x1A, GBABG2VOFS);
+    REG_BG2VOFS = GBABG2VOFS; //todo the rest
 	
 	break;
   case 0x1C:
-    BG3HOFS = value & 511;
-    UPDATE_REG(0x1C, BG3HOFS);
-	REG_BG3HOFS = BG3HOFS;
+    GBABG3HOFS = value & 511;
+    UPDATE_REG(0x1C, GBABG3HOFS);
+	REG_BG3HOFS = GBABG3HOFS;
 	
 	break;
   case 0x1E:
-    BG3VOFS = value & 511;
-    UPDATE_REG(0x1E, BG3VOFS);
-	REG_BG3VOFS = BG3VOFS; //todo the rest
+    GBABG3VOFS = value & 511;
+    UPDATE_REG(0x1E, GBABG3VOFS);
+	REG_BG3VOFS = GBABG3VOFS; //todo the rest
 	
 	break;      
   case 0x20:
-    BG2PA = value;	//todo: mask value?
-    UPDATE_REG(0x20, BG2PA);
-	REG_BG2PA = BG2PA;
+    GBABG2PA = value;	//todo: mask value?
+    UPDATE_REG(0x20, GBABG2PA);
+	REG_BG2PA = GBABG2PA;
 	
 	break;
   case 0x22:
-    BG2PB = value;
-    UPDATE_REG(0x22, BG2PB);
-    REG_BG2PB = BG2PB;
+    GBABG2PB = value;
+    UPDATE_REG(0x22, GBABG2PB);
+    REG_BG2PB = GBABG2PB;
 	
 	break;
   case 0x24:
-    BG2PC = value;
-    UPDATE_REG(0x24, BG2PC);
-    REG_BG2PC = BG2PC;
+    GBABG2PC = value;
+    UPDATE_REG(0x24, GBABG2PC);
+    REG_BG2PC = GBABG2PC;
 	
 	break;
   case 0x26:
-    BG2PD = value;
-    UPDATE_REG(0x26, BG2PD);
-	REG_BG2PD = BG2PD;
+    GBABG2PD = value;
+    UPDATE_REG(0x26, GBABG2PD);
+	REG_BG2PD = GBABG2PD;
 	
 	break;
   case 0x28:
-    BG2X_L = value;
-    UPDATE_REG(0x28, BG2X_L);
+    GBABG2X_L = value;
+    UPDATE_REG(0x28, GBABG2X_L);
 	#define REG_BG2X_L              (*(vu16*)0x4000028)
-	REG_BG2X_L = BG2X_L;
+	REG_BG2X_L = GBABG2X_L;
 	
 	break;
   case 0x2A:
-    BG2X_H = (value & 0xFFF);
-    UPDATE_REG(0x2A, BG2X_H);
+    GBABG2X_H = (value & 0xFFF);
+    UPDATE_REG(0x2A, GBABG2X_H);
     #define REG_BG2X_H              (*(vu16*)0x400002A)
-	REG_BG2X_H = BG2X_H;
+	REG_BG2X_H = GBABG2X_H;
 	
 	break;
   case 0x2C:
-    BG2Y_L = value;
-    UPDATE_REG(0x2C, BG2Y_L);
+    GBABG2Y_L = value;
+    UPDATE_REG(0x2C, GBABG2Y_L);
 	#define REG_BG2Y_L              (*(vu16*)0x400002C)
-	REG_BG2Y_L = BG2Y_L;
+	REG_BG2Y_L = GBABG2Y_L;
 	
 	break;
   case 0x2E:
-    BG2Y_H = value & 0xFFF;
-    UPDATE_REG(0x2E, BG2Y_H);
+    GBABG2Y_H = value & 0xFFF;
+    UPDATE_REG(0x2E, GBABG2Y_H);
     #define REG_BG2Y_H              (*(vu16*)0x400002E)
-	REG_BG2Y_H = BG2Y_H;
+	REG_BG2Y_H = GBABG2Y_H;
 	
 	break;
   case 0x30:
-    BG3PA = value;
-    UPDATE_REG(0x30, BG3PA);
-    REG_BG3PA = BG3PA;
+    GBABG3PA = value;
+    UPDATE_REG(0x30, GBABG3PA);
+    REG_BG3PA = GBABG3PA;
 	
 	break;
   case 0x32:
-    BG3PB = value;
-    UPDATE_REG(0x32, BG3PB);
-    REG_BG3PB = BG3PB;
+    GBABG3PB = value;
+    UPDATE_REG(0x32, GBABG3PB);
+    REG_BG3PB = GBABG3PB;
 	
 	break;
   case 0x34:
     
-	BG3PC = value;
-    UPDATE_REG(0x34, BG3PC);
-	REG_BG3PC = BG3PC;
+	GBABG3PC = value;
+    UPDATE_REG(0x34, GBABG3PC);
+	REG_BG3PC = GBABG3PC;
 	
 	break;
   case 0x36:
-    BG3PD = value;
-    UPDATE_REG(0x36, BG3PD);
-    REG_BG3PD = BG3PD;
+    GBABG3PD = value;
+    UPDATE_REG(0x36, GBABG3PD);
+    REG_BG3PD = GBABG3PD;
 	
 	break;
   case 0x38:
-    BG3X_L = value;
-    UPDATE_REG(0x38, BG3X_L);
+    GBABG3X_L = value;
+    UPDATE_REG(0x38, GBABG3X_L);
     
 	#define REG_BG3X_L              (*(vu16*)0x4000038)
-	REG_BG3X_L = BG3X_L;
+	REG_BG3X_L = GBABG3X_L;
 	
 	break;
   case 0x3A:
-    BG3X_H = value & 0xFFF;
-    UPDATE_REG(0x3A, BG3X_H);
+    GBABG3X_H = value & 0xFFF;
+    UPDATE_REG(0x3A, GBABG3X_H);
     
 	#define REG_BG3X_H              (*(vu16*)0x400003A)
-	REG_BG3X_H = BG3X_H;
+	REG_BG3X_H = GBABG3X_H;
 	
 	break;
   case 0x3C:
-    BG3Y_L = value;
-    UPDATE_REG(0x3C, BG3Y_L);
+    GBABG3Y_L = value;
+    UPDATE_REG(0x3C, GBABG3Y_L);
     
 	#define REG_BG3Y_L              (*(vu16*)0x400003C)
-	REG_BG3Y_L = BG3Y_L;
+	REG_BG3Y_L = GBABG3Y_L;
 	break;
   case 0x3E:
-    BG3Y_H = value & 0xFFF;
-    UPDATE_REG(0x3E, BG3Y_H);
+    GBABG3Y_H = value & 0xFFF;
+    UPDATE_REG(0x3E, GBABG3Y_H);
     
 	#define REG_BG3Y_H              (*(vu16*)0x400003E)
-	REG_BG3Y_H = BG3Y_H;
+	REG_BG3Y_H = GBABG3Y_H;
 	
 	break;
   case 0x40:
-    WIN0H = value;
-    UPDATE_REG(0x40, WIN0H);
+    GBAWIN0H = value;
+    UPDATE_REG(0x40, GBAWIN0H);
     //CPUUpdateWindow0();
     *(u16 *)(0x4000040) = value;
 	break;
   case 0x42:
-    WIN1H = value;
-    UPDATE_REG(0x42, WIN1H);
+    GBAWIN1H = value;
+    UPDATE_REG(0x42, GBAWIN1H);
 	*(u16 *)(0x4000042) = value;
     //CPUUpdateWindow1();    
     break;      
   case 0x44:
-    WIN0V = value;
-    UPDATE_REG(0x44, WIN0V);
+    GBAWIN0V = value;
+    UPDATE_REG(0x44, GBAWIN0V);
     *(u16 *)(0x4000044) = value;
 	break;
   case 0x46:
-    WIN1V = value;
-    UPDATE_REG(0x46, WIN1V);
+    GBAWIN1V = value;
+    UPDATE_REG(0x46, GBAWIN1V);
     *(u16 *)(0x4000046) = value;
 	break;
   case 0x48:
-    WININ = value & 0x3F3F;
-    UPDATE_REG(0x48, WININ);
-    if((DISPCNT & 7) < 3)*(u16 *)(0x4000048) = value;
+    GBAWININ = value & 0x3F3F;
+    UPDATE_REG(0x48, GBAWININ);
+    if((GBADISPCNT & 7) < 3)*(u16 *)(0x4000048) = value;
 	else
 	{
-		int tempWININ = WININ & ~0x404;
-		tempWININ = tempWININ | ((WININ & 0x404) << 1);
-		WIN_IN = tempWININ;
+		int tempWININ = GBAWININ & ~0x404;
+		tempWININ = tempWININ | ((GBAWININ & 0x404) << 1);
+		GBAWININ = tempWININ;
 	}
 	break;
   case 0x4A:
-    WINOUT = value & 0x3F3F;
-    UPDATE_REG(0x4A, WINOUT);
-    if((DISPCNT & 7) < 3)*(u16 *)(0x400004A) = value;
+    GBAWINOUT = value & 0x3F3F;
+    UPDATE_REG(0x4A, GBAWINOUT);
+    if((GBADISPCNT & 7) < 3)*(u16 *)(0x400004A) = value;
 	else
 	{
-		int tempWINOUT = WINOUT & ~0x404;
-		tempWINOUT = tempWINOUT | ((WINOUT & 0x404) << 1);
+		int tempWINOUT = GBAWINOUT & ~0x404;
+		tempWINOUT = tempWINOUT | ((GBAWINOUT & 0x404) << 1);
 		WIN_OUT = tempWINOUT;
 	}
 	break;
   case 0x4C:
-    MOSAIC = value;
-    UPDATE_REG(0x4C, MOSAIC);
+    GBAMOSAIC = value;
+    UPDATE_REG(0x4C, GBAMOSAIC);
     *(u16 *)(0x400004C) = value;
 	break;
   case 0x50:
-    BLDMOD = value & 0x3FFF;
-    UPDATE_REG(0x50, BLDMOD);
-    if((DISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
+    GBABLDMOD = value & 0x3FFF;
+    UPDATE_REG(0x50, GBABLDMOD);
+    if((GBADISPCNT & 7) < 3)*(u16 *)(0x4000050) = value;
 	else
 	{
-		int tempBLDMOD = BLDMOD & ~0x404;
-		tempBLDMOD = tempBLDMOD | ((BLDMOD & 0x404) << 1);
+		int tempBLDMOD = GBABLDMOD & ~0x404;
+		tempBLDMOD = tempBLDMOD | ((GBABLDMOD & 0x404) << 1);
 		REG_BLDCNT = tempBLDMOD;
 	}
     break;
   case 0x52:
-    COLEV = value & 0x1F1F;
-    UPDATE_REG(0x52, COLEV);
+    GBACOLEV = value & 0x1F1F;
+    UPDATE_REG(0x52, GBACOLEV);
     *(u16 *)(0x4000052) = value;
 	break;
   case 0x54:
-    COLY = value & 0x1F;
-    UPDATE_REG(0x54, COLY);
+    GBACOLY = value & 0x1F;
+    UPDATE_REG(0x54, GBACOLY);
 	*(u16 *)(0x4000054) = value;
     break;
   case 0x60:
@@ -1362,36 +1362,36 @@ void CPUUpdateRegister(u32 address, u16 value)
 	  UPDATE_REG(address,value);
     break;
   case 0xB0:
-    DM0SAD_L = value;
-    UPDATE_REG(0xB0, DM0SAD_L);
+    GBADM0SAD_L = value;
+    UPDATE_REG(0xB0, GBADM0SAD_L);
     break;
   case 0xB2:
-    DM0SAD_H = value & 0x07FF;
-    UPDATE_REG(0xB2, DM0SAD_H);
+    GBADM0SAD_H = value & 0x07FF;
+    UPDATE_REG(0xB2, GBADM0SAD_H);
     break;
   case 0xB4:
-    DM0DAD_L = value;
-    UPDATE_REG(0xB4, DM0DAD_L);
+    GBADM0DAD_L = value;
+    UPDATE_REG(0xB4, GBADM0DAD_L);
     break;
   case 0xB6:
-    DM0DAD_H = value & 0x07FF;
-    UPDATE_REG(0xB6, DM0DAD_H);
+    GBADM0DAD_H = value & 0x07FF;
+    UPDATE_REG(0xB6, GBADM0DAD_H);
     break;
   case 0xB8:
-    DM0CNT_L = value & 0x3FFF;
+    GBADM0CNT_L = value & 0x3FFF;
     UPDATE_REG(0xB8, 0);
     break;
   case 0xBA:
     {
-      bool start = ((DM0CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((GBADM0CNT_H ^ value) & 0x8000) ? true : false;
       value &= 0xF7E0;
 
-      DM0CNT_H = value;
-      UPDATE_REG(0xBA, DM0CNT_H);    
+      GBADM0CNT_H = value;
+      UPDATE_REG(0xBA, GBADM0CNT_H);    
     
       if(start && (value & 0x8000)) {
-        dma0Source = DM0SAD_L | (DM0SAD_H << 16);
-        dma0Dest = DM0DAD_L | (DM0DAD_H << 16);
+        dma0Source = GBADM0SAD_L | (GBADM0SAD_H << 16);
+        dma0Dest = GBADM0DAD_L | (GBADM0DAD_H << 16);
         CPUCheckDMA(0, 1);
       }
     }
@@ -1405,8 +1405,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
     
-	DM1SAD_L = value;
-    UPDATE_REG(0xBC, DM1SAD_L);
+	GBADM1SAD_L = value;
+    UPDATE_REG(0xBC, GBADM1SAD_L);
     break;
   case 0xBE:
 #ifdef dmawriteprint
@@ -1417,8 +1417,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-    DM1SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xBE, DM1SAD_H);
+    GBADM1SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xBE, GBADM1SAD_H);
     break;
   case 0xC0:
 #ifdef dmawriteprint
@@ -1429,8 +1429,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM1DAD_L = value;
-    UPDATE_REG(0xC0, DM1DAD_L);
+	GBADM1DAD_L = value;
+    UPDATE_REG(0xC0, GBADM1DAD_L);
     break;
   case 0xC2:
 #ifdef dmawriteprint
@@ -1441,8 +1441,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-    DM1DAD_H = value & 0x07FF;
-    UPDATE_REG(0xC2, DM1DAD_H);
+    GBADM1DAD_H = value & 0x07FF;
+    UPDATE_REG(0xC2, GBADM1DAD_H);
     break;
   case 0xC4:
 #ifdef dmawriteprint
@@ -1453,7 +1453,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM1CNT_L = value & 0x3FFF;
+	GBADM1CNT_L = value & 0x3FFF;
     UPDATE_REG(0xC4, 0);
     break;
   case 0xC6:
@@ -1465,15 +1465,15 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 	  {
-      bool start = ((DM1CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((GBADM1CNT_H ^ value) & 0x8000) ? true : false;
       value &= 0xF7E0;
       
-      DM1CNT_H = value;
-      UPDATE_REG(0xC6, DM1CNT_H);
+      GBADM1CNT_H = value;
+      UPDATE_REG(0xC6, GBADM1CNT_H);
       
       if(start && (value & 0x8000)) {
-        dma1Source = DM1SAD_L | (DM1SAD_H << 16);
-        dma1Dest = DM1DAD_L | (DM1DAD_H << 16);
+        dma1Source = GBADM1SAD_L | (GBADM1SAD_H << 16);
+        dma1Dest = GBADM1DAD_L | (GBADM1DAD_H << 16);
         CPUCheckDMA(0, 2);
       }
     }
@@ -1487,8 +1487,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM2SAD_L = value;
-    UPDATE_REG(0xC8, DM2SAD_L);
+	GBADM2SAD_L = value;
+    UPDATE_REG(0xC8, GBADM2SAD_L);
     break;
   case 0xCA:
 #ifdef dmawriteprint
@@ -1499,8 +1499,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM2SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xCA, DM2SAD_H);
+	GBADM2SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xCA, GBADM2SAD_H);
     break;
   case 0xCC:
 #ifdef dmawriteprint
@@ -1511,8 +1511,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM2DAD_L = value;
-    UPDATE_REG(0xCC, DM2DAD_L);
+	GBADM2DAD_L = value;
+    UPDATE_REG(0xCC, GBADM2DAD_L);
     break;
   case 0xCE:
 #ifdef dmawriteprint
@@ -1523,8 +1523,8 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM2DAD_H = value & 0x07FF;
-    UPDATE_REG(0xCE, DM2DAD_H);
+	GBADM2DAD_H = value & 0x07FF;
+    UPDATE_REG(0xCE, GBADM2DAD_H);
     break;
   case 0xD0:
 #ifdef dmawriteprint
@@ -1536,7 +1536,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	REG_IPC_FIFO_TX = value; //faster in case we send a 0
 #endif
 
-	DM2CNT_L = value & 0x3FFF;
+	GBADM2CNT_L = value & 0x3FFF;
     UPDATE_REG(0xD0, 0);
     break;
   case 0xD2:
@@ -1550,53 +1550,53 @@ void CPUUpdateRegister(u32 address, u16 value)
 #endif
 
 	  {
-      bool start = ((DM2CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((GBADM2CNT_H ^ value) & 0x8000) ? true : false;
       
       value &= 0xF7E0;
       
-      DM2CNT_H = value;
-      UPDATE_REG(0xD2, DM2CNT_H);
+      GBADM2CNT_H = value;
+      UPDATE_REG(0xD2, GBADM2CNT_H);
       
       if(start && (value & 0x8000)) {
-        dma2Source = DM2SAD_L | (DM2SAD_H << 16);
-        dma2Dest = DM2DAD_L | (DM2DAD_H << 16);
+        dma2Source = GBADM2SAD_L | (GBADM2SAD_H << 16);
+        dma2Dest = GBADM2DAD_L | (GBADM2DAD_H << 16);
 
         CPUCheckDMA(0, 4);
       }            
     }
     break;
   case 0xD4:
-    DM3SAD_L = value;
-    UPDATE_REG(0xD4, DM3SAD_L);
+    GBADM3SAD_L = value;
+    UPDATE_REG(0xD4, GBADM3SAD_L);
     break;
   case 0xD6:
-    DM3SAD_H = value & 0x0FFF;
-    UPDATE_REG(0xD6, DM3SAD_H);
+    GBADM3SAD_H = value & 0x0FFF;
+    UPDATE_REG(0xD6, GBADM3SAD_H);
     break;
   case 0xD8:
-    DM3DAD_L = value;
-    UPDATE_REG(0xD8, DM3DAD_L);
+    GBADM3DAD_L = value;
+    UPDATE_REG(0xD8, GBADM3DAD_L);
     break;
   case 0xDA:
-    DM3DAD_H = value & 0x0FFF;
-    UPDATE_REG(0xDA, DM3DAD_H);
+    GBADM3DAD_H = value & 0x0FFF;
+    UPDATE_REG(0xDA, GBADM3DAD_H);
     break;
   case 0xDC:
-    DM3CNT_L = value;
+    GBADM3CNT_L = value;
     UPDATE_REG(0xDC, 0);
     break;
   case 0xDE:
     {
-      bool start = ((DM3CNT_H ^ value) & 0x8000) ? true : false;
+      bool start = ((GBADM3CNT_H ^ value) & 0x8000) ? true : false;
 
       value &= 0xFFE0;
 
-      DM3CNT_H = value;
-      UPDATE_REG(0xDE, DM3CNT_H);
+      GBADM3CNT_H = value;
+      UPDATE_REG(0xDE, GBADM3CNT_H);
     
       if(start && (value & 0x8000)) {
-        dma3Source = DM3SAD_L | (DM3SAD_H << 16);
-        dma3Dest = DM3DAD_L | (DM3DAD_H << 16);
+        dma3Source = GBADM3SAD_L | (GBADM3SAD_H << 16);
+        dma3Dest = GBADM3DAD_L | (GBADM3DAD_H << 16);
         CPUCheckDMA(0,8);
       }
     }
@@ -1793,39 +1793,39 @@ void CPUUpdateRegister(u32 address, u16 value)
       value &= 0xff7f;
       if(value & 1 && (value & 0x4000)) {
         UPDATE_REG(0x12a, 0xFF);
-        IF |= 0x80;
-        UPDATE_REG(0x202, IF);
+        GBAIF |= 0x80;
+        UPDATE_REG(0x202, GBAIF);
         value &= 0x7f7f;
       }
     }
     UPDATE_REG(0x128, value);
     break;
   case 0x130:
-    //P1 |= (value & 0x3FF); //ichfly readonly
-    //UPDATE_REG(0x130, P1);
+    //GBAP1 |= (value & 0x3FF); //ichfly readonly
+    //UPDATE_REG(0x130, GBAP1);
     break;
   case 0x132:
     UPDATE_REG(0x132, value & 0xC3FF);
 	*(u16 *)(0x4000132) = value;
     break;
   case 0x200:
-    IE = value & 0x3FFF;
-    UPDATE_REG(0x200, IE);
-    /*if ((IME & 1) && (IF & IE) && armIrqEnable)
+    GBAIE = value & 0x3FFF;
+    UPDATE_REG(0x200, GBAIE);
+    /*if ((GBAIME & 1) && (GBAIF & GBAIE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
 #ifdef forceHBlankirqs
-	REG_IE = IE | (REG_IE & 0xFFFF0000) | IRQ_HBLANK;
+	REG_IE = GBAIE | (REG_IE & 0xFFFF0000) | IRQ_HBLANK;
 #else
-	REG_IE = IE | (REG_IE & 0xFFFF0000);
+	REG_IE = GBAIE | (REG_IE & 0xFFFF0000);
 #endif
 	
-	anytimejmpfilter = IE;
+	anytimejmpfilter = GBAIE;
 	
     break;
   case 0x202:
 	//REG_IF = value; //ichfly update at read outdated
-	//IF = REG_IF;
-	REG_IF = IF = value;
+	//GBAIF = REG_IF;
+	REG_IF = GBAIF = value;
     break;
   case 0x204:
     { //ichfly can't emulate that
@@ -1873,10 +1873,10 @@ void CPUUpdateRegister(u32 address, u16 value)
     }
     break;
   case 0x208:
-    IME = value & 1;
-    UPDATE_REG(0x208, IME);
-	REG_IME = IME;
-    /*if ((IME & 1) && (IF & IE) && armIrqEnable)
+    GBAIME = value & 1;
+    UPDATE_REG(0x208, GBAIME);
+	REG_IME = GBAIME;
+    /*if ((GBAIME & 1) && (GBAIF & GBAIE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
     break;
   case 0x300:
@@ -2029,83 +2029,83 @@ void CPUReset(){
 	cpu_SetCP15Cnt(ctxCP15Cnt);
 	REG_IME = ctxREG_IME;
 	
-	//DISPCNT  = 0x0000;
-	DISPSTAT = 0x0000;
-	VCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
-	BG0CNT   = 0x0000;
-	BG1CNT   = 0x0000;
-	BG2CNT   = 0x0000;
-	BG3CNT   = 0x0000;
-	BG0HOFS  = 0x0000;
-	BG0VOFS  = 0x0000;
-	BG1HOFS  = 0x0000;
-	BG1VOFS  = 0x0000;
-	BG2HOFS  = 0x0000;
-	BG2VOFS  = 0x0000;
-	BG3HOFS  = 0x0000;
-	BG3VOFS  = 0x0000;
-	BG2PA    = 0x0100;
-	BG2PB    = 0x0000;
-	BG2PC    = 0x0000;
-	BG2PD    = 0x0100;
-	BG2X_L   = 0x0000;
-	BG2X_H   = 0x0000;
-	BG2Y_L   = 0x0000;
-	BG2Y_H   = 0x0000;
-	BG3PA    = 0x0100;
-	BG3PB    = 0x0000;
-	BG3PC    = 0x0000;
-	BG3PD    = 0x0100;
-	BG3X_L   = 0x0000;
-	BG3X_H   = 0x0000;
-	BG3Y_L   = 0x0000;
-	BG3Y_H   = 0x0000;
-	WIN0H    = 0x0000;
-	WIN1H    = 0x0000;
-	WIN0V    = 0x0000;
-	WIN1V    = 0x0000;
-	WININ    = 0x0000;
-	WINOUT   = 0x0000;
-	MOSAIC   = 0x0000;
-	BLDMOD   = 0x0000;
-	COLEV    = 0x0000;
-	COLY     = 0x0000;
-	DM0SAD_L = 0x0000;
-	DM0SAD_H = 0x0000;
-	DM0DAD_L = 0x0000;
-	DM0DAD_H = 0x0000;
-	DM0CNT_L = 0x0000;
-	DM0CNT_H = 0x0000;
-	DM1SAD_L = 0x0000;
-	DM1SAD_H = 0x0000;
-	DM1DAD_L = 0x0000;
-	DM1DAD_H = 0x0000;
-	DM1CNT_L = 0x0000;
-	DM1CNT_H = 0x0000;
-	DM2SAD_L = 0x0000;
-	DM2SAD_H = 0x0000;
-	DM2DAD_L = 0x0000;
-	DM2DAD_H = 0x0000;
-	DM2CNT_L = 0x0000;
-	DM2CNT_H = 0x0000;
-	DM3SAD_L = 0x0000;
-	DM3SAD_H = 0x0000;
-	DM3DAD_L = 0x0000;
-	DM3DAD_H = 0x0000;
-	DM3CNT_L = 0x0000;
-	DM3CNT_H = 0x0000;
-	TM0D     = 0x0000;
-	TM0CNT   = 0x0000;
-	TM1D     = 0x0000;
-	TM1CNT   = 0x0000;
-	TM2D     = 0x0000;
-	TM2CNT   = 0x0000;
-	TM3D     = 0x0000;
-	TM3CNT   = 0x0000;
-	P1       = 0x03FF;
-	IE       = 0x0000;
-	IF       = 0x0000;
-	IME      = 0x0000;
+	//GBADISPCNT  = 0x0000;
+	GBADISPSTAT = 0x0000;
+	GBAVCOUNT   = (useBios && !skipBios) ? 0 :0x007E;
+	GBABG0CNT   = 0x0000;
+	GBABG1CNT   = 0x0000;
+	GBABG2CNT   = 0x0000;
+	GBABG3CNT   = 0x0000;
+	GBABG0HOFS  = 0x0000;
+	GBABG0VOFS  = 0x0000;
+	GBABG1HOFS  = 0x0000;
+	GBABG1VOFS  = 0x0000;
+	GBABG2HOFS  = 0x0000;
+	GBABG2VOFS  = 0x0000;
+	GBABG3HOFS  = 0x0000;
+	GBABG3VOFS  = 0x0000;
+	GBABG2PA    = 0x0100;
+	GBABG2PB    = 0x0000;
+	GBABG2PC    = 0x0000;
+	GBABG2PD    = 0x0100;
+	GBABG2X_L   = 0x0000;
+	GBABG2X_H   = 0x0000;
+	GBABG2Y_L   = 0x0000;
+	GBABG2Y_H   = 0x0000;
+	GBABG3PA    = 0x0100;
+	GBABG3PB    = 0x0000;
+	GBABG3PC    = 0x0000;
+	GBABG3PD    = 0x0100;
+	GBABG3X_L   = 0x0000;
+	GBABG3X_H   = 0x0000;
+	GBABG3Y_L   = 0x0000;
+	GBABG3Y_H   = 0x0000;
+	GBAWIN0H    = 0x0000;
+	GBAWIN1H    = 0x0000;
+	GBAWIN0V    = 0x0000;
+	GBAWIN1V    = 0x0000;
+	GBAWININ    = 0x0000;
+	GBAWINOUT   = 0x0000;
+	GBAMOSAIC   = 0x0000;
+	GBABLDMOD   = 0x0000;
+	GBACOLEV    = 0x0000;
+	GBACOLY     = 0x0000;
+	GBADM0SAD_L = 0x0000;
+	GBADM0SAD_H = 0x0000;
+	GBADM0DAD_L = 0x0000;
+	GBADM0DAD_H = 0x0000;
+	GBADM0CNT_L = 0x0000;
+	GBADM0CNT_H = 0x0000;
+	GBADM1SAD_L = 0x0000;
+	GBADM1SAD_H = 0x0000;
+	GBADM1DAD_L = 0x0000;
+	GBADM1DAD_H = 0x0000;
+	GBADM1CNT_L = 0x0000;
+	GBADM1CNT_H = 0x0000;
+	GBADM2SAD_L = 0x0000;
+	GBADM2SAD_H = 0x0000;
+	GBADM2DAD_L = 0x0000;
+	GBADM2DAD_H = 0x0000;
+	GBADM2CNT_L = 0x0000;
+	GBADM2CNT_H = 0x0000;
+	GBADM3SAD_L = 0x0000;
+	GBADM3SAD_H = 0x0000;
+	GBADM3DAD_L = 0x0000;
+	GBADM3DAD_H = 0x0000;
+	GBADM3CNT_L = 0x0000;
+	GBADM3CNT_H = 0x0000;
+	GBATM0D     = 0x0000;
+	GBATM0CNT   = 0x0000;
+	GBATM1D     = 0x0000;
+	GBATM1CNT   = 0x0000;
+	GBATM2D     = 0x0000;
+	GBATM2CNT   = 0x0000;
+	GBATM3D     = 0x0000;
+	GBATM3CNT   = 0x0000;
+	GBAP1       = 0x03FF;
+	GBAIE       = 0x0000;
+	GBAIF       = 0x0000;
+	GBAIME      = 0x0000;
 
 	armMode = 0x1F;
 
@@ -2133,13 +2133,13 @@ void CPUReset(){
 	armState = true;
 	C_FLAG = V_FLAG = N_FLAG = Z_FLAG = false;*/
 	armState = true;
-	UPDATE_REG(0x00, DISPCNT);
-	UPDATE_REG(0x06, VCOUNT);
-	UPDATE_REG(0x20, BG2PA);
-	UPDATE_REG(0x26, BG2PD);
-	UPDATE_REG(0x30, BG3PA);
-	UPDATE_REG(0x36, BG3PD);
-	UPDATE_REG(0x130, P1);
+	UPDATE_REG(0x00, GBADISPCNT);
+	UPDATE_REG(0x06, GBAVCOUNT);
+	UPDATE_REG(0x20, GBABG2PA);
+	UPDATE_REG(0x26, GBABG2PD);
+	UPDATE_REG(0x30, GBABG3PA);
+	UPDATE_REG(0x36, GBABG3PD);
+	UPDATE_REG(0x130, GBAP1);
 	UPDATE_REG(0x88, 0x200);
 
 	// disable FIQ
@@ -2436,7 +2436,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -2570,7 +2570,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -2754,14 +2754,14 @@ void CPUWriteByte(u32 address, u8 b)
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
 
     // no need to switch 
     // byte writes to OBJ VRAM are ignored
-    if ((address) < objTilesAddress[((DISPCNT&7)+1)>>2])
+    if ((address) < objTilesAddress[((GBADISPCNT&7)+1)>>2])
     {
 #ifdef BKPT_SUPPORT
       if(freezeVRAM[address])
@@ -2817,21 +2817,21 @@ void CPUWriteByte(u32 address, u8 b)
 __attribute__((section(".itcm")))
 void vcounthandler(void){
 		
-		DISPSTAT |= (REG_DISPSTAT & 0x3);
-		VCOUNT = REG_VCOUNT&0xff;
+		GBADISPSTAT |= (REG_DISPSTAT & 0x3);
+		GBAVCOUNT = REG_VCOUNT&0xff;
 		
-		if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
+		if(GBAVCOUNT == (GBADISPSTAT >> 8)) //update by V-Count Setting
 		{
-			DISPSTAT |= 0x4;
+			GBADISPSTAT |= 0x4;
             
         
 		}
 		else{
-			DISPSTAT &= 0xFFFb; //remove vcount
+			GBADISPSTAT &= 0xFFFb; //remove vcount
 		}
 		//io update
-		UPDATE_REG(0x06, VCOUNT);
-		UPDATE_REG(0x04, DISPSTAT);
+		UPDATE_REG(0x06, GBAVCOUNT);
+		UPDATE_REG(0x04, GBADISPSTAT);
 }
 
 __attribute__((section(".itcm")))
@@ -2890,12 +2890,12 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	}
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, GBAIF);
 	}
 	if(address==0x04000006){
 		vcounthandler();
-		value = VCOUNT;
+		value = GBAVCOUNT;
 		break;
 	}
 	
@@ -2917,7 +2917,7 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
     {
         value = 0;
         break;
@@ -3080,13 +3080,13 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	}
 	if(address==0x04000006){
 		vcounthandler();
-		value = VCOUNT;
+		value = GBAVCOUNT;
 		break;
 	}
 	if(address == 0x4000202)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214;
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214;
+		UPDATE_REG(0x202, GBAIF);
 	}	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
@@ -3105,7 +3105,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
     {
         value = 0;
         break;
@@ -3246,14 +3246,14 @@ iprintf("r8 %02x\n",address);
 	}
 	if(address==0x04000006){
 		vcounthandler();
-		return (u8)VCOUNT;
+		return (u8)GBAVCOUNT;
 		break;
 	}
 	
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, GBAIF);
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
@@ -3268,7 +3268,7 @@ iprintf("r8 %02x\n",address);
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1ffff);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return 0;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -3386,12 +3386,12 @@ u32 CPUReadMemoryrealpu(u32 address)
 	}
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, GBAIF);
 	}
 	if(address==0x04000006){
 		vcounthandler();
-		value = VCOUNT;
+		value = GBAVCOUNT;
 		break;
 	}
 	
@@ -3543,13 +3543,13 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
   
 	if(address==0x04000006){
 		vcounthandler();
-		value = VCOUNT;
+		value = GBAVCOUNT;
 		break;
 	}
 	if(address == 0x4000202)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214;
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214;
+		UPDATE_REG(0x202, GBAIF);
 	}	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
@@ -3651,13 +3651,13 @@ iprintf("r8 %02x\n",address);
 	}
 	if(address==0x04000006){
 		vcounthandler();
-		return (u8)VCOUNT;
+		return (u8)GBAVCOUNT;
 		break;
 	}	
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
-		IF = *(vuint16*)0x04000214; //VBlanc
-		UPDATE_REG(0x202, IF);
+		GBAIF = *(vuint16*)0x04000214; //VBlanc
+		UPDATE_REG(0x202, GBAIF);
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
@@ -3768,7 +3768,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
 	if(address > 0x06020000)goto unreadable;
 #endif
     address = (address & 0x1fffc);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -3880,7 +3880,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
@@ -3963,14 +3963,14 @@ void CPUWriteBytepu(u32 address, u8 b)
 	if(address > 0x06020000)goto unwritable;
 #endif
     address = (address & 0x1fffe);
-    if (((DISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
+    if (((GBADISPCNT & 7) >2) && ((address & 0x1C000) == 0x18000))
         return;
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
 
     // no need to switch 
     // byte writes to OBJ VRAM are ignored
-    if ((address) < objTilesAddress[((DISPCNT&7)+1)>>2])
+    if ((address) < objTilesAddress[((GBADISPCNT&7)+1)>>2])
     {
 #ifdef BKPT_SUPPORT
       if(freezeVRAM[address])

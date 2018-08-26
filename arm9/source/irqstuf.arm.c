@@ -37,7 +37,7 @@
 
 
 __attribute__((section(".dtcm")))
-u16 DISPCNT = 0; 	//u16 DISPCNT  = 0x0080;
+u16 GBADISPCNT = 0; 	//u16 GBADISPCNT  = 0x0080;
 
 __attribute__((section(".dtcm")))
 int framenummer = 0;
@@ -67,7 +67,7 @@ BG Mode 0,1,2 (Tile/Map based Modes)
   06000000-0600FFFF  64 KBytes shared for BG Map and Tiles
   06010000-06017FFF  32 KBytes OBJ Tiles
 
-The shared 64K area can be split into BG Map area(s), and BG Tiles area(s), the respective addresses for Map and Tile areas are set up by BG0CNT-BG3CNT registers. The Map address may be specified in units of 2K (steps of 800h), the Tile address in units of 16K (steps of 4000h).
+The shared 64K area can be split into BG Map area(s), and BG Tiles area(s), the respective addresses for Map and Tile areas are set up by GBABG0CNT-GBABG3CNT registers. The Map address may be specified in units of 2K (steps of 800h), the Tile address in units of 16K (steps of 4000h).
 
 BG Mode 0,1 (Tile/Map based Text mode)
 The tiles may have 4bit or 8bit color depth, minimum map size is 32x32 tiles, maximum is 64x64 tiles, up to 1024 tiles can be used per map.
@@ -110,7 +110,7 @@ Additionally to the above VRAM, the GBA also contains 1 KByte Palette RAM (at 05
 
  LCD VRAM Character Data
 
-Each character (tile) consists of 8x8 dots (64 dots in total). The color depth may be either 4bit or 8bit (see BG0CNT-BG3CNT).
+Each character (tile) consists of 8x8 dots (64 dots in total). The color depth may be either 4bit or 8bit (see GBABG0CNT-GBABG3CNT).
 
 4bit depth (16 colors, 16 palettes)
 Each tile occupies 32 bytes of memory, the first 4 bytes for the topmost row of the tile, and so on. Each byte representing two dots, the lower 4 bits define the color for the left (!) dot, the upper 4 bits the color for the right dot.
@@ -143,7 +143,7 @@ In this mode, only 256 tiles can be used. There are no x/y-flip attributes, the 
 
 The dimensions of Rotation/Scaling BG Maps depend on the BG size. For size 0-3 that are: 16x16 tiles (128x128 pixels), 32x32 tiles (256x256 pixels), 64x64 tiles (512x512 pixels), or 128x128 tiles (1024x1024 pixels).
 
-The size and VRAM base address of the separate BG maps for BG0-3 are set up by BG0CNT-BG3CNT registers.
+The size and VRAM base address of the separate BG maps for BG0-3 are set up by GBABG0CNT-GBABG3CNT registers.
 
 
  LCD VRAM Bitmap BG Modes
@@ -169,7 +169,7 @@ BG Mode 5 - 160x128 pixels, 32768 colors
 Colors are defined as for Mode 3 (see above), but horizontal and vertical size are cut down to 160x128 pixels only - smaller than the physical dimensions of the LCD screen.
 The background occupies exactly 40 KBytes, so that BG VRAM may be split into two frames (06000000-06009FFF for Frame 0, and 0600A000-06013FFF for Frame 1).
 
-In BG modes 4,5, one Frame may be displayed (selected by DISPCNT Bit 4), the other Frame is invisible and may be redrawn in background.
+In BG modes 4,5, one Frame may be displayed (selected by GBADISPCNT Bit 4), the other Frame is invisible and may be redrawn in background.
 */
 
 
@@ -213,12 +213,12 @@ void initspeedupfelder()
 		{
 			if(currentprocV < 192)
 			{
-				res1 = ((currentprocV * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				res1 = ((currentprocV * 214) >> 8);//GBAVCOUNT = help * (1./1.2); //1.15350877;
 				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
 			}
 			else
 			{
-				res1 = (((currentprocV - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				res1 = (((currentprocV - 192) * 246) >>  8)+ 160;//GBAVCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
 				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
 			}
 			VCountdstogba[currentprocV] = res1;
@@ -280,10 +280,10 @@ __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
 	Wifi_Sync();
-    DISPSTAT |= (REG_DISPSTAT & 0x3);
-    DISPSTAT |= 0x2;	//hblank
-    DISPSTAT &= 0xFFFe; //remove vblank
-    UPDATE_REG(0x04, DISPSTAT);
+    GBADISPSTAT |= (REG_DISPSTAT & 0x3);
+    GBADISPSTAT |= 0x2;	//hblank
+    GBADISPSTAT &= 0xFFFe; //remove vblank
+    UPDATE_REG(0x04, GBADISPSTAT);
     CPUCheckDMA(2, 0x0f);
 	REG_IF = IRQ_HBLANK;
 }
@@ -303,23 +303,23 @@ void VblankHandler(void) {
 	//handles DS-DS Comms
 	sint32 currentDSWNIFIMode = doMULTIDaemonStage1();
 	
-	DISPSTAT |= (REG_DISPSTAT & 0x3);
-	DISPSTAT |= 0x1;	//vblank
-	DISPSTAT &= 0xFFFd; //remove hblank
-	UPDATE_REG(0x04, DISPSTAT);
+	GBADISPSTAT |= (REG_DISPSTAT & 0x3);
+	GBADISPSTAT |= 0x1;	//vblank
+	GBADISPSTAT &= 0xFFFd; //remove hblank
+	UPDATE_REG(0x04, GBADISPSTAT);
 
 	CPUCheckDMA(1, 0x0f); //V-Blank
 	dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);	//32 KBytes OBJ Tiles GBA copy into DS OBJ Mem (sprites)
 	
-    P1 = REG_KEYINPUT&0x3ff;
+    GBAP1 = REG_KEYINPUT&0x3ff;
 #ifdef ichflytestkeypossibillity
   // disallow Left+Right or Up+Down of being pressed at the same time
-  if((P1 & 0x30) == 0)
-    P1 |= 0x10;
-  if((P1 & 0xC0) == 0)
-    P1 |= 0x80;
+  if((GBAP1 & 0x30) == 0)
+    GBAP1 |= 0x10;
+  if((GBAP1 & 0xC0) == 0)
+    GBAP1 |= 0x80;
 #endif
-	if(!(P1 & KEY_A) && !(P1 & KEY_B) && !(P1 & KEY_UP))
+	if(!(GBAP1 & KEY_A) && !(GBAP1 & KEY_B) && !(GBAP1 & KEY_UP))
 	{
 		if(ignorenextY == 0)
 		{
@@ -328,7 +328,7 @@ void VblankHandler(void) {
 		}
 		else {ignorenextY -= 1;}
 	}   
-    UPDATE_REG(0x130, P1);
+    UPDATE_REG(0x130, GBAP1);
 }
 
 
@@ -391,12 +391,12 @@ void pausemenue()
 					vramSetBankI(VRAM_I_LCD); //only sub
 					videoBgEnableSub(3);
 #endif
-					while(REG_VCOUNT != tempvcount); //wait for VCOUNT
+					while(REG_VCOUNT != tempvcount); //wait for GBAVCOUNT
 					TIMER0_CR = timer0Value; //timer on
 					TIMER1_CR = timer1Value;
 					TIMER2_CR = timer2Value;
 					TIMER3_CR = timer3Value;
-					REG_IE = IE | IRQ_FIFO_NOT_EMPTY; //irq on
+					REG_IE = GBAIE | IRQ_FIFO_NOT_EMPTY; //irq on
 					while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
 						u32 src = REG_IPC_FIFO_RX; //get sync irqs back
 					}

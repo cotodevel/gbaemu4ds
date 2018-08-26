@@ -96,11 +96,11 @@ struct sIPCSharedGBA{
 	//not yet!
 	/*
     //GBA IRQS
-    u16 IE;
+    u16 GBAIE;
 
-    u16 IF;
+    u16 GBAIF;
 
-    u16 IME;
+    u16 GBAIME;
     
     //The next hardware mapped here: DMA 1,2 and Timers 0,1 since they belong to GBA sound system
     //FIFO DMA Emulation
@@ -123,39 +123,39 @@ struct sIPCSharedGBA{
     //DMA
     u32 dma0Source;
     u32 dma0Dest;
-    u16 DM0SAD_L;
-    u16 DM0SAD_H;
-    u16 DM0DAD_L;
-    u16 DM0DAD_H;
-    u16 DM0CNT_L;
-    u16 DM0CNT_H;
+    u16 GBADM0SAD_L;
+    u16 GBADM0SAD_H;
+    u16 GBADM0DAD_L;
+    u16 GBADM0DAD_H;
+    u16 GBADM0CNT_L;
+    u16 GBADM0CNT_H;
     
     u32 dma1Source;
     u32 dma1Dest;
-    u16 DM1SAD_L;
-    u16 DM1SAD_H;
-    u16 DM1DAD_L;
-    u16 DM1DAD_H;
-    u16 DM1CNT_L;
-    u16 DM1CNT_H;
+    u16 GBADM1SAD_L;
+    u16 GBADM1SAD_H;
+    u16 GBADM1DAD_L;
+    u16 GBADM1DAD_H;
+    u16 GBADM1CNT_L;
+    u16 GBADM1CNT_H;
     
     u32 dma2Source;
     u32 dma2Dest;
-    u16 DM2SAD_L;
-    u16 DM2SAD_H;
-    u16 DM2DAD_L;
-    u16 DM2DAD_H;
-    u16 DM2CNT_L;
-    u16 DM2CNT_H;
+    u16 GBADM2SAD_L;
+    u16 GBADM2SAD_H;
+    u16 GBADM2DAD_L;
+    u16 GBADM2DAD_H;
+    u16 GBADM2CNT_L;
+    u16 GBADM2CNT_H;
     
     u32 dma3Source;
     u32 dma3Dest;
-    u16 DM3SAD_L;
-    u16 DM3SAD_H;
-    u16 DM3DAD_L;
-    u16 DM3DAD_H;
-    u16 DM3CNT_L;
-    u16 DM3CNT_H;
+    u16 GBADM3SAD_L;
+    u16 GBADM3SAD_H;
+    u16 GBADM3DAD_L;
+    u16 GBADM3DAD_H;
+    u16 GBADM3CNT_L;
+    u16 GBADM3CNT_H;
     
     //Timers
     u16 timer0Value;
@@ -164,8 +164,8 @@ struct sIPCSharedGBA{
     int timer0Reload;
     int timer0ClockReload;
     
-    u16 TM0D;
-    u16 TM0CNT;
+    u16 GBATM0D;
+    u16 GBATM0CNT;
     
     u16 timer1Value;
     bool timer1On;
@@ -173,8 +173,8 @@ struct sIPCSharedGBA{
     int timer1Reload;
     int timer1ClockReload;
     
-    u16 TM1D;
-    u16 TM1CNT;
+    u16 GBATM1D;
+    u16 GBATM1CNT;
     
     u16 timer2Value;
     bool timer2On;
@@ -182,8 +182,8 @@ struct sIPCSharedGBA{
     int timer2Reload;
     int timer2ClockReload;
     
-    u16 TM2D;
-    u16 TM2CNT;
+    u16 GBATM2D;
+    u16 GBATM2CNT;
     
     u16 timer3Value;
     bool timer3On;
@@ -191,8 +191,8 @@ struct sIPCSharedGBA{
     int timer3Reload;
     int timer3ClockReload;
     
-    u16 TM3D;
-    u16 TM3CNT;
+    u16 GBATM3D;
+    u16 GBATM3CNT;
 
     //GBA Virtual Sound Controller
     u16 SOUNDCNT_L;
