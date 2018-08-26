@@ -1282,7 +1282,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	{
 		int tempWININ = GBAWININ & ~0x404;
 		tempWININ = tempWININ | ((GBAWININ & 0x404) << 1);
-		GBAWININ = tempWININ;
+		WIN_IN = tempWININ;
 	}
 	break;
   case 0x4A:
