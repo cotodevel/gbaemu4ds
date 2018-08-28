@@ -420,7 +420,7 @@ void pausemenue()
 						SendArm7Command(set_callline,(u32)tempvcount);	//cmd
 						REG_VCOUNT = tempvcount;
 						pu_Enable();
-						gbaInit(false);
+						gbaInit(useMPUFast);
 						REG_IME = 1;
 						SendArm7Command(GBAEMU4DS_SND_START,0x0);
 						gbaMode();

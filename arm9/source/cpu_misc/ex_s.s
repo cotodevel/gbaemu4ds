@@ -35,6 +35,10 @@ inter_res2:
 
 .pool
 
+.global GBAModeCodeDataPermission
+GBAModeCodeDataPermission:
+	.word 0
+
 .global savedsp
 savedsp:
 	.word 0
@@ -70,7 +74,8 @@ inter_irq:
 	ldr r2, [r2]
 	ands r1,r1,r2 			@bankedIE (NDS enabled hardware) & GBAIF
 	
-	ldr	r1, =0x06300033        	@puGba();
+	adr r1,GBAModeCodeDataPermission	@puGba();
+	ldr r1, [r1]
 	mcr	p15, 0, r1, c5, c0, 2	@setDataPermiss
 	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
@@ -213,7 +218,9 @@ exitdirectcpu:
 	ldmia r6, {r13-r14}	@restor r13 and r14  @ on restaure les registres bankés (r13 et r14). /!\ N'allons pas croire qu'on les a restauré dans notre contexte: en effet, on a changé de mode là !
 	msr	cpsr, r3	@chagne to mode "normal"@ on revient au mode "normal"
 	
-	ldr	SP, =0x06300033			@puGba();
+	
+	adr	SP,GBAModeCodeDataPermission			@puGba();
+	ldr SP, [SP]
 	mcr	p15, 0, SP, c5, c0, 2	@setDataPermiss
 	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ prefetch abort handles different logic. Policy is when GBAMode enters is set once.
 	

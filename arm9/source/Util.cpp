@@ -729,7 +729,9 @@ bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, i
 	return false;
 }
 
+bool useMPUFast = false;
 //coto: if a game is defined here savetype from gamecode will be used
+//		update: saveDecider also changes the MPU bits to give per-game speedup
 int save_decider(){
 
 	//void * memcpy ( void * destination, const void * source, size_t num );
@@ -741,21 +743,15 @@ int save_decider(){
 	memcpy((char*)gamecode,(u8*)&GetsIPCSharedGBA()->gbaheader.gamecode,sizeof(GetsIPCSharedGBA()->gbaheader.gamecode));
 	memcpy((char*)title,(u8*)&GetsIPCSharedGBA()->gbaheader.title,sizeof(GetsIPCSharedGBA()->gbaheader.title));
 	
-	//iprintf("GameCode is: %s \n",gamecode);
-	//iprintf("GameCode is: %s \n",strtoupper(gamecode));
-	//iprintf("GameCode is: %s \n",strtolower(gamecode));
-	//while(1);
-
     if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"bpre01"), //firered 128K
         sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
-    {
-        
+    {    
         savetype = 3; 
-    }
+	}
     
 	else if( strncmp( 
         strtoupper((char*)gamecode), 
@@ -763,8 +759,7 @@ int save_decider(){
         sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
-    {
-        
+    {    
         savetype = 3; 
     }
     
@@ -774,10 +769,10 @@ int save_decider(){
         sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
-    {
-        
+    {   
         savetype = 1; 
-    }
+		useMPUFast = true;	//use fast settings
+	}
     
     else if( strncmp( 
         strtoupper((char*)gamecode), 
@@ -785,13 +780,12 @@ int save_decider(){
         sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
         ) == 0 
         )
-    {
-        
+    {   
         savetype = 3; 
-    }
+		useMPUFast = true;	//use fast settings
+	}
 	
 	//all pokemon sapphire / pokemon ruby cases are also 128K Flash
-	
 	else if(
 		(save_deciderByTitle(title, (char*)"POKEMON SAPP",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
 		||
@@ -801,7 +795,25 @@ int save_decider(){
         savetype = 3; 
     }
 	
-
+	else if(
+		(save_deciderByTitle(title, (char*)"SUPER MARIOB",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)	//Mario world
+		||
+		(save_deciderByTitle(title, (char*)"SUPER MARIOC",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)	//Yoshi Island
+	)
+    {
+		useMPUFast = true;	//use fast settings
+	}
+	//SUPER MARIOA & SUPER MARIOD Already covered
+	
+	
+	else if(
+		(save_deciderByTitle(title, (char*)"AGB KIRBY DX",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)	//Kirby nightmare in dreamland
+	)
+    {
+		useMPUFast = true;	//use fast settings
+	}
+	
+	
     int myflashsize = 0x10000;
 
     //Flash setup: 0 auto / 1 eeprom / 2 sram / 3 flashrom /4 eeprom + sensor / 5 none
@@ -1110,7 +1122,7 @@ bool reloadGBA(char * filename, u32 manual_save_type){
 	#endif
 	SendArm7Command(GBAEMU4DS_SND_START,0x0);
 	pu_Enable();
-	gbaInit(false);
+	gbaInit(useMPUFast);
 	gbaMode();
 	REG_IF = IRQ_HBLANK;
 	cpu_ArmJumpforstackinit((u32)rom, 0);

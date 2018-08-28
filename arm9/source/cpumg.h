@@ -95,6 +95,7 @@ extern void setGBAVectors();
 extern void setVectorsAsm();
 extern void debugExceptionHandler();
 
+extern u32 GBAModeCodeDataPermission;
 #ifdef __cplusplus
 }
 #endif

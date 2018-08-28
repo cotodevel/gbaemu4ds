@@ -161,6 +161,8 @@ extern void WRITE16LE(u16 * x,u16 v);
 extern void WRITE32LE(u32 * x, u32 v);
 extern void UPDATE_REG(u16 address, u16 value);
 
+extern bool useMPUFast;
+
 #ifdef __cplusplus
 }
 #endif
