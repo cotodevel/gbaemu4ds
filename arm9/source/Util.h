@@ -153,7 +153,8 @@ extern u32 swap32(u32 v);
 
 extern bool reloadGBA(char * filename, u32 manual_save_type);
 extern bool ShowBrowser();
-extern char * bufNames[entriesPerList][512];
+extern char * internalName[entriesPerList][512];
+extern char * printName[entriesPerList][512];
 
 extern u16 READ16LE(u16 * x);
 extern u32 READ32LE(u32 * x);

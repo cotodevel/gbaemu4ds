@@ -1139,9 +1139,10 @@ bool reloadGBA(char * filename, u32 manual_save_type){
 	cpu_ArmJumpforstackinit((u32)rom, 0);
 }
 
-char * bufNames[entriesPerList][512];
+char * internalName[entriesPerList][512];	//internal name
 
-
+char * printName[entriesPerList][512];	//printable name
+	
 //return value : lcdSwapS == true, must swap LCD, otherwise false
 __attribute__((section(".itcm")))
 bool ShowBrowser(){
@@ -1167,22 +1168,25 @@ bool ShowBrowser(){
 	
 	struct dirent *de;  // Pointer for directory entry
 	char cwPath[512] = {0};
-	
 	sprintf(cwPath,"%s","/gba");
-	
-	// opendir() returns a pointer of DIR type. 
-    DIR *dr = opendir(cwPath);
+	DIR *dr = opendir(cwPath);
 	
     if (dr == NULL){  // opendir returns NULL if couldn't open directory
         iprintf("Could not open current directory. check README.md " );
         while(1==1);
     }
 	int j = 0, k =0;
-	
     while ((de = readdir(dr)) != NULL){
 		if(j < entriesPerList){
 			if( utilIsGBAImage((const char *)de->d_name) == true){
-				sprintf((char*)&bufNames[j],"%s",de->d_name);
+				sprintf((char*)&internalName[j],"%s",de->d_name);	//internal name
+				int CopySize = strlen(de->d_name) + 1;
+				if( CopySize > 22){	//up to 23 characters on menu
+					snprintf((char*)&printName[j], 22 + 4, "%s%s", (char*)&internalName[j], "...");
+				}
+				else{
+					snprintf((char*)&printName[j], CopySize, "%s", (char*)&internalName[j]);
+				}
 				j++;
 			}
 		}
@@ -1192,7 +1196,7 @@ bool ShowBrowser(){
 	//actual file lister
 	iprintf("\x1b[2J");
 	while(k < j ){
-		iprintf("--- %s",(char*)&bufNames[k]);
+		iprintf("--- %s",(char*)&printName[k]);
 		iprintf("\n");
 		k++;
 	}
@@ -1237,7 +1241,7 @@ bool ShowBrowser(){
 		lastVal = k;
 	}
 	iprintf("\x1b[2J");
-	sprintf(szFile,"%s%s/%s","fat:",cwPath,(char*)&bufNames[k]);
+	sprintf(szFile,"%s%s/%s","fat:",cwPath,(char*)&internalName[k]);
 	return lcdSwapS;
 }
 
