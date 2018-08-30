@@ -796,6 +796,16 @@ int save_decider(){
         useMPUFast = true;	//use fast settings
 	}
 	
+	else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"bsbe78"), //sonic battle
+        sizeof(GetsIPCSharedGBA()->gbaheader.gamecode)
+        ) == 0 
+        )
+    {   
+        useMPUFast = true;	//use fast settings
+	}
+	
 	//all pokemon sapphire / pokemon ruby cases are also 128K Flash
 	else if(
 		(save_deciderByTitle(title, (char*)"POKEMON SAPP",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)
