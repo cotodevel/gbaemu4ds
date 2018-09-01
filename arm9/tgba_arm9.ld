@@ -3,22 +3,19 @@ OUTPUT_ARCH(arm)
 ENTRY(_start)
 
 MEMORY {
+	rom     : ORIGIN = 0x08000000, LENGTH = 32M
+	gbarom  : ORIGIN = 0x02180000, LENGTH = 2M
+	gbaew   : ORIGIN = 0x02000000, LENGTH = 256k
+	ewram   : ORIGIN = 0x02100000, LENGTH = 1M
+	dtcm    : ORIGIN = 0x027C0000, LENGTH = 16K
 
-       rom     : ORIGIN = 0x08000000, LENGTH = 32M
-       gbarom  : ORIGIN = 0x02180000, LENGTH = 2M
-       gbaew   : ORIGIN = 0x02000000, LENGTH = 256k
-       ewram   : ORIGIN = 0x02100000, LENGTH = 1M
-       dtcm    : ORIGIN = 0x027C0000, LENGTH = 16K
-	   
-	   /* ITCM relocated pseudo GBA bios area, that is in ~32MB range (from 0x00000000) any ARMv4 branch opcode supports */
-       vectors : ORIGIN = 0x01FF8000, LENGTH = 512
-       
-	   /* ITCM relocated pseudo GBA bios area, that is in ~32MB range (from 0x00000000) any ARMv4 branch opcode supports */
-	   itcm    : ORIGIN = (0x01FF8000 + 512), LENGTH = 32K - 512
+	/* ITCM relocated pseudo GBA bios area, that is in ~32MB range (from 0x00000000) any ARMv4 branch opcode supports */
+	/* Vectors : 0x01FF8000 ~ 512 bytes */
+	/* ITCM: 0x01FF8000 + 512 bytes  */
+	itcm    : ORIGIN = 0x01FF8000, LENGTH = 32K
 }
 
 
-__vectors_start	=	ORIGIN(vectors);
 __itcm_start	=	ORIGIN(itcm);
 __itcm_end	=	ORIGIN(itcm) + LENGTH(itcm);
 
@@ -186,22 +183,18 @@ SECTIONS
 
 	.itcm __itcm_start : AT (__itcm_lma)
 	{
+		__vectors_lma = .;
+		__vectors_start = __vectors_lma;
+		*(.vectors)
+		*vectors.*(.text)
+		. = ALIGN(4);
+		__vectors_end = ABSOLUTE(.);
 		*(.itcm)
 		*itcm.*(.text)
 		. = ALIGN(4);
 		__itcm_end = ABSOLUTE(.);
 	} >itcm = 0xff
-	
-	__vectors_lma = __itcm_lma + SIZEOF(.itcm);
 
-	.vectors __vectors_start : AT (__vectors_lma)
-	{
-		*(.vectors)
-		*vectors.*(.text)
-		. = ALIGN(4);
-		__vectors_end = ABSOLUTE(.);
-	} >vectors = 0xff
-	
 	.sbss __dtcm_end (NOLOAD): 
 	{
 		__sbss_start = ABSOLUTE(.);
