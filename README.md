@@ -26,7 +26,8 @@ How to build:
 
 
 How to boot: 
- - copy gba homebrew/files to SD root/gba folder , and run gbaemu4ds.nds, and a simple file directory will read the gba folder contents. Press start to choose the file and that's it.
+ - copy the /release folder contents, in SD:/ root folder. (where SD is the Mounted Media according your OS), if it prompts for overwrite: Yes to All. 
+   And run gbaemu4ds.nds, and a simple file directory will read the gba folder contents. Press start to choose the file and that's it.
  
  
  Coto.
