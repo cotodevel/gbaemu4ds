@@ -17,6 +17,18 @@ patcher: (prefetcher?)
 - 0x1DC0DE
 - decrypter
 
+12/16/2018:
+
+- Restore :
+
+	uppern_read_emulation
+
+	gba_handel_IRQ_correct
+
+	static inline void updateVC() -> merge into gbaemu4ds-alive
+
+
+
 alive-branch specific todo:
 
 Homebrew tests: 
