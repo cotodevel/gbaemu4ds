@@ -17,6 +17,52 @@ patcher: (prefetcher?)
 - 0x1DC0DE
 - decrypter
 
+alive-branch specific todo:
+
+Homebrew tests: 
+
+Test Date: 12/16/2018
+
+1 1 Bit Wall: blackscreen
+2 2 Bit wall: black screen
+3 3 weeks in paradise: unknown OP
+4 5nake: ok, screen flicker
+5 1942 Advance: Works
+6 Absolute Zed: hang up at title screen (not hard freeze, as DS interrupts are still working, perhaps the VCOUNTER emulation isn't accurate)
+7 ACE : Works
+8 Agoria: hangs up at intro screen
+9 Airwing assault: hangs up at intro screen
+10: Anguna: Works, even past Green Toady.
+11: Another World: Works, but needs the BG mode re-added back from gbaemu4ds 2014
+12: Asteroids: Works
+13: Atomix: hangs up at intro screen
+14: Balle: Blackscreen
+15: Battle Picross: Whitescreen
+16: Blast Arena Advance: Works
+17: Block Trap: Works
+18: Bridge Racer: Unknown OP
+19: Bytes: Works
+20: Castle Master: Works
+21: CCCP: Works
+22: Chaos : Freezes during game play.
+23: Chips Advance: Works
+24: Chocobo World Deluxe: Unknown OP at intro screen
+25: Clayshooter: Works
+26: CleanGameAdvance: Works
+27: CodeNameHacker: Works
+28: DoomDarkRevenge: Works
+29: Elevator: Freezes
+30: Factory Bots: hang up at title screen (not hard freeze, as DS interrupts are still working, perhaps the VCOUNTER emulation isn't accurate)
+31: Frogger: Blackscreens
+32: Hexavirus
+33: Jetpack2: Blackscreen
+34: Metal Warriors 4: Works.
+35: Negative Space: Works
+36: 15 Puzzle: need old irqs to work
+37: Santa's Sweat Shop: Works
+38: TetrieRAM: hang up at title screen (not hard freeze, as DS interrupts are still working, perhaps the VCOUNTER emulation isn't accurate)
+39: Time Walker: Unknown OP
+40: Waimanu: Works 
 
 
 Documentation:
