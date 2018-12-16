@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 #include "libnds_internal.h"
-#include "../ichflysettings.h"
+#include "ichflysettings.h"
 #include "../GBA.h"
 #include "../bios.h"
 #include "../Globals.h"

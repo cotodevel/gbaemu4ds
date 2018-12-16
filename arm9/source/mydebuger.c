@@ -27,7 +27,9 @@
 #include "mydebuger.h"
 #include "file_browse.h"
 #include "main.h"
+#include "ichflysettings.h"
 
+#ifndef noichflydebugger
 char* seloptionsshowmem [7] = {"dump ram","dump gba ram","show nds ram","show gba ram","cram dump","dispcomdebug","exit"};
 
 void wait_press_b()
@@ -458,3 +460,4 @@ void show_mem()
 
 	}
 }
+#endif

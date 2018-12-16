@@ -3,7 +3,7 @@
 .section	.itcm,"ax",%progbits
 .align 4
 .arm
-#include "../ichflysettings.h"
+#include "../../../common/ichflysettings.h"
 .pool
 
 @========== Exception code ====================	

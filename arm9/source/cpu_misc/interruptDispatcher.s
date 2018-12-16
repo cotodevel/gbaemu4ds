@@ -29,7 +29,7 @@
 .align 4
 .arm
 
-#include "../ichflysettings.h"
+#include "../../../common/ichflysettings.h"
 .extern	irqTable
 
 .global	IntrMain, __cpsr_mask

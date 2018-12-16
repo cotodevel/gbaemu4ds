@@ -29,8 +29,6 @@ extern int lastdebugcurrent;
 extern int lastdebugsize;
 #endif
 
-//todo: move these to DTCM after the current commit works
-
 #define DISPCAPCNT (*(vu32*)0x4000064)
 #define internalRAM ((u8*)0x03000000)
 #define workRAM ((u8*)0x02000000)

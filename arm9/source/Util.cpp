@@ -63,6 +63,7 @@
 #include "fatfile.h"
 #include "dswnifi_lib.h"
 #include "disk_fs/ichflyfs.h"
+#include "Cheats.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
@@ -434,12 +435,12 @@ void patchit(int romSize2)
 			break;
 		case 1:
 			{
-			//fread((void*)&cheatsNumber,1,0x4,patchf);
+			fread((void*)&cheatsNumber,1,0x4,patchf);
 			int offset;
 			fread((void*)&offset,1,0x4,patchf);
 			int coo5 = ftell(patchf);
 			fseek(patchf,offset,SEEK_SET);
-			//fread((void*)cheatsList,1,cheatsNumber*28,patchf);
+			fread((void*)cheatsList,1,cheatsNumber*28,patchf);
 			fseek(patchf,coo5,SEEK_SET);
 			__irqSet(IRQ_FIFO_NOT_EMPTY,arm7dmareqandcheat,irqTable);
 #ifdef debugpatch
@@ -612,8 +613,8 @@ void patchit(int romSize2)
 			}
 			break;
 			case 5:
-			{	
-			#ifdef usebuffedVcout
+				#ifdef usebuffedVcout
+				
 				extern u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
 				extern u8 VCountdstogba[263]; //(LY)      (0..262)
 				extern u8 VCountdoit[263]; //jump in or out
@@ -626,8 +627,8 @@ void patchit(int romSize2)
 				fread(VCountdstogba,1,263,patchf);
 				fread(VCountdoit,1,263,patchf);
 				fseek(patchf,coo,SEEK_SET);
-			#endif
-			}
+				
+				#endif
 			break;
 		}
 	}

@@ -13,7 +13,7 @@
 #include "filetime.h"
 #include "lock.h"
 
-#include "../ichflysettings.h"
+#include "ichflysettings.h"
 
 #include "../Globals.h"
 #include "../GBA.h"

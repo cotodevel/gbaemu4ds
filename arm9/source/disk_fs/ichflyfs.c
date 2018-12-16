@@ -2,7 +2,7 @@
 #include "ichflyfs.h"
 #include "../Util.h"
 #include "../GBA.h"
-#include "../ichflysettings.h"
+#include "ichflysettings.h"
 
 __attribute__((section(".itcm")))
 u8 ichfly_readu8(unsigned int pos) //need lockup

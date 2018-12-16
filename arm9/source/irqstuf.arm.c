@@ -300,6 +300,23 @@ __attribute__((section(".itcm")))
 void VblankHandler(void) {
 //---------------------------------------------------------------------------------
 	
+#ifdef showdebug
+	iprintf("\x1b[2J");
+	iprintf("%d %d\n",VBlankIntrWaitentertimesshow,IntrWaitnum);
+#ifdef anyarmcom
+	extern void showcomdebug();
+	showcomdebug();
+#endif
+	counterenters++;
+	if(counterenters == 60)
+	{
+		VBlankIntrWaitentertimesshow = VBlankIntrWaitentertimes;
+		counterenters = 0;
+		VBlankIntrWaitentertimes = 0;
+	}
+#endif
+
+
 	//handles DS-DS Comms
 	sint32 currentDSWNIFIMode = doMULTIDaemonStage1();
 	
@@ -329,6 +346,11 @@ void VblankHandler(void) {
 		else {ignorenextY -= 1;}
 	}   
     UPDATE_REG(0x130, GBAP1);
+	
+	#ifdef showdebug
+	//iprintf("ex %d\n",REG_VCOUNT);
+	#endif
+
 }
 
 
@@ -381,7 +403,9 @@ void pausemenue()
 					CPUWriteBatteryFile(savePath);
 					break;
 				case 1:
+					#ifndef noichflydebugger
 					show_mem();
+					#endif
 					break;
 				case 2:{
 					iprintf("\x1b[2J");

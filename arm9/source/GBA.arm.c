@@ -56,6 +56,7 @@ bool ichflytest = false;
 
 #include "ichflyfs.h"
 #include "agbprint.h"
+#include "main.h"
 
 #ifdef PROFILING
 #include "prof/prof.h"
@@ -572,7 +573,13 @@ int CPULoadRom(const char *szFile)
 	int fileSize = ftell(f);
 	fseek(f,0,SEEK_SET);
 	generatefilemap(fileSize);
-	romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	
+	#ifdef wifidebuger
+	  romSize = 0x02380000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	#else
+      romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	#endif
+
 	rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);	
 	size_t read = fileSize <= romSize ? fileSize : romSize;
 	size_t r= 0x80000;
@@ -583,6 +590,9 @@ int CPULoadRom(const char *szFile)
 	else{	//Single Cart, Normal Boot
 		r = fread(rom, 1, read, f);
 	}
+	
+	if(patchPath[0] != 0)patchit(romSize);
+	
 	//set up header
     memcpy((u8*)&GetsIPCSharedGBA()->gbaheader,(u8*)rom,sizeof(gbaHeader_t));
 	ichflyfilestream = f;

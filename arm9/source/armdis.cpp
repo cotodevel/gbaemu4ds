@@ -20,14 +20,14 @@
 /* Arm/Thumb command set disassembler                                   */
 /************************************************************************/
 
-
 #include "ichflysettings.h"
-
+#ifndef noichflydebugger
 #include <stdio.h>
+
 #include "GBA.h"
 #include "armdis.h"
+#include "elf.h"
 #include "Util.h"
-
 
 char hdig[] = "0123456789abcdef";
 
@@ -59,7 +59,7 @@ char *armMultLoadStore[12] = {
   "fa","fd","ea","ed"
 };
 
-struct Opcodes thumbOpcodes[] = {
+Opcodes thumbOpcodes[] = {
   // Format 1
   {0xf800, 0x0000, "lsl %r0, %r3, %o"},
   {0xf800, 0x0800, "lsr %r0, %r3, %o"},
@@ -145,7 +145,7 @@ struct Opcodes thumbOpcodes[] = {
   {0x0000, 0x0000, "[ ??? ]"}
 };
 
-struct Opcodes armOpcodes[] = {
+Opcodes armOpcodes[] = {
   // Undefined
   {0x0e000010, 0x06000010, "[ undefined ]"},
   // Branch instructions
@@ -220,7 +220,7 @@ char* addHex(char *dest, int siz, u32 val){
 int disArm(u32 offset, char *dest, int flags){
   u32 opcode = debuggerReadMemory(offset);
         
-  const struct Opcodes *sp = armOpcodes;
+  const Opcodes *sp = armOpcodes;
   while( sp->cval != (opcode & sp->mask) )
     sp++;
 
@@ -534,7 +534,7 @@ int disArm(u32 offset, char *dest, int flags){
 int disThumb(u32 offset, char *dest, int flags){
   u32 opcode = debuggerReadHalfWord(offset);
         
-  const struct Opcodes *sp = thumbOpcodes;
+  const Opcodes *sp = thumbOpcodes;
   int ret = 2;
   while( sp->cval != (opcode & sp->mask) )
     sp++;
@@ -683,3 +683,4 @@ int disThumb(u32 offset, char *dest, int flags){
   *dest++ = 0;
   return ret;
 }
+#endif

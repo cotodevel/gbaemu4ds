@@ -6,7 +6,7 @@
 #include "../../../common/gba_ipc.h"
 #include "../../../common/cpuglobal.h"
 
-#include "../ichflysettings.h"
+#include "ichflysettings.h"
 #include "../GBA.h"
 #include "../Sound.h"
 #include "../Util.h"
