@@ -56,6 +56,11 @@ spsvc:
 
 .pool
 
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@start
+
+#ifdef gba_handel_IRQ_correct
+
 inter_irq:
 	sub lr,lr,#4
 	stmfd  SP!, {R0-R12,LR}		@save registers to SP_irq
@@ -80,13 +85,130 @@ inter_irq:
 	@mcr	p15, 0, r1, c5, c0, 3	@setCodePermiss	/ no need for that here since only happens when: the instructions pool failed to fetch data at AHB level or instruction not understood/unaligned access
 
 	BEQ	irqexit		@ GBAIF > 0 ? GBA IRQ Handler
-
+	
 	@GBA IRQ Handler
-	add    LR,PC,#0            @retadr for USER handler
-	ldr    PC,[R0, #-0x4] 	     @jump to [03FFFFFC] USER handler
-
+	#ifdef checkclearaddr	
+		ldr    r1,=0x03008000
+		add    lr,pc,#0            @retadr for USER handler
+		ldr    pc,[r1, #-0x4]      @jump to [03007FFC] USER handler
+	#else
+		add    lr,pc,#0            @retadr for USER handler
+		ldr    pc,[r0, #-0x4] 	     @jump to [03FFFFFC] USER handler	
+	#endif
 irqexit:
 	ldmfd  SP!, {R0-R12,PC}^ @restore registers from SP_irq + armv4 format at arm9
+
+#else
+inter_irq:
+
+	str sp,[pc, #-0xC] @ichfly sizechange
+	ldr sp,=SPtoload
+	ldr sp,[sp]
+	STMDB SP!, {R0-R4,R12,LR}
+	ldr r0,=SPtoload
+	sub r1,sp,#0x3E4@ ichfly irq stack size 0x400
+	str r1,[r0]
+
+	MRC P15, 0 ,r0, c9,c1,0
+	Mov r0, r0, LSR #0xC
+	Mov r0, r0, LSL #0xC
+	ADD r0,r0, #0x4000
+	
+	mrc	p15, 0, r2, c5, c0, 2 @ ichfly
+	ldr	r1,=0x36333333
+	mcr	p15, 0, r1, c5, c0, 2
+	ldr	r1, =_exMain_tmpPuplain
+	str	r2, [r1] @ichfly
+		
+	@BL IntrMain
+	
+	mov	r12, #0x4000000		@ REG_BASE
+	ldr	r4, [r12, #0x214]		
+	
+	ADD lr,pc,#0
+	LDR pc, [r0, #-0x4]
+	
+	ldr	r1, =_exMain_tmpPuplain
+	ldr	r2, [r1] @ichfly
+	
+	mcr	p15, 0, r2, c5, c0, 2
+	
+	ldr	r2, =IME
+	ldrh r2, [r2]
+	cmp r2,#1
+	BNE	noIME
+	
+	ldr	r2, =anytimejmpfilter
+	ldr r2, [r2]
+	ands r4,r4,r2 @ anytimejmpfilter und IF
+	@ldr    R0,[pc,#-0x400]
+	@cmp r4,#0 @the s flag in and
+	BNE	got_over_gba_handler
+
+noIME:
+	LDMIA SP!, {R0-R4,R12,LR} @exit
+	
+	@ichfly marker todoooooooooooooooooooooooooo!
+	str sp,[pc, #-0x90]  @ichfly sizechange
+	
+	ldr sp,[pc, #-0x90]  @ichfly sizechange
+	SUBS pc, lr, #0x4
+	
+got_over_gba_handler:
+
+	@nop @test
+	@nop
+	@nop
+
+	ldr	r1, =0x06333333
+	
+	mcr	p15, 0, r1, c5, c0, 2
+	
+	LDMIA SP!, {R0-R4,R12,LR} @exit
+	str sp,[pc, #-0xA8]  @ichfly sizechange
+	ldr sp,[pc, #-0xA8]  @ichfly sizechange
+
+nop @need this nops
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+nop
+
+	@original from gba
+	stmfd  SP!, {R0-R3,R12,LR} @save registers to SP_irq
+#ifdef checkclearaddr
+
+	ldr    R1,=0x03008000
+	mov    R0,#0x4000000       @ptr+4 to 03FFFFFC (mirror of 03007FFC)
+	add    LR,PC,#0            @retadr for USER handler
+	ldr    PC,[R1, #-0x4]      @jump to [03FFFFFC] USER handler
+
+#else
+
+	mov    R0,#0x4000000       @ptr+4 to 03FFFFFC (mirror of 03007FFC)
+	add    LR,PC,#0            @retadr for USER handler
+	ldr    PC,[R0, #-0x4]      @jump to [03FFFFFC] USER handler
+#endif
+	
+	ldr	r1, =_exMain_tmpPuplain @ichfly einschub
+	ldr	r2, [r1] @ichfly
+	
+	mcr	p15, 0, r2, c5, c0, 2	
+	ldmfd  SP!, {R0-R3,R12,LR} @restore registers from SP_irq  
+	subs   PC,LR, #0x4         @return from IRQ (PC=LR-4, CPSR=SPSR)
+#endif
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@end
+
 
 .pool
 	

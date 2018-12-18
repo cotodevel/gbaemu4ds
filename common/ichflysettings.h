@@ -31,7 +31,8 @@
 //#define printsavewrite
 //#define countpagefalts
 //#define DEV_VERSION	//printf load/stores
-//#define checkclearaddr
+//#define checkclearaddr	//enabled: 0x03007ffc user IRQ handler / disabled: (mirror) 3ffffffc user IRQ handler
+
 //#define checkclearaddr20 //break clock and some other things only work with checkclearaddr
 //#define checkclearaddrrw
 //#define printreads
@@ -47,3 +48,4 @@
 //#define wifidebuger	//Coto: not used but kept for historical reasons
 //#define debugpatch
 //#define print_uppern_read_emulation
+#define gba_handel_IRQ_correct	//proper GBA IRQ emulation (maybe)

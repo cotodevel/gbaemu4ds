@@ -23,7 +23,7 @@ patcher: (prefetcher?)
 
 	uppern_read_emulation	<--- OK
 
-	gba_handel_IRQ_correct
+	gba_handel_IRQ_correct  <--- gba_handel_IRQ_correct: index #3
 
 	static inline void updateVC() -> merge into gbaemu4ds-alive
 
