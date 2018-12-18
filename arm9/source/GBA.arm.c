@@ -3139,6 +3139,7 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
       value = rtcRead(address);
     else
 	{
+	#ifdef uppern_read_emulation
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3160,6 +3161,9 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	{
 		value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 	}
+#else
+    value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
+#endif
 	}
     break;    
   case 13:
@@ -3293,7 +3297,7 @@ iprintf("r8 %02x\n",address);
   case 10:
   case 11:
   case 12:
-
+	#ifdef uppern_read_emulation
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3316,6 +3320,10 @@ iprintf("r8 %02x\n",address);
 	{
 		return rom[address & 0x1FFFFFF];
 	}
+#else
+    return rom[address & 0x1FFFFFF];
+#endif        
+	break;
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);
@@ -3417,6 +3425,7 @@ u32 CPUReadMemoryrealpu(u32 address)
   case 10:
   case 11:
   case 12:
+#ifdef uppern_read_emulation
 	if((address&0x1FFFFFC) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3438,6 +3447,9 @@ u32 CPUReadMemoryrealpu(u32 address)
 	{
 		value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
 	}
+#else
+    value = READ32LE(((u32 *)&rom[address&0x1FFFFFC]));
+#endif
     break;
   case 13:
 #ifdef printsaveread
@@ -3576,6 +3588,7 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
       value = rtcRead(address);
     else
 	{
+	#ifdef uppern_read_emulation
 	if((address&0x1FFFFFE) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3597,6 +3610,9 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	{
 		value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
 	}
+#else
+    value = READ16LE(((u16 *)&rom[address & 0x1FFFFFE]));
+#endif
 	}
     break;    
   case 13:
@@ -3678,6 +3694,7 @@ iprintf("r8 %02x\n",address);
   case 11:
   case 12:
 
+#ifdef uppern_read_emulation
 	if((address&0x1FFFFFF) > romSize)
 	{
 #ifdef print_uppern_read_emulation
@@ -3700,7 +3717,9 @@ iprintf("r8 %02x\n",address);
 	{
 		return rom[address & 0x1FFFFFF];
 	}
-
+#else
+    return rom[address & 0x1FFFFFF];
+#endif   
   case 13:
 #ifdef printsaveread
 	  iprintf("%X\n\r",address);

@@ -21,7 +21,7 @@ patcher: (prefetcher?)
 
 - Restore :
 
-	uppern_read_emulation
+	uppern_read_emulation	<--- OK
 
 	gba_handel_IRQ_correct
 

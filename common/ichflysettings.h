@@ -20,12 +20,15 @@
 //#define forceHBlankirqs
 #define advanced_irq_check
 
-//debug
+
+//(updated)settings
+#define uppern_read_emulation
+
+//(updated) debug
 //#define usebuffedVcout		//preset line counter or hardware vcounter
 #define unsecamr7com		//allows arm7 to either reach all gba map (unsecure,defined) or nds-hardware mapped mem (undefined)
 //#define printsaveread
 //#define printsavewrite
-//#define print_uppern_read_emulation
 //#define countpagefalts
 //#define DEV_VERSION	//printf load/stores
 //#define checkclearaddr
@@ -43,3 +46,4 @@
 //#define showdebug
 //#define wifidebuger	//Coto: not used but kept for historical reasons
 //#define debugpatch
+//#define print_uppern_read_emulation
