@@ -1835,8 +1835,13 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x202:
 	//REG_IF = value; //ichfly update at read outdated
 	//GBAIF = REG_IF;
-	REG_IF = GBAIF = value;
-    break;
+	#ifdef gba_handel_IRQ_correct
+	REG_IF = value;	//coto: REG_IF = GBAIF = value
+	#else
+		IF ^= (value & IF);
+		UPDATE_REG(0x202, IF);
+	#endif
+	break;
   case 0x204:
     { //ichfly can't emulate that
       /*memoryWait[0x0e] = memoryWaitSeq[0x0e] = gamepakRamWaitState[value & 3];
@@ -1885,7 +1890,11 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x208:
     GBAIME = value & 1;
     UPDATE_REG(0x208, GBAIME);
+	
+	#ifdef gba_handel_IRQ_correct
 	REG_IME = GBAIME;
+	#endif
+
     /*if ((GBAIME & 1) && (GBAIF & GBAIE) && armIrqEnable)
       cpuNextEvent = cpuTotalTicks;*/
     break;
@@ -2898,11 +2907,16 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 		value = *(u32 *)(address);
 		break;
 	}
+	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, GBAIF);
 	}
+	#endif	
+	
+	//coto: this code could cause blackscreens in homebrew.
 	if(address==0x04000006){
 		vcounthandler();
 		value = GBAVCOUNT;
@@ -3093,12 +3107,16 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 		value = GBAVCOUNT;
 		break;
 	}
+	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214;
 		UPDATE_REG(0x202, GBAIF);
-	}	
-    if((address < 0x4000400) && ioReadable[address & 0x3fe])
+	}
+	#endif
+    
+	if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
 		value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
     }
@@ -3264,11 +3282,14 @@ iprintf("r8 %02x\n",address);
 		break;
 	}
 	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, GBAIF);
 	}
+	#endif
+
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
     else goto unreadable;
@@ -3402,11 +3423,15 @@ u32 CPUReadMemoryrealpu(u32 address)
 		value = *(u32 *)(address);
 		break;
 	}
+	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000200)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, GBAIF);
 	}
+	#endif	
+	
 	if(address==0x04000006){
 		vcounthandler();
 		value = GBAVCOUNT;
@@ -3568,11 +3593,15 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 		value = GBAVCOUNT;
 		break;
 	}
+	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214;
 		UPDATE_REG(0x202, GBAIF);
-	}	
+	}
+	#endif
+
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
 		value =  READ16LE(((u16 *)&ioMem[address & 0x3fe]));
@@ -3680,11 +3709,13 @@ iprintf("r8 %02x\n",address);
 		return (u8)GBAVCOUNT;
 		break;
 	}	
+	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{
 		GBAIF = *(vuint16*)0x04000214; //VBlanc
 		UPDATE_REG(0x202, GBAIF);
 	}
+	#endif
     if((address < 0x4000400) && ioReadable[address & 0x3ff])
       return ioMem[address & 0x3ff];
     else goto unreadable;

@@ -304,6 +304,10 @@ inter_dataAbt:
 	stmia r6, {r13-r14} @save the registrers	@ on sauvegarde les registres bankés (r13 et r14)
 	msr	cpsr, r3	@ back to normal mode @ on revient au mode "normal"
 	
+	#ifndef gba_handel_IRQ_correct
+		BIC r5,r5,#0x80
+	#endif
+
 	@ldr r1,=exRegs
 	sub r1,SP,#13 * 4
 	
