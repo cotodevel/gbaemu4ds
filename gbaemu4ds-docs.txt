@@ -23,9 +23,11 @@ patcher: (prefetcher?)
 
 	uppern_read_emulation	<--- OK
 
-	gba_handel_IRQ_correct  <--- gba_handel_IRQ_correct: index #3
+	gba_handel_IRQ_correct  <--- OK
 
-	static inline void updateVC() -> merge into gbaemu4ds-alive
+	static inline void updateVC() -> merge into gbaemu4ds-alive <-- OK
+
+	proper HBLANK IRQ emulation restored (causes black screens in games like pokemon firered), so as workaround of that disable it for problematic games.
 
 
 

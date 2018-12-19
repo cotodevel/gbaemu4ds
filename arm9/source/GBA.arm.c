@@ -116,6 +116,111 @@ void debuggerOutput(char * buf, u32 val){
 void (*dbgOutput)(char *, u32) = debuggerOutput;
 
 
+
+
+//HBLANK IRQ Disabled emulation
+__attribute__((section(".itcm")))
+void vcounthandler(void){		
+	GBADISPSTAT |= (REG_DISPSTAT & 0x3);
+	GBAVCOUNT = REG_VCOUNT&0xff;
+	
+	if(GBAVCOUNT == (GBADISPSTAT >> 8)) //update by V-Count Setting
+	{
+		GBADISPSTAT |= 0x4;
+	}
+	else{
+		GBADISPSTAT &= 0xFFFb; //remove vcount
+	}
+	//io update
+	UPDATE_REG(0x06, GBAVCOUNT);
+	UPDATE_REG(0x04, GBADISPSTAT);
+}
+
+
+
+//HBLANK IRQ Enabled emulation
+__attribute__((section(".itcm")))
+static inline void updateVCsub()
+{
+		u32 temp = REG_VCOUNT;
+		u32 temp2 = REG_DISPSTAT;
+		//iprintf("Vcountreal: %08x\n",temp);
+		u16 help3;
+#ifdef usebuffedVcout
+		GBAVCOUNT = VCountdstogba[temp];
+#else
+		if(temp < 192)
+		{
+			GBAVCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+		}
+		else
+		{
+			GBAVCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+		}
+#endif
+		GBADISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
+		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
+		//{
+			GBADISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
+		//}
+		//if(VCOUNT > 160 && VCOUNT != 227)DISPSTAT |= 1;//V-Blanc
+		UPDATE_REG(0x06, GBAVCOUNT);
+		if(GBAVCOUNT == (GBADISPSTAT >> 8)) //update by V-Count Setting
+		{
+			GBADISPSTAT |= 0x4;
+			/*if(DISPSTAT & 0x20) {
+			  IF |= 4;
+			  UPDATE_REG(0x202, IF);
+			}*/
+		}
+		UPDATE_REG(0x04, GBADISPSTAT);
+		//iprintf("Vcountreal: %08x\n",temp);
+		//iprintf("DISPSTAT: %08x\n",temp2);
+}
+
+__attribute__((section(".itcm")))
+static inline void updateVC()
+{
+		u32 temp = REG_VCOUNT;
+		u32 temp2 = REG_DISPSTAT;
+		//iprintf("Vcountreal: %08x\n",temp);
+		u16 help3;
+#ifdef usebuffedVcout
+		GBAVCOUNT = VCountdstogba[temp];
+#else
+		if(temp < 192)
+		{
+			GBAVCOUNT = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+			//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+		}
+		else
+		{
+			GBAVCOUNT = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+			//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+		}
+#endif
+		GBADISPSTAT &= 0xFFF8; //reset h-blanc and V-Blanc and V-Count Setting
+		//if(help3 == VCOUNT) //else it is a extra long V-Line // ichfly todo it is to slow
+		//{
+			GBADISPSTAT |= (temp2 & 0x3); //temporary patch get original settings
+		//}
+		//if(VCOUNT > 160 && VCOUNT != 227)GBADISPSTAT |= 1;//V-Blanc
+		UPDATE_REG(0x06, GBAVCOUNT);
+		if(GBAVCOUNT == (GBADISPSTAT >> 8)) //update by V-Count Setting
+		{
+			GBADISPSTAT |= 0x4;
+			/*if(GBADISPSTAT & 0x20) {
+			  IF |= 4;
+			  UPDATE_REG(0x202, IF);
+			}*/
+		}
+		UPDATE_REG(0x04, GBADISPSTAT);
+		//iprintf("Vcountreal: %08x\n",temp);
+		//iprintf("GBADISPSTAT: %08x\n",temp2);
+}
+
 __attribute__((section(".dtcm")))
 bool busPrefetch = false;
 __attribute__((section(".dtcm")))
@@ -1046,8 +1151,9 @@ void CPUUpdateRegister(u32 address, u16 value)
 	u16 tempDISPSTAT = (u16)((GBADISPSTAT&0xFF) | ((VCountgbatods[GBADISPSTAT>>8]) << 8));
 #else
 	//8-15  V-Count Setting (LYC)      (0..227)
+
 	{
-	u16 tempDISPSTAT = GBADISPSTAT >> 8;
+		u16 tempDISPSTAT = GBADISPSTAT >> 8;
 		//float help = tempDISPSTAT;
 		if(tempDISPSTAT < 160)
 		{
@@ -1068,7 +1174,6 @@ void CPUUpdateRegister(u32 address, u16 value)
 			}
 			else tempDISPSTAT = (GBADISPSTAT & 0x1F);		
 		}
-		
 #endif
 #ifdef forceHBlankirqs
 	*(u16 *)(0x4000004) = tempDISPSTAT | BIT(4);
@@ -1836,7 +1941,7 @@ void CPUUpdateRegister(u32 address, u16 value)
 	//REG_IF = value; //ichfly update at read outdated
 	//GBAIF = REG_IF;
 	#ifdef gba_handel_IRQ_correct
-	REG_IF = value;	//coto: REG_IF = GBAIF = value
+	REG_IF = GBAIF = value;
 	#else
 		IF ^= (value & IF);
 		UPDATE_REG(0x202, IF);
@@ -2834,26 +2939,6 @@ void CPUWriteByte(u32 address, u8 b)
 }
 
 __attribute__((section(".itcm")))
-void vcounthandler(void){
-		
-		GBADISPSTAT |= (REG_DISPSTAT & 0x3);
-		GBAVCOUNT = REG_VCOUNT&0xff;
-		
-		if(GBAVCOUNT == (GBADISPSTAT >> 8)) //update by V-Count Setting
-		{
-			GBADISPSTAT |= 0x4;
-            
-        
-		}
-		else{
-			GBADISPSTAT &= 0xFFFb; //remove vcount
-		}
-		//io update
-		UPDATE_REG(0x06, GBAVCOUNT);
-		UPDATE_REG(0x04, GBADISPSTAT);
-}
-
-__attribute__((section(".itcm")))
 u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is smaler
 {
 #ifdef DEV_VERSION
@@ -2916,11 +3001,15 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	}
 	#endif	
 	
-	//coto: this code could cause blackscreens in homebrew.
-	if(address==0x04000006){
-		vcounthandler();
-		value = GBAVCOUNT;
-		break;
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
+		
 	}
 	
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
@@ -3102,10 +3191,15 @@ u32 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 			return value;
 		}
 	}
-	if(address==0x04000006){
-		vcounthandler();
-		value = GBAVCOUNT;
-		break;
+	
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
 	}
 	
 	#ifdef gba_handel_IRQ_correct
@@ -3276,10 +3370,14 @@ iprintf("r8 %02x\n",address);
 		//todo timer shift
 		return *(u8 *)(address);
 	}
-	if(address==0x04000006){
-		vcounthandler();
-		return (u8)GBAVCOUNT;
-		break;
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
 	}
 	
 	#ifdef gba_handel_IRQ_correct
@@ -3432,10 +3530,14 @@ u32 CPUReadMemoryrealpu(u32 address)
 	}
 	#endif	
 	
-	if(address==0x04000006){
-		vcounthandler();
-		value = GBAVCOUNT;
-		break;
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
 	}
 	
 	if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
@@ -3588,10 +3690,14 @@ u32 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 		}
 	}
   
-	if(address==0x04000006){
-		vcounthandler();
-		value = GBAVCOUNT;
-		break;
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
 	}
 	
 	#ifdef gba_handel_IRQ_correct
@@ -3704,11 +3810,15 @@ iprintf("r8 %02x\n",address);
 		//todo timer shift
 		return *(u8 *)(address);
 	}
-	if(address==0x04000006){
-		vcounthandler();
-		return (u8)GBAVCOUNT;
-		break;
-	}	
+	if(address > 0x4000003 && address < 0x4000008)//ichfly update
+	{
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
+	}
 	#ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
 	{

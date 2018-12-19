@@ -752,6 +752,7 @@ int save_decider(){
         )
     {    
         savetype = 3; 
+		disableHBLANKIRQ = true;	//otherwise blackscreens
 	}
     
 	else if( strncmp( 
@@ -762,6 +763,7 @@ int save_decider(){
         )
     {    
         savetype = 3; 
+		disableHBLANKIRQ = true;	//otherwise blackscreens
     }
     
     else if( strncmp( 
@@ -773,6 +775,7 @@ int save_decider(){
     {   
         savetype = 1; 
 		useMPUFast = true;	//use fast settings
+		disableHBLANKIRQ = true;	//otherwise blackscreens
 	}
     
     else if( strncmp( 
@@ -833,6 +836,16 @@ int save_decider(){
 	)
     {
 		useMPUFast = true;	//use fast settings
+		disableHBLANKIRQ = true;	//faster
+	}
+	
+	
+	//games that break when HBLANK irqs are enabled for them
+	else if(
+		(save_deciderByTitle(title, (char*)"WORMSWORLDPT",sizeof(GetsIPCSharedGBA()->gbaheader.title)) == true)	//Worms World Party
+	)
+    {
+		disableHBLANKIRQ = true;	//otherwise blackscreens
 	}
 	
 	
@@ -1053,6 +1066,8 @@ bool reloadGBA(char * filename, u32 manual_save_type){
 	
 	
 	GBADISPCNT  = 0x0080;
+	disableHBLANKIRQ = false;	//always disabled by default.
+	
 	if(bios){
 		free(bios);
 	}

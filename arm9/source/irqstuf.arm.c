@@ -56,6 +56,10 @@ int ignorenextY = 0;
 __attribute__((section(".dtcm")))
 int arm9VCOUNTsyncline = 0;
 
+//coto: some games may require it.
+__attribute__((section(".dtcm")))
+bool disableHBLANKIRQ = false;
+
 
 /*
  LCD VRAM Overview
@@ -174,8 +178,13 @@ In BG modes 4,5, one Frame may be displayed (selected by GBADISPCNT Bit 4), the 
 
 
 #ifdef usebuffedVcout
+__attribute__((section(".dtcm")))
 u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
+
+__attribute__((section(".dtcm")))
 u8 VCountdstogba[263]; //(LY)      (0..262)
+
+__attribute__((section(".dtcm")))
 u8 VCountdoit[263]; //jump in or out
 #endif
 
@@ -279,13 +288,70 @@ void initspeedupfelder()
 __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
-	Wifi_Sync();
-    GBADISPSTAT |= (REG_DISPSTAT & 0x3);
-    GBADISPSTAT |= 0x2;	//hblank
-    GBADISPSTAT &= 0xFFFe; //remove vblank
-    UPDATE_REG(0x04, GBADISPSTAT);
-    CPUCheckDMA(2, 0x0f);
-	REG_IF = IRQ_HBLANK;
+	//coto (disabled) hblank handler
+	if(disableHBLANKIRQ == true){
+		Wifi_Sync();
+		GBADISPSTAT |= (REG_DISPSTAT & 0x3);
+		GBADISPSTAT |= 0x2;	//hblank
+		GBADISPSTAT &= 0xFFFe; //remove vblank
+		UPDATE_REG(0x04, GBADISPSTAT);
+		CPUCheckDMA(2, 0x0f);
+		REG_IF = IRQ_HBLANK;
+	}
+	//ichfly hblank handler
+	else{
+		#ifdef usebuffedVcout
+			if(VCountdoit[REG_VCOUNT])
+			{
+			#ifdef HBlankdma
+				CPUCheckDMA(2, 0x0f);
+			#endif
+			}
+			else
+			{
+				REG_IF = IRQ_HBLANK;
+			}
+			#ifdef forceHBlankirqs
+				if((GBAIE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
+			#endif
+			
+		#else
+			u16 res1;
+			u16 res2;
+			u16 temp = REG_VCOUNT;
+			if(temp < 192)
+			{
+				res1 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+			}
+			else
+			{
+				res1 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+			}
+			temp++;
+			if(temp < 192)
+			{
+				res2 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+			}
+			else
+			{
+				res2 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+			}
+			if(res1 == res2)
+			{
+				REG_IF = IRQ_HBLANK;
+			#ifdef HBlankdma
+				CPUCheckDMA(2, 0x0f);
+			#endif
+			}
+			#ifdef forceHBlankirqs
+				if((IE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
+			#endif
+		#endif
+	}
 }
 
 #ifdef showdebug
@@ -315,7 +381,6 @@ void VblankHandler(void) {
 		VBlankIntrWaitentertimes = 0;
 	}
 #endif
-
 
 	//handles DS-DS Comms
 	sint32 currentDSWNIFIMode = doMULTIDaemonStage1();
