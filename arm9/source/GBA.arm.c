@@ -1202,169 +1202,157 @@ void CPUUpdateRegister(u32 address, u16 value)
   case 0x0C:
     GBABG2CNT = (value & 0xFFCF);
     UPDATE_REG(0x0C, GBABG2CNT);
-	REG_BG2CNT = GBABG2CNT;
+	*(u16 *)(0x400000C) = GBABG2CNT;
 	
   break;
   case 0x0E:
     GBABG3CNT = (value & 0xFFCF);
     UPDATE_REG(0x0E, GBABG3CNT);
-	REG_BG3CNT = GBABG3CNT;
+	*(u16 *)(0x400000E) = GBABG3CNT;
 	
 	break;
   case 0x10:
     GBABG0HOFS = value & 511;
     UPDATE_REG(0x10, GBABG0HOFS);
-    REG_BG0HOFS = GBABG0HOFS;
+    *(u16 *)(0x4000010) = value;
 	
 	break;
   case 0x12:
     GBABG0VOFS = value & 511;
     UPDATE_REG(0x12, GBABG0VOFS);
-    REG_BG0VOFS = GBABG0VOFS;
+    *(u16 *)(0x4000012) = value;
 	
 	break;
   case 0x14:
     GBABG1HOFS = value & 511;
     UPDATE_REG(0x14, GBABG1HOFS);
-	REG_BG1HOFS = GBABG1HOFS;
+	*(u16 *)(0x4000014) = value;
     
 	break;
   case 0x16:
     GBABG1VOFS = value & 511;
     UPDATE_REG(0x16, GBABG1VOFS);
-    REG_BG1VOFS = GBABG1VOFS;
+    *(u16 *)(0x4000016) = value;
 	
 	break;      
   case 0x18:
     GBABG2HOFS = value & 511;
     UPDATE_REG(0x18, GBABG2HOFS);
-	REG_BG2HOFS = GBABG2HOFS; //todo the rest
+	*(u16 *)(0x4000018) = value;
 	
 	break;
   case 0x1A:
     GBABG2VOFS = value & 511;
     UPDATE_REG(0x1A, GBABG2VOFS);
-    REG_BG2VOFS = GBABG2VOFS; //todo the rest
+    *(u16 *)(0x400001A) = value;
 	
 	break;
   case 0x1C:
     GBABG3HOFS = value & 511;
     UPDATE_REG(0x1C, GBABG3HOFS);
-	REG_BG3HOFS = GBABG3HOFS;
+	*(u16 *)(0x400001C) = value;
 	
 	break;
   case 0x1E:
     GBABG3VOFS = value & 511;
     UPDATE_REG(0x1E, GBABG3VOFS);
-	REG_BG3VOFS = GBABG3VOFS; //todo the rest
+	*(u16 *)(0x400001E) = value;
 	
 	break;      
   case 0x20:
     GBABG2PA = value;	//todo: mask value?
     UPDATE_REG(0x20, GBABG2PA);
-	REG_BG2PA = GBABG2PA;
+	*(u16 *)(0x4000020) = value;
 	
 	break;
   case 0x22:
     GBABG2PB = value;
     UPDATE_REG(0x22, GBABG2PB);
-    REG_BG2PB = GBABG2PB;
+    *(u16 *)(0x4000022) = value;
 	
 	break;
   case 0x24:
     GBABG2PC = value;
     UPDATE_REG(0x24, GBABG2PC);
-    REG_BG2PC = GBABG2PC;
+    *(u16 *)(0x4000024) = value;
 	
 	break;
   case 0x26:
     GBABG2PD = value;
     UPDATE_REG(0x26, GBABG2PD);
-	REG_BG2PD = GBABG2PD;
+	*(u16 *)(0x4000026) = value;
 	
 	break;
   case 0x28:
     GBABG2X_L = value;
     UPDATE_REG(0x28, GBABG2X_L);
-	#define REG_BG2X_L              (*(vu16*)0x4000028)
-	REG_BG2X_L = GBABG2X_L;
+	*(u16 *)(0x4000028) = value;
 	
 	break;
   case 0x2A:
     GBABG2X_H = (value & 0xFFF);
     UPDATE_REG(0x2A, GBABG2X_H);
-    #define REG_BG2X_H              (*(vu16*)0x400002A)
-	REG_BG2X_H = GBABG2X_H;
+    *(u16 *)(0x400002A) = value;
 	
 	break;
   case 0x2C:
     GBABG2Y_L = value;
     UPDATE_REG(0x2C, GBABG2Y_L);
-	#define REG_BG2Y_L              (*(vu16*)0x400002C)
-	REG_BG2Y_L = GBABG2Y_L;
+	*(u16 *)(0x400002C) = value;
 	
 	break;
   case 0x2E:
     GBABG2Y_H = value & 0xFFF;
     UPDATE_REG(0x2E, GBABG2Y_H);
-    #define REG_BG2Y_H              (*(vu16*)0x400002E)
-	REG_BG2Y_H = GBABG2Y_H;
+    *(u16 *)(0x400002E) = value;
 	
 	break;
   case 0x30:
     GBABG3PA = value;
     UPDATE_REG(0x30, GBABG3PA);
-    REG_BG3PA = GBABG3PA;
+    *(u16 *)(0x4000030) = value;
 	
 	break;
   case 0x32:
     GBABG3PB = value;
     UPDATE_REG(0x32, GBABG3PB);
-    REG_BG3PB = GBABG3PB;
+    *(u16 *)(0x4000032) = value;
 	
 	break;
   case 0x34:
     
 	GBABG3PC = value;
     UPDATE_REG(0x34, GBABG3PC);
-	REG_BG3PC = GBABG3PC;
+	*(u16 *)(0x4000034) = value;
 	
 	break;
   case 0x36:
     GBABG3PD = value;
     UPDATE_REG(0x36, GBABG3PD);
-    REG_BG3PD = GBABG3PD;
+    *(u16 *)(0x4000036) = value;
 	
 	break;
   case 0x38:
     GBABG3X_L = value;
     UPDATE_REG(0x38, GBABG3X_L);
-    
-	#define REG_BG3X_L              (*(vu16*)0x4000038)
-	REG_BG3X_L = GBABG3X_L;
+    *(u16 *)(0x4000038) = value;
 	
 	break;
   case 0x3A:
     GBABG3X_H = value & 0xFFF;
     UPDATE_REG(0x3A, GBABG3X_H);
-    
-	#define REG_BG3X_H              (*(vu16*)0x400003A)
-	REG_BG3X_H = GBABG3X_H;
+    *(u16 *)(0x400003A) = value;
 	
 	break;
   case 0x3C:
     GBABG3Y_L = value;
     UPDATE_REG(0x3C, GBABG3Y_L);
-    
-	#define REG_BG3Y_L              (*(vu16*)0x400003C)
-	REG_BG3Y_L = GBABG3Y_L;
+    *(u16 *)(0x400003C) = value;
 	break;
   case 0x3E:
     GBABG3Y_H = value & 0xFFF;
     UPDATE_REG(0x3E, GBABG3Y_H);
-    
-	#define REG_BG3Y_H              (*(vu16*)0x400003E)
-	REG_BG3Y_H = GBABG3Y_H;
+    *(u16 *)(0x400003E) = value;
 	
 	break;
   case 0x40:
