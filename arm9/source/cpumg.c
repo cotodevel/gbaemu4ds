@@ -360,8 +360,11 @@ void BIOScall(int op,  u32 *R)
 	#endif
 		//if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 		//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+		
 		//send cmd
-		SendArm7Command(WaitforVblancarmcmd, 0);	//tell the arm7
+		REG_IPC_FIFO_TX = 0x1FFFFFFB; //tell the arm7
+		REG_IPC_FIFO_TX = 0;
+		
 		ichflyswiWaitForVBlank();
 
 		break;

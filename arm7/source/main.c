@@ -383,11 +383,10 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 				  //it is better on the DS any way
 			  REG_SOUNDBIAS = val;
 			  break;
-
-		  case setdmasoundbuff:
-
-			  dmabuffer = val;
-#ifdef anyarmcom
+			  
+		case setdmasoundbuff:
+				  dmabuffer = val;
+				  #ifdef anyarmcom
 			amr7sendcom =  (u32*)(*(u32*)(dmabuffer));
 			amr7senddma1 = (u32*)(*(u32*)(dmabuffer + 4));
 			amr7senddma2 = (u32*)(*(u32*)(dmabuffer + 8));
@@ -395,20 +394,20 @@ void newvalwrite(u32 addr, u32 val, u32 cmd0)	//cmd0 == addr but 0xc0000000 part
 			amr7directrec = (u32*)(*(u32*)(dmabuffer + 16));
 			amr7indirectrec = (u32*)(*(u32*)(dmabuffer + 20));
 			amr7fehlerfeld = (u32*)(*(u32*)(dmabuffer + 24));
-#endif
-			soundbuffA = (u32*)(dmabuffer);
-				SCHANNEL_SOURCE(4) = soundbuffA;
-			  soundbuffB = (u32*)(dmabuffer + 0x50);
-				SCHANNEL_SOURCE(5) = soundbuffB;
+				#endif
+
+				  soundbuffA = (u8*)(u32*)(dmabuffer);
+					SCHANNEL_SOURCE(4) = (u32)soundbuffA;
+				  soundbuffB = (u8*)(u32*)(dmabuffer + 0x50);
+					SCHANNEL_SOURCE(5) = (u32)soundbuffB;
+					break;
+			case 0x1FFFFFFB: //wait
+				if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
+				{
+					REG_IPC_FIFO_TX = 0x4100BEEF; //send cmd 0x4100BEEF
+				}
 				break;
-		case WaitforVblancarmcmd: //wait
-			if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
-			{
-#ifdef anyarmcom
-				*amr7sendcom = *amr7sendcom + 1;
-#endif
-			}
-			break;
+				
 		case enableWaitforVblancarmcmdirq: //setauto
 			autodetectdetect = true;
 			break;

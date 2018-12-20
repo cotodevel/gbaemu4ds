@@ -335,6 +335,7 @@ extern void debuggerOutput(char * buf, u32 val);
 extern void vcounthandler(void);
 
 extern bool disableHBLANKIRQ;
+extern void frameasyncsync(void);
 
 #ifdef __cplusplus
 }

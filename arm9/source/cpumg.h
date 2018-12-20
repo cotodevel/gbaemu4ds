@@ -88,7 +88,6 @@ extern u32 cpu_GetCP15Cnt();
 extern void undefinedExceptionHandler();
 
 extern void HblankHandler(void);
-extern int frameskip;
 
 //GBA (unused by design) ARM vectors, actually used here.
 extern void setGBAVectors();

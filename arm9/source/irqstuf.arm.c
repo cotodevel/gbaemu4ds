@@ -61,6 +61,53 @@ __attribute__((section(".dtcm")))
 bool disableHBLANKIRQ = false;
 
 
+__attribute__((section(".itcm")))
+void frameasyncsync(void) {
+//---------------------------------------------------------------------------------
+		framewtf = 0;
+		if((GBADISPCNT & 7) < 3)
+		{
+			dmaCopyWordsAsynch(1,(void*) (vram + 0x10000),(void*)0x06400000,0x8000);
+		}
+		else
+		{
+			dmaCopyWordsAsynch(1,(void*)0x06014000,(void*)0x06404000,0x4000);
+			if((GBADISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
+			{
+				u8 *pointertobild = (u8 *)(0x6000000);
+				for(int iy = 0; iy <160; iy++){
+					dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(512*iy)), 480);
+					pointertobild+=480;
+				}
+			}
+			else
+			{
+				if((GBADISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
+				{
+					u8 *pointertobild = (u8 *)(0x06000000);
+					if(BIT(4) & GBADISPCNT)pointertobild+=0xA000;
+					for(int iy = 0; iy <160; iy++){
+						dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(256*iy)), 240);
+						pointertobild+=240;
+						//pointertobild+=120;
+					}
+				}
+				else
+				{
+					//if((DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
+					{
+						u8 *pointertobild = (u8 *)(0x6000000);
+						if(BIT(4) & GBADISPCNT)pointertobild+=0xA000;
+						for(int iy = 0; iy <128; iy++){
+							dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(512*iy)), 320);
+							pointertobild+=320;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 /*
  LCD VRAM Overview
 
@@ -391,7 +438,61 @@ void VblankHandler(void) {
 	UPDATE_REG(0x04, GBADISPSTAT);
 
 	CPUCheckDMA(1, 0x0f); //V-Blank
-	dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);	//32 KBytes OBJ Tiles GBA copy into DS OBJ Mem (sprites)
+	
+	
+	//dmaCopyWordsAsynch(1,(void*)(vram + 0x10000),(void*)0x06400000,0x8000);	//32 KBytes OBJ Tiles GBA copy into DS OBJ Mem (sprites)
+	
+	
+	if(framewtf == frameSkip)
+	{
+		framewtf = 0;
+		if((GBADISPCNT & 7) < 3)
+		{
+			dmaCopyWordsAsynch(1,(void*)((u32)vram + 0x10000),(void*)0x06400000,0x8000);
+		}
+		else
+		{
+			dmaCopyWordsAsynch(1,(void*)0x06014000,(void*)0x06404000,0x4000);
+			if((GBADISPCNT & 7) == 3) //BG Mode 3 - 240x160 pixels, 32768 colors
+			{
+				u8 *pointertobild = (u8 *)(0x6000000);
+				for(int iy = 0; iy <160; iy++){
+					dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(512*iy)), 480);
+					pointertobild+=480;
+				}
+			}
+			else
+			{
+				if((GBADISPCNT & 7) == 4) //BG Mode 4 - 240x160 pixels, 256 colors (out of 32768 colors)
+				{
+					u8 *pointertobild = (u8 *)(0x6000000);
+					if(BIT(4) & GBADISPCNT)pointertobild+=0xA000;
+					for(int iy = 0; iy <160; iy++){
+						dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(256*iy)), 240);
+						pointertobild+=240;
+						//pointertobild+=120;
+					}
+				}
+				else
+				{
+					//if((DISPCNT & 7) == 5) //BG Mode 5 - 160x128 pixels, 32768 colors //ichfly can't be other mode
+					{
+						u8 *pointertobild = (u8 *)(0x6000000);
+						if(BIT(4) & GBADISPCNT)pointertobild+=0xA000;
+						for(int iy = 0; iy <128; iy++){
+							dmaCopy( (void*)pointertobild, (void*)(0x06020000/*bgGetGfxPtr(bgrouid)*/+(512*iy)), 320);
+							pointertobild+=320;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		framewtf++;
+	}
+	
 	
     GBAP1 = REG_KEYINPUT&0x3ff;
 #ifdef ichflytestkeypossibillity

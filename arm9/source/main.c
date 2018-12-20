@@ -66,8 +66,6 @@ u32 amr7fehlerfeld[10];
 #endif
 
 
-__attribute__((section(".dtcm")))
-int frameskip = 0;
 
 //---------------------------------------------------------------------------------
 int main( int argc, char **argv) {

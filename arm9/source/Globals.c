@@ -82,6 +82,9 @@ __attribute__((section(".dtcm")))
 int frameSkip = 1;
 
 __attribute__((section(".dtcm")))
+int framewtf = 0;
+
+__attribute__((section(".dtcm")))
 bool speedup = false;
 
 __attribute__((section(".dtcm")))

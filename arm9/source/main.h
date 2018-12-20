@@ -32,7 +32,6 @@ extern void __irqSet(u32 mask, IntFn handler, struct IntTable irqTable[] );
 // The only built in driver
 extern DLDI_INTERFACE _io_dldi_stub;
 
-extern int frameskip;
 extern u8 arm7exchangefild[0x100];
 #ifdef __cplusplus
 }

@@ -135,6 +135,10 @@ void HandleFifo() {
 					//continue;
 				}
 				break;
+				case(0x4100BEEF):{
+					frameasyncsync();
+				}
+				break;
 				case(0x4200BEEF):{
 					if(savePath[0] == 0)sprintf(savePath,"%s.sav",szFile);
 					CPUWriteBatteryFile(savePath);

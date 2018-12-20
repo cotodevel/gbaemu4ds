@@ -81,6 +81,7 @@ extern int saveType;
 extern bool useBios;
 extern bool skipBios;
 extern int frameSkip;
+extern int framewtf;
 extern bool speedup;
 extern bool synchronize;
 extern bool cpuDisableSfx;
