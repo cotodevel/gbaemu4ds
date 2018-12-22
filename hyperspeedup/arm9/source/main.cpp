@@ -96,7 +96,7 @@ vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 	REG_POWERCNT &= ~((POWER_3D_CORE | POWER_MATRIX) & 0xFFFF);//powerOff(POWER_3D_CORE | POWER_MATRIX); //3D use power so that is not needed
 
 	//consoleDemoInitsubsc();
-	iprintf("gbaemu4DS: original ichfly 2013 - gbaemu4ds: Coto 2015 \n");
+	iprintf("gbaemu4DS: ichfly / Coto \n");
 	//consoleDemoInit();
 	//soundEnable(); //sound finaly
 	//fifoSetDatamsgHandler(FIFO_USER_02, arm7debugMsgHandler, 0);
@@ -136,7 +136,6 @@ if (0 != argc )
 #endif
 if(!(_io_dldi_stub.friendlyName[0] == 0x52 && _io_dldi_stub.friendlyName[5] == 0x4E) && temptest)
 {
-		iprintf("gbaemu4DS: original ichfly 2013 - gbaemu4ds: Coto 2015 \n");
 		iprintf("Warning: you try to run gbaemu DS on %s gbaemu may not work\n press A to continue and ignore this",_io_dldi_stub.friendlyName);
 	while(1) {
 		scanKeys();
@@ -258,7 +257,6 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 			while(1) 
 	{
 		iprintf("\x1b[2J");
-		iprintf("gbaemu4DS: original ichfly 2013 - gbaemu4ds: Coto 2015 \n");
 		iprintf("fps 60/%i\n",frameskip + 1);
 		//swiWaitForVBlank();
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -273,7 +271,6 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 	while(1) 
 	{
 		iprintf("\x1b[2J");
-		iprintf("gbaemu4DS: original ichfly 2013 - gbaemu4ds: Coto 2015 \n");
 		iprintf("Videosyncline %i\n",syncline);
 		//swiWaitForVBlank();
 		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
@@ -288,7 +285,6 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 	}
 		bool slow;
 	iprintf("\x1b[2J");
-	iprintf("gbaemu4DS: original ichfly 2013 - gbaemu4ds: Coto 2015 \n");
 	iprintf("press B for slow emuation A for normal\n");
 	while(1) 
 	{
