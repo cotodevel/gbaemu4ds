@@ -489,7 +489,7 @@ REG_IPC_FIFO_TX = 0x2222222;
 	bgUpdate();
 #endif
 
-	gbaInit(slow);
+	gbaInit(useMPUFast);
 	
 	iprintf("gbaMode2\n");
 	gbaMode2();

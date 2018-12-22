@@ -188,62 +188,24 @@ void undifinedresolver()
 }
 
 
-void gbaInit(bool slow)
-{
-
-	/*
-	Region 0 - background	0x00000000 PU_PAGE_128M
-	Region 1 - DTCM 0x0b000000 PAGE_16K   
-	Region 2 - speedupone 0x02040000 PU_PAGE_256K
-	Region 3 - speeduptwo 0x02080000 PU_PAGE_512K
-	Region 4 - speedupthree 0x02100000 PU_PAGE_1M
-	Region 5 - speedupfour 0x02200000 PU_PAGE_2M
-	Region 6 - ITCM protector 0x00000000 PU_PAGE_16M
-	Region 7 - IO 0x04000000 PU_PAGE_16M
-	*/
-
+void gbaInit(bool useMPUFast){
 	exInitswisystem(gbaswieulatedbios); //define handler
 	exInitundifinedsystem(undifinedresolver); //define handler
 
 	REG_IME = IME_DISABLE;
-
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu while configurating pu
 	
-	//ori
-	/*
-	if(slow) //true
-	{
-		pu_SetDataCachability(   0b01111100);
-		pu_SetCodeCachability(   0b01111100);
-		pu_GetWriteBufferability(0b01111100);
-	}
+	exInit(gbaExceptionHdl); //define handler
+	WRAM_CR = 0; //swap wram in
 	
-	else	//false
-	{
-		pu_SetDataCachability(   0b00111100);
-		pu_SetCodeCachability(   0b00111100);
-		pu_GetWriteBufferability(0b00111100);
-	}
-	*/	
-	
-	/* //ori
-	if(slow)
-	{
+	//slower but handles most games
+	if(useMPUFast == false){
+		pu_SetDataCachability(   0b01111110);
+		pu_SetCodeCachability(   0b01111110);
+		pu_GetWriteBufferability(0b01111110);
 		pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-		//pu_SetRegion(1, 0x0b000000 | PU_PAGE_16K | 1);
-		pu_SetRegion(1, 0);
-		pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);
-		pu_SetRegion(3, 0x02080000 | PU_PAGE_256K | 1);
-		pu_SetRegion(4, 0x020C0000 | PU_PAGE_128K | 1);
-		pu_SetRegion(5, 0x020E0000 | PU_PAGE_16K | 1);
-		pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
-		pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
-	}
-	else
-	{
-		pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-		//pu_SetRegion(1, 0x0b000000 | PU_PAGE_16K | 1);
-		pu_SetRegion(1, 0);
+		//pu_SetRegion(1, (u32)&__dtcm_start | PU_PAGE_16K | 1);
+		//pu_SetRegion(1, 0);
 		pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);
 		pu_SetRegion(3, 0x02080000 | PU_PAGE_512K | 1);
 		pu_SetRegion(4, 0x02100000 | PU_PAGE_1M | 1);
@@ -251,37 +213,23 @@ void gbaInit(bool slow)
 		pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
 		pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
 	}
-	
-	*/
-	
-	//unsafe
-	{
-		pu_SetDataCachability(   0b01111110);
-		pu_SetCodeCachability(   0b01111110);
-		pu_GetWriteBufferability(0b01111110);
+	//faster but only less accurate/ screen glitches 
+	else{
+		pu_SetDataCachability(   0b00111110);
+		pu_SetCodeCachability(   0b00111110);
+		pu_GetWriteBufferability(0b00111110);
+		pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1); 
+		pu_SetRegion(1, (u32)(0x02000000) 						| PU_PAGE_1M  | 1); 
+		pu_SetRegion(2, (u32)(0x02100000) 						| PU_PAGE_1M  | 1); 
+		pu_SetRegion(3, (u32)(0x02200000)						| PU_PAGE_1M | 1);  
+		pu_SetRegion(4, (u32)(0x02300000)  					| PU_PAGE_2M | 1);
+		pu_SetRegion(5, (u32)(0x01FF8000) 						| PU_PAGE_32K  | 1); 
+		pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1); //vector protection
+		pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1); //IO protection
 	}
-
-
-	exInit(gbaExceptionHdl); //define handler
-	WRAM_CR = 0; //swap wram in
-
-	extern int __dtcm_start;
-	iprintf("dtcm add: %x",(unsigned int)(&__dtcm_start));
-	pu_SetRegion(0, 0x00000000 | PU_PAGE_128M | 1);
-	//pu_SetRegion(1, (u32)&__dtcm_start | PU_PAGE_16K | 1);
-	//pu_SetRegion(1, 0);
-	pu_SetRegion(2, 0x02040000 | PU_PAGE_256K | 1);
-	pu_SetRegion(3, 0x02080000 | PU_PAGE_512K | 1);
-	pu_SetRegion(4, 0x02100000 | PU_PAGE_1M | 1);
-	pu_SetRegion(5, 0x02200000 | PU_PAGE_2M | 1);
-	pu_SetRegion(6, 0x00000000 | PU_PAGE_16M | 1);
-	pu_SetRegion(7, 0x04000000 | PU_PAGE_16M | 1);
-	
 	
 	pu_Enable(); //PU go
-
 	DC_FlushAll(); //try it
-	
 	IC_InvalidateAll();	
 }
 

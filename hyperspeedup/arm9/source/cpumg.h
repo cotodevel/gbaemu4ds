@@ -36,7 +36,7 @@ extern void exInit(void (*)());
 
 extern void undifinedresolver();
 
-extern void gbaInit(bool slow);
+extern void gbaInit(bool useMPUFast);
 extern void switch_to_unprivileged_mode();
 extern void gbaMode();
 extern void gbaMode2();
@@ -63,8 +63,6 @@ extern void downgreadcpu();
 
 extern inline void puGba();
 extern inline void puNds();
-
-
 
 #ifdef __cplusplus
 }
