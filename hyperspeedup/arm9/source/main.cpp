@@ -495,7 +495,7 @@ REG_IPC_FIFO_TX = 0x2222222;
 	gbaMode2();
 	
 	iprintf("jump to IMAGE @ EWRAM (%08X)\n\r",(unsigned int)(rom));
-	iprintf("(0)[%x] (1)[%x] (2)[%x] (3)[%x] ",(unsigned int)u32read((u32)rom+0x0),(unsigned int)u32read((u32)rom+0x4),(unsigned int)u32read((u32)rom+0x8),(unsigned int)u32read((u32)rom+0xc));
+	iprintf("(0)[%x] (1)[%x] (2)[%x] (3)[%x] ",(unsigned int)*((u32*)rom+0x0),(unsigned int)*((u32*)rom+1),(unsigned int)*((u32*)rom+2),(unsigned int)*((u32*)rom+3));
 	
 	nopinlasm();
 	nopinlasm();

@@ -869,40 +869,6 @@ u32 swap32(u32 v)
 }
 */
 
-__attribute__((section(".itcm")))
-void u32store(u32 address, u32 value){
-	*(u32*)(address)=value;
-}
-
-__attribute__((section(".itcm")))
-void u16store(u32 address, u16 value){
-	*(u16*)(address)=value;
-}
-
-__attribute__((section(".itcm")))
-void u8store(u32 addr, u8 value){
-	*(u8*)(addr)=value;
-}
-
-__attribute__((section(".itcm")))
-u32 u32read(u32 address){
-	return *(u32*)(address);
-}
-
-__attribute__((section(".itcm")))
-u16 u16read(u32 address){
-	return *(u16*)(address);
-}
-
-__attribute__((section(".itcm")))
-u8 u8read(u32 addr){
-	return *(u8*)(addr);
-}
-
-
-//These were a macro... prevent any macro "expansions" for correct linking.
-//Also, read along with me: I WILL NEVER USE #DEFINE C++ COMPILER TO PROCESS DYNAREC OPCODES OR EVEN SIMPLE CODE.
-//IT CAN'T CATCH A COLD.
 /*
 #define CPUReadByteQuick(addr) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
@@ -920,7 +886,7 @@ u8 CPUReadByteQuick(u32 addr)	{
 
 __attribute__((section(".itcm")))
 u16 CPUReadHalfWordQuick(u32 addr){
-	return READ16LE(((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]));
+	return READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]));
 }
 /*
 #define CPUReadMemoryQuick(addr) \
@@ -929,41 +895,35 @@ u16 CPUReadHalfWordQuick(u32 addr){
 
 __attribute__((section(".itcm")))
 u32 CPUReadMemoryQuick(u32 addr){
-	return READ32LE(((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]));
+	return READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]));
 }
 
 
+//little-endian GBA == little-endian NDS
 __attribute__((section(".itcm")))
-u32 READ32LE(u8 * x){
-	return u32read((u32)x);
+u16 READ16LE(u16 * x){
+  return *((u16 *)x);
 }
 
 __attribute__((section(".itcm")))
-u16 READ16LE(u8 * x){
-	return u16read((u32)x);
+u32 READ32LE(u32 * x){
+  return *((u32 *)x);
 }
 
 __attribute__((section(".itcm")))
-void WRITE32LE(u8 * x,u32 v){
-	u32store((u32)x,v);
+void WRITE16LE(u16 * x,u16 v){
+  *((u16 *)x) = (v);
 }
 
 __attribute__((section(".itcm")))
-void WRITE16LE(u8 * x,u16 v){
-	u16store((u32)x,v);
+void WRITE32LE(u32 * x, u32 v){
+  *((u32 *)x) = (v);
 }
 
 __attribute__((section(".itcm")))
 void UPDATE_REG(u16 address, u16 value){
-	WRITE16LE(((u8*)&ioMem[address]),value);
+	WRITE16LE(((u16*)&ioMem[address]),value);
 }
-
-
-int i=0;
-
-
-
-
 
 
 char* strtoupper(char* s) {

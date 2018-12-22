@@ -62,18 +62,6 @@
 u32 mastercode = 0;
 
 
-#define READ16LE(x) \
-  *((u16 *)x)
-#define READ32LE(x) \
-  *((u32 *)x)
-#define WRITE16LE(x,v) \
-  *((u16 *)x) = (v)
-#define WRITE32LE(x,v) \
-  *((u32 *)x) = (v)
-
-
-
-
 #define UNKNOWN_CODE                  -1
 #define INT_8_BIT_WRITE               0
 #define INT_16_BIT_WRITE              1
@@ -198,19 +186,19 @@ u16 rompatch2val [4];
 u16 rompatch2oldval [4];
 
 #define debuggerReadMemory(addr) \
-  READ32LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+  READ32LE(((uint32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 #define debuggerReadHalfWord(addr) \
-  READ16LE((&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+  READ16LE(((uint16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 #define debuggerReadByte(addr) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
 
 #define debuggerWriteMemory(addr, value) \
-  WRITE32LE(&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], value)
+  WRITE32LE((uint32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], value)
 
 #define debuggerWriteHalfWord(addr, value) \
-  WRITE16LE(&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], value)
+  WRITE16LE((uint16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], value)
 
 #define debuggerWriteByte(addr, value) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask] = (value)

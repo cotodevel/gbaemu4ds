@@ -38,10 +38,10 @@ struct Opcodes {
 };
 
 #define debuggerReadMemory(addr) \
-  READ32LE(((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+  READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 #define debuggerReadHalfWord(addr) \
-  READ16LE(((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 #define debuggerReadByte(addr) \
   map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]

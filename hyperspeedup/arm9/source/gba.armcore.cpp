@@ -2085,7 +2085,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
 #ifdef WORDS_BIGENDIAN
   if(!cpuBiosSwapped) {
     for(unsigned int i = 0; i < sizeof(myROM)/4; i++) {
-      WRITE32LE((u8*)&myROM[i], myROM[i]);
+      WRITE32LE((u32*)&myROM[i], myROM[i]);
     }
     cpuBiosSwapped = true;
   }
@@ -2687,23 +2687,23 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
         }
 #endif
         
-        value = READ32LE(((u8 *)&biosProtected));
+        value = READ32LE(((u32*)&biosProtected));
       }
       else goto unreadable;
     } else
-      value = READ32LE(((u8 *)&bios[address & 0x3FFC]));
+      value = READ32LE(((u32*)&bios[address & 0x3FFC]));
     break;
   case 2:
 #ifdef checkclearaddrrw
 	if(address >0x023FFFFF)goto unreadable;
 #endif
-    value = READ32LE(((u8 *)&workRAM[address & 0x3FFFC]));
+    value = READ32LE(((u32*)&workRAM[address & 0x3FFFC]));
     break;
   case 3:
 #ifdef checkclearaddrrw
 	if(address > 0x03008000 && !(address > 0x03FF8000)/*upern mirrow*/)goto unreadable;
 #endif
-    value = READ32LE(((u8 *)&internalRAM[address & 0x7ffC]));
+    value = READ32LE(((u32*)&internalRAM[address & 0x7ffC]));
     break;
   case 4:
   
@@ -2733,16 +2733,16 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
       if(ioReadable[(address & 0x3fc) + 2])
-        value = READ32LE(((u8 *)&ioMem[address & 0x3fC]));
+        value = READ32LE(((u32*)&ioMem[address & 0x3fC]));
       else
-        value = READ16LE(((u8 *)&ioMem[address & 0x3fc]));
+        value = READ16LE(((u16*)&ioMem[address & 0x3fc]));
     } else goto unreadable;
     break;
   case 5:
 #ifdef checkclearaddrrw
 	if(address > 0x05000400)goto unreadable;
 #endif
-    value = READ32LE(((u8 *)&paletteRAM[address & 0x3fC]));
+    value = READ32LE(((u32*)&paletteRAM[address & 0x3fC]));
     break;
   case 6:
 #ifdef checkclearaddrrw
@@ -2756,13 +2756,13 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
     }
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
-    value = READ32LE(((u8 *)&vram[address]));
+    value = READ32LE(((u32*)&vram[address]));
     break;
   case 7:
 #ifdef checkclearaddrrw
 	if(address > 0x07000400)goto unreadable;
 #endif
-    value = READ32LE(((u8 *)&emultoroam[address & 0x3FC]));
+    value = READ32LE(((u32*)&emultoroam[address & 0x3FC]));
     break;
   case 8:
   case 9:
@@ -2789,10 +2789,10 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 	}
 	else
 	{
-		value = READ32LE(((u8 *)&rom[address&0x1FFFFFC]));
+		value = READ32LE(((u32*)&rom[address&0x1FFFFFC]));
 	}
 #else
-    value = READ32LE(((u8 *)&rom[address&0x1FFFFFC]));
+    value = READ32LE(((u32*)&rom[address&0x1FFFFFC]));
 #endif
     break;
   case 13:
@@ -2879,22 +2879,22 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
               armNextPC - 4 : armNextPC - 2);
         }
 #endif
-        value = READ16LE(((u8 *)&biosProtected[address&2]));
+        value = READ16LE(((u16*)&biosProtected[address&2]));
       } else goto unreadable;
     } else
-      value = READ16LE(((u8 *)&bios[address & 0x3FFE]));
+      value = READ16LE(((u16*)&bios[address & 0x3FFE]));
     break;
   case 2:
 #ifdef checkclearaddrrw
 	if(address >0x023FFFFF)goto unreadable;
 #endif
-    value = READ16LE(((u8 *)&workRAM[address & 0x3FFFE]));
+    value = READ16LE(((u16*)&workRAM[address & 0x3FFFE]));
     break;
   case 3:
 #ifdef checkclearaddrrw
 	if(address > 0x03008000 && !(address > 0x03FF8000)/*upern mirrow*/)goto unreadable;
 #endif
-    value = READ16LE(((u8 *)&internalRAM[address & 0x7ffe]));
+    value = READ16LE(((u16*)&internalRAM[address & 0x7ffe]));
     break;
   case 4:
   
@@ -2935,7 +2935,7 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
-		value =  READ16LE(((u8 *)&ioMem[address & 0x3fe]));
+		value =  READ16LE(((u16*)&ioMem[address & 0x3fe]));
     }
     else goto unreadable;
     break;
@@ -2943,7 +2943,7 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 #ifdef checkclearaddrrw
 	if(address > 0x05000400)goto unreadable;
 #endif
-    value = READ16LE(((u8 *)&paletteRAM[address & 0x3fe]));
+    value = READ16LE(((u16*)&paletteRAM[address & 0x3fe]));
     break;
   case 6:
 #ifdef checkclearaddrrw
@@ -2957,13 +2957,13 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
     }
     if ((address & 0x18000) == 0x18000)
       address &= 0x17fff;
-    value = READ16LE(((u8 *)&vram[address]));
+    value = READ16LE(((u16*)&vram[address]));
     break;
   case 7:
 #ifdef checkclearaddrrw
 	if(address > 0x07000400)goto unreadable;
 #endif
-    value = READ16LE(((u8 *)&emultoroam[address & 0x3fe]));
+    value = READ16LE(((u16*)&emultoroam[address & 0x3fe]));
     break;
   case 8:
   case 9:
@@ -2994,10 +2994,10 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
 	}
 	else
 	{
-		value = READ16LE(((u8 *)&rom[address & 0x1FFFFFE]));
+		value = READ16LE(((u16*)&rom[address & 0x1FFFFFE]));
 	}
 #else
-    value = READ16LE(((u8 *)&rom[address & 0x1FFFFFE]));
+    value = READ16LE(((u16*)&rom[address & 0x1FFFFFE]));
 #endif
 	}
     break;    
@@ -3244,7 +3244,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 #ifdef checkclearaddrrw
 	if(address >0x023FFFFF)goto unreadable;
 #endif
-      WRITE32LE(((u8 *)&workRAM[address & 0x3FFFC]), value);
+      WRITE32LE(((u32*)&workRAM[address & 0x3FFFC]), value);
     break;
   case 0x03:
 #ifdef BKPT_SUPPORT
@@ -3256,7 +3256,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 #ifdef checkclearaddrrw
 	if(address > 0x03008000 && !(address > 0x03FF8000)/*upern mirrow*/)goto unreadable;
 #endif
-      WRITE32LE(((u8 *)&internalRAM[address & 0x7ffC]), value);
+      WRITE32LE(((u32*)&internalRAM[address & 0x7ffC]), value);
     break;
   case 0x04:
     if(address < 0x4000400) {
@@ -3283,7 +3283,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
 #ifdef checkclearaddrrw
 	if(address > 0x05000400)goto unreadable;
 #endif
-    WRITE32LE(((u8 *)&paletteRAM[address & 0x3FC]), value);
+    WRITE32LE(((u32*)&paletteRAM[address & 0x3FC]), value);
     break;
   case 0x06:
 #ifdef checkclearaddrrw
@@ -3301,7 +3301,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
     else
 #endif
     
-    WRITE32LE(((u8 *)&vram[address]), value);
+    WRITE32LE(((u32*)&vram[address]), value);
     break;
   case 0x07:
 #ifdef checkclearaddrrw
@@ -3313,7 +3313,7 @@ void CPUWriteMemory(u32 address, u32 value) //ichfly not inline is faster becaus
                         value);
     else
 #endif
-    WRITE32LE(((u8 *)&emultoroam[address & 0x3fc]), value);
+    WRITE32LE(((u32*)&emultoroam[address & 0x3fc]), value);
     break;
   case 0x0D:
 #ifdef printsavewrite
@@ -3375,7 +3375,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 #ifdef checkclearaddrrw
 	if(address >0x023FFFFF)goto unwritable;
 #endif
-      WRITE16LE(((u8 *)&workRAM[address & 0x3FFFE]),value);
+      WRITE16LE(((u16*)&workRAM[address & 0x3FFFE]),value);
     break;
   case 3:
 #ifdef BKPT_SUPPORT
@@ -3387,7 +3387,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 #ifdef checkclearaddrrw
 	if(address > 0x03008000 && !(address > 0x03FF8000)/*upern mirrow*/)goto unwritable;
 #endif
-      WRITE16LE(((u8 *)&internalRAM[address & 0x7ffe]), value);
+      WRITE16LE(((u16*)&internalRAM[address & 0x7ffe]), value);
     break;    
   case 4:
   
@@ -3416,7 +3416,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 #ifdef checkclearaddrrw
 	if(address > 0x05000400)goto unwritable;
 #endif
-    WRITE16LE(((u8 *)&paletteRAM[address & 0x3fe]), value);
+    WRITE16LE(((u16*)&paletteRAM[address & 0x3fe]), value);
     break;
   case 6:
 #ifdef checkclearaddrrw
@@ -3433,7 +3433,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
                           value);
     else
 #endif
-    WRITE16LE(((u8 *)&vram[address]), value); 
+    WRITE16LE(((u16*)&vram[address]), value); 
     break;
   case 7:
 #ifdef BKPT_SUPPORT
@@ -3445,7 +3445,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 #ifdef checkclearaddrrw
 	if(address > 0x07000400)goto unwritable;
 #endif
-    WRITE16LE(((u8 *)&emultoroam[address & 0x3fe]), value);
+    WRITE16LE(((u16*)&emultoroam[address & 0x3fe]), value);
     break;
   case 8:
   case 9:
@@ -3583,14 +3583,14 @@ void CPUWriteByte(u32 address, u8 b)
 	if(address & 1)
 	{
 	  CPUUpdateRegister(address & 0x3fe,
-			    ((READ16LE(((u8 *)&ioMem[address & 0x3fe])))
+			    ((READ16LE(((u16*)&ioMem[address & 0x3fe])))
 			     & 0x00FF) |
 			    b<<8);
 
 	}
 	else
 	  CPUUpdateRegister(address & 0x3fe,
-			    ((READ16LE(((u8 *)&ioMem[address & 0x3fe])) & 0xFF00) | b));
+			    ((READ16LE(((u16*)&ioMem[address & 0x3fe])) & 0xFF00) | b));
       }
       break;
     } else goto unwritable;
@@ -3759,9 +3759,9 @@ u32 CPUReadMemoryrealpu(u32 address)
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
       if(ioReadable[(address & 0x3fc) + 2])
-        value = READ32LE(((u8 *)&ioMem[address & 0x3fC]));
+        value = READ32LE(((u32*)&ioMem[address & 0x3fC]));
       else
-        value = READ16LE(((u8 *)&ioMem[address & 0x3fc]));
+        value = READ16LE(((u16*)&ioMem[address & 0x3fc]));
     } else goto unreadable;
     break;
   case 8:
@@ -3789,10 +3789,10 @@ u32 CPUReadMemoryrealpu(u32 address)
 	}
 	else
 	{
-		value = READ32LE(((u8 *)&rom[address&0x1FFFFFC]));
+		value = READ32LE(((u32*)&rom[address&0x1FFFFFC]));
 	}
 #else
-    value = READ32LE(((u8 *)&rom[address&0x1FFFFFC]));
+    value = READ32LE(((u32*)&rom[address&0x1FFFFFC]));
 #endif
     break;
   case 13:
@@ -3916,7 +3916,7 @@ u16 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	
     if((address < 0x4000400) && ioReadable[address & 0x3fe])
     {
-		value =  READ16LE(((u8 *)&ioMem[address & 0x3fe]));
+		value =  READ16LE(((u16*)&ioMem[address & 0x3fe]));
     }
     else goto unreadable;
     break;
@@ -3949,10 +3949,10 @@ u16 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
 	}
 	else
 	{
-		value = READ16LE(((u8 *)&rom[address & 0x1FFFFFE]));
+		value = READ16LE(((u16*)&rom[address & 0x1FFFFFE]));
 	}
 #else
-    value = READ16LE(((u8 *)&rom[address & 0x1FFFFFE]));
+    value = READ16LE(((u16*)&rom[address & 0x1FFFFFE]));
 #endif
 	}
     break;    
@@ -4161,7 +4161,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
     else
 #endif
     
-    WRITE32LE(((u8 *)&vram[address]), value);
+    WRITE32LE(((u32*)&vram[address]), value);
     break;
   case 0x07:
 #ifdef checkclearaddrrw
@@ -4173,7 +4173,7 @@ void CPUWriteMemorypu(u32 address, u32 value) //ichfly not inline is faster beca
                         value);
     else
 #endif
-    WRITE32LE(((u8 *)&emultoroam[address & 0x3fc]), value);
+    WRITE32LE(((u32*)&emultoroam[address & 0x3fc]), value);
 #endif
 
   case 0x04:
@@ -4258,7 +4258,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
 #ifdef checkclearaddrrw
 	if(address > 0x05000400)goto unwritable;
 #endif
-    WRITE16LE(((u8 *)&paletteRAM[address & 0x3fe]), value);
+    WRITE16LE(((u16*)&paletteRAM[address & 0x3fe]), value);
     break;
   case 6:
 #ifdef checkclearaddrrw
@@ -4275,7 +4275,7 @@ iprintf("w16 %04x to %08x\r\n",value,address);
                           value);
     else
 #endif
-    WRITE16LE(((u8 *)&vram[address]), value); 
+    WRITE16LE(((u16*)&vram[address]), value); 
     break;
 #endif
 
@@ -4432,14 +4432,14 @@ void CPUWriteBytepu(u32 address, u8 b)
 	if(address & 1)
 	{
 	  CPUUpdateRegister(address & 0x3fe,
-			    ((READ16LE(((u8 *)&ioMem[address & 0x3fe])))
+			    ((READ16LE(((u16*)&ioMem[address & 0x3fe])))
 			     & 0x00FF) |
 			    b<<8);
 
 	}
 	else
 	  CPUUpdateRegister(address & 0x3fe,
-			    ((READ16LE(((u8 *)&ioMem[address & 0x3fe])) & 0xFF00) | b));
+			    ((READ16LE(((u16*)&ioMem[address & 0x3fe])) & 0xFF00) | b));
       }
       break;
     } else goto unwritable;

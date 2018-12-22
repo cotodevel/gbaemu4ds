@@ -346,71 +346,7 @@ extern u16 timer1Value;
 extern u16 timer2Value;
 extern u16 timer3Value;
 
-/*
-#ifdef WORDS_BIGENDIAN
-#if defined(__GNUC__) && defined(__ppc__)
 
-#define READ16LE(base) \
-  ({ unsigned short lhbrxResult;       \
-     __asm__ ("lhbrx %0, 0, %1" : "=r" (lhbrxResult) : "r" (base) : "memory"); \
-      lhbrxResult; })
-
-#define READ32LE(base) \
-  ({ unsigned long lwbrxResult; \
-     __asm__ ("lwbrx %0, 0, %1" : "=r" (lwbrxResult) : "r" (base) : "memory"); \
-      lwbrxResult; })
-
-#define WRITE16LE(base, value) \
-  __asm__ ("sthbrx %0, 0, %1" : : "r" (value), "r" (base) : "memory")
-  
-#define WRITE32LE(base, value) \
-  __asm__ ("stwbrx %0, 0, %1" : : "r" (value), "r" (base) : "memory")
-  
-#else
-#define READ16LE(x) \
-  swap16(*((u16 *)(x)))
-#define READ32LE(x) \
-  swap32(*((u32 *)(x)))
-#define WRITE16LE(x,v) \
-  *((u16 *)x) = swap16((v))
-#define WRITE32LE(x,v) \
-  *((u32 *)x) = swap32((v))
-#endif
-#else
-#define READ16LE(x) \
-  *((u16 *)x)
-#define READ32LE(x) \
-  *((u32 *)x)
-#define WRITE16LE(x,v) \
-  *((u16 *)x) = (v)
-#define WRITE32LE(x,v) \
-  *((u32 *)x) = (v)
-#endif
-
-
-//enabled for now (to boot)
-#define UPDATE_REG(address, value)\
-  {\
-    WRITE16LE(((u16 *)&ioMem[address]),value);\
-  }\
-*/
-
-/*
-
-
-//....ugh compiler ranted because we were passing pointers of different cast directly...
-//we NEED TO MOVE THIS TO PROPER INLINE
-#define CPUReadByteQuick(addr) \
-  map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]
-
-#define CPUReadHalfWordQuick(addr) \
-  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
-
-#define CPUReadMemoryQuick(addr) \
-  READ32LE(((u32*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
-
-
-*/  
 #endif // VBA_GLOBALS_H
 
 

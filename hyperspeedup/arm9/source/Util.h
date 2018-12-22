@@ -70,27 +70,13 @@ extern long utilGzMemTell(gzFile file);
 extern void utilGBAFindSave(const u8 *, const int);
 extern void utilUpdateSystemColorMaps();
 extern int anytimejmpfilter;
-
-
 extern int utilGetSize(int size);
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-u8 clzero(u32 var);
-extern u8 u8read(u32 addr);
-extern u16 u16read(u32 address);
-extern u32 u32read(u32 address);
-extern void u8store(u32 addr, u8 value);
-extern void u16store(u32 address, u16 value);
-extern void u32store(u32 address, u32 value);
-
-//the legendary variable (use it for what your mind allows to)
-extern int i;
-
 extern void UPDATE_REG(u16 address, u16 value);
-extern void WRITE32LE(u8 * x,u32 v);
-extern void WRITE16LE(u8 * x,u16 v);
-extern u32 READ32LE(u8 * x);
-extern u16 READ16LE(u8 * x);
+extern void WRITE32LE(u32 * x, u32 v);
+extern void WRITE16LE(u16 * x, u16 v);
+extern u32 READ32LE(u32 * x);
+extern u16 READ16LE(u16 * x);
 
 extern u8 CPUReadByteQuick(u32 addr);
 extern u16 CPUReadHalfWordQuick(u32 addr);

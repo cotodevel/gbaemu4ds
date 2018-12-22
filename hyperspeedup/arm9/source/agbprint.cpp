@@ -24,10 +24,10 @@
 #include "Util.h"
 
 #define debuggerWriteHalfWord(addr, value) \
-  WRITE16LE((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], (value))
+  WRITE16LE((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask], (value))
 
 #define debuggerReadHalfWord(addr) \
-  READ16LE(((u8*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
+  READ16LE(((u16*)&map[(addr)>>24].address[(addr) & map[(addr)>>24].mask]))
 
 static bool agbPrintEnabled = false;
 static bool agbPrintProtect = false;
