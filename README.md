@@ -11,23 +11,22 @@ In fact that was the only thing really holding me back from releasing gbaemu4ds 
 PS: If you are a coder, use always differencing and merging tools. These really work
 
 - Fixed hblank irqs, fixes pokemon fire red / green leaf battles
-- use the MPU/Caches to speedup gba wram: the gba wram runs directly from nds ewram, but gba mirrored wram is handled by the MPU. Fixes some obscure bugs and gives speedup.
 - SRAM/EEprom/Flash saves supported. Note: press Y mid-game -only- after the game saved. 
 - RTC support
-- cleanup gbaemu4ds source code. Definitely needs more code cleanup.
-- broken mode 1 support. You will see games that use mode1 correctly or glitched.
-- Soft reset works: Either in-game soft-reset method (A+B+SELECT+START) or gbaemu4ds menu (LEFT+UP+A+B) -> "reset GBA"
+- cleanup gbaemu4ds source code. 
+- broken mode 0 support. You will see games that use mode1 correctly or glitched. Other modes might work correctly.
+- In-game soft-reset method (A+B+SELECT+START)
 
 Instructions:
 
 How to build: 
- - Open msys2 console: Head to gbaemu4ds folder write "make clean", then "make", then copy the gbaemu4ds.nds file to any directory in SD card.
- - Or just copy /release folder gbaemu4ds.nds in root directory in SD card, and launch it. The card must have a DLDI that allows to read/write for it to work (NTR Mode).
-
+ - Open msys2 console: Head to hbmenu folder write "make clean", then "make", then copy the hbmenu.nds file to any directory in SD card.
+ - Head to hyperspeedup, write "make clean", then "make", then copy the advirqsound.loader file to any SDRoot/gbaemu4ds folder. Create it if missing.
+ 
 
 How to boot: 
- - copy the /release folder contents, in SD:/ root folder. (where SD is the Mounted Media according your OS), if it prompts for overwrite: Yes to All. 
-   And run gbaemu4ds.nds, and a simple file directory will read the gba folder contents. Press start to choose the file and that's it.
+ - Just copy /release folder contents in root directory in SD card, and launch hbmenu.nds. hbmenu.nds must be DLDI-patched (NTR Mode). If prompts for overwrite: Yes to All. 
+   Now pick your file. Press A consecutively if you don't know what to do.
  
  
  Coto.
