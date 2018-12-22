@@ -40,8 +40,14 @@
 #include <nds/disc_io.h>
 #include <dirent.h>
 
-volatile u16 DISPCNT;
-//volatile u16 DISPCNT  = 0x0080;
+//coto: some games may require it.
+__attribute__((section(".dtcm")))
+bool disableHBLANKIRQ = false;
+
+__attribute__((section(".dtcm")))
+volatile u16 DISPCNT = 0;
+
+__attribute__((section(".dtcm")))
 int framenummer;
 
 char* rootdirnames [3] = {(char*)"nitro:/",(char*)"fat:/",(char*)"sd:/"};
@@ -174,8 +180,13 @@ int frameskip = 10;
 int framewtf = 0;
 
 #ifdef usebuffedVcout
+__attribute__((section(".dtcm")))
 u8 VCountgbatods[0x100]; //(LY)      (0..227) + check overflow
+
+__attribute__((section(".dtcm")))
 u8 VCountdstogba[263]; //(LY)      (0..262)
+
+__attribute__((section(".dtcm")))
 u8 VCountdoit[263]; //jump in or out
 #endif
 
@@ -277,61 +288,75 @@ __attribute__((section(".itcm")))
 void HblankHandler(void) {
 //---------------------------------------------------------------------------------
 
-	u16 temp = REG_VCOUNT;
-#ifdef usebuffedVcout
-
-	if(VCountdoit[temp])
-	{
-#ifdef HBlankdma
+	//coto (disabled) hblank handler
+	if(disableHBLANKIRQ == true){
+		//Wifi_Sync();
+		DISPSTAT |= (REG_DISPSTAT & 0x3);
+		DISPSTAT |= 0x2;	//hblank
+		DISPSTAT &= 0xFFFe; //remove vblank
+		UPDATE_REG(0x04, DISPSTAT);
 		CPUCheckDMA(2, 0x0f);
-#endif
-	}
-	else
-	{
 		REG_IF = IRQ_HBLANK;
 	}
-#ifdef forceHBlankirqs
-	if(!(IE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
-#endif
+	//ichfly hblank handler
+	else{
+
+			u16 temp = REG_VCOUNT;
+		#ifdef usebuffedVcout
+
+			if(VCountdoit[temp])
+			{
+		#ifdef HBlankdma
+				CPUCheckDMA(2, 0x0f);
+		#endif
+			}
+			else
+			{
+				REG_IF = IRQ_HBLANK;
+			}
+		#ifdef forceHBlankirqs
+			if(!(IE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
+		#endif
 
 
-#else
-	u16 res1;
-	u16 res2;
-	if(temp < 192)
-	{
-		res1 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
-		//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
-	}
-	else
-	{
-		res1 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
-		//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
-	}
-	temp++;
-	if(temp < 192)
-	{
-		res2 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
-		//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
-	}
-	else
-	{
-		res2 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
-		//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
-	}
+		#else
+			u16 res1;
+			u16 res2;
+			if(temp < 192)
+			{
+				res1 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+			}
+			else
+			{
+				res1 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+			}
+			temp++;
+			if(temp < 192)
+			{
+				res2 = ((temp * 214) >> 8);//VCOUNT = help * (1./1.2); //1.15350877;
+				//help3 = (help + 1) * (1./1.2); //1.15350877;  // ichfly todo it is to slow
+			}
+			else
+			{
+				res2 = (((temp - 192) * 246) >>  8)+ 160;//VCOUNT = ((temp - 192) * (1./ 1.04411764)) + 160 //* (1./ 1.04411764)) + 160; //1.15350877;
+				//help3 = ((help - 191) *  (1./ 1.04411764)) + 160; //1.15350877;  // ichfly todo it is to slow			
+			}
 
 
-	if(res1 == res2)
-	{
-		REG_IF = IRQ_HBLANK;
-#ifdef HBlankdma
-		CPUCheckDMA(2, 0x0f);
-#endif
+			if(res1 == res2)
+			{
+				REG_IF = IRQ_HBLANK;
+		#ifdef HBlankdma
+				CPUCheckDMA(2, 0x0f);
+		#endif
+			}
+		#ifdef forceHBlankirqs
+			if(!(IE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
+		#endif
+		#endif
 	}
-#ifdef forceHBlankirqs
-	if(!(IE & IRQ_HBLANK))REG_IF = IRQ_HBLANK;
-#endif
-#endif
 }
 //---------------------------------------------------------------------------------
 __attribute__((section(".itcm")))

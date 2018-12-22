@@ -31,23 +31,6 @@
 
 #define readanom 0x100
 
-typedef struct
-{
-	u32 entryPoint;
-	u8 logo[156];
-	char title[0xC];
-	char gamecode[0x4];
-	u16 makercode;
-	u8 is96h;
-	u8 unitcode;
-	u8 devicecode;
-	u8 unused[7];
-	u8 version;
-	u8 complement;
-	u16 checksum;
-} __attribute__ ((__packed__)) gbaHeader_t;
-
-
 char* seloptionsshowmem [6] = {(char*)"dump ram",(char*)"dump gba ram",(char*)"show nds ram",(char*)"show gba ram",(char*)"cram dump",(char*)"exit"};
 
 u32 userinputval(u32 original_val,u32 bits)

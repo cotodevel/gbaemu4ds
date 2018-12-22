@@ -100,6 +100,15 @@ extern u16 swap16(u16 v);
 extern u32 swap32(u32 v);
 
 extern u32 nopinlasm();
+extern int save_decider();
+extern bool useMPUFast;
+
+extern bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck);
+extern bool pendingSaveFix;
+extern int  SaveSizeBeforeFix;
+extern int  SaveSizeAfterFix;
+extern char* strtoupper(char* s);
+extern char* strtolower(char* s);
 
 #ifdef __cplusplus
 }

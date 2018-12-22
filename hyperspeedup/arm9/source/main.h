@@ -1,12 +1,13 @@
+#ifndef main_gba_core
+#define main_gba_core
+
 #include <nds.h>
 #include <stdio.h>
 #include <assert.h>
 #include <nds/arm9/dldi.h>
 #include <nds/disc_io.h>
 #include <dirent.h>
-
-#ifndef main_gba_core
-#define main_gba_core
+#include "GBA.h"
 
 #define INT_TABLE_SECTION __attribute__((section(".itcm")))
 #define GBA_EWRAM ((void*)(0x02000000))
@@ -36,6 +37,8 @@ extern int frameskip;
 extern int main( int argc, char **argv);
 
 extern u8 arm7exchangefild[0x100];
+
+extern gbaHeader_t gbaheader;
 #ifdef __cplusplus
 }
 #endif

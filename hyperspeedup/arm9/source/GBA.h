@@ -37,6 +37,22 @@
 #define SAVE_GAME_VERSION_9 9
 #define SAVE_GAME_VERSION  SAVE_GAME_VERSION_9
 
+typedef struct
+{
+	u32 entryPoint;
+	u8 logo[156];
+	char title[0xC];
+	char gamecode[0x4];
+	u16 makercode;
+	u8 is96h;
+	u8 unitcode;
+	u8 devicecode;
+	u8 unused[7];
+	u8 version;
+	u8 complement;
+	u16 checksum;
+} __attribute__ ((__packed__)) gbaHeader_t;
+
 typedef struct {
   u8 *address;
   u32 mask;
@@ -605,6 +621,7 @@ extern const u8 gamepakWaitState1[2];
 extern const u8 gamepakWaitState2[2];
 extern const bool isInRom [16];
 extern u8 memoryWait[16];
+extern bool disableHBLANKIRQ;
 
 // The videoMemoryWait constants are used to add some waitstates
 // if the opcode access video memory data outside of vblank/hblank

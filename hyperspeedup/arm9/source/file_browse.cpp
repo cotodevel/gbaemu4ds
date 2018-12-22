@@ -52,26 +52,7 @@ extern "C" u32 fileRead (char* buffer, u32 cluster, u32 startOffset, u32 length)
 
 using namespace std;
 
-typedef struct
-{
-	u32 entryPoint;
-	u8 logo[156];
-	char title[0xC];
-	char gamecode[0x4];
-	char makercode[0x2];
-	u8 is96h;
-	u8 unitcode;
-	u8 devicecode;
-	u8 unused[7];
-	u8 version;
-	u8 complement;
-	u16 res;
-} __attribute__ ((__packed__)) gbaHeader_t;
-
 char showbuff[0x10];
-
-
-gbaHeader_t gbaheader;
 
 char* filetypsforemu [4] = {"gbafile (start emu)","savefile","bios","patch"};
 

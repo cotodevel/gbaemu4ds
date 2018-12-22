@@ -45,22 +45,7 @@
 #include <string.h>
 #include <unistd.h>    // for sbrk()
 
-typedef struct
-{
-	u32 entryPoint;
-	u8 logo[156];
-	char title[0xC];
-	char gamecode[0x4];
-	u16 makercode;
-	u8 is96h;
-	u8 unitcode;
-	u8 devicecode;
-	u8 unused[7];
-	u8 version;
-	u8 complement;
-	u16 checksum;
-} __attribute__ ((__packed__)) gbaHeader_t;
-
+gbaHeader_t gbaheader;
 u8 arm7exchangefild[0x100];
 
 char* savetypeschar[7] =
@@ -388,31 +373,58 @@ if(argv[8][0] == '1')
 
 	  iprintf("CPUReset\n");
       CPUReset();
-		  
-	  if(savePath[0] != 0)
-	  {
-		  iprintf("CPUReadBatteryFile...");
-		  if(CPUReadBatteryFile(savePath))
-		  {
-			iprintf("OK\n");
-		  }
-		  else
-		  {
-			  iprintf("failed\n");
-				int i = 0;
-				while(i< 300)
-				{
-					//swiWaitForVBlank();
-					if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-					while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-					i++;
-				}
-		  }
-	  }
-	if(cpuSaveType == 3)
-		flashSetSize(myflashsize);
+		
+	//Save start
+	u32 manual_save_type = 0;
+	if(save_decider()==0){
+		if(manual_save_type == 6)
+		{
+			myflashsize = 0x20000;
+			cpuSaveType = 3;
+		}
+		else
+		{
+			cpuSaveType = manual_save_type;
+		}
+	}
+	int filepathlen = strlen(szFile);
+	char  fn_noext[filepathlen] = {0};
+	memcpy(fn_noext,szFile,filepathlen-3);
+
+	//detect savefile (filename.sav)
+	sprintf(fn_noext,"%ssav",fn_noext);
+	FILE * frh = fopen(fn_noext,"r");
+
+	//coto: added create new savefile
+	if(!frh){
+		iprintf("no savefile found, creating new one... \n");
+		savePath[0] = 0;
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		CPUWriteBatteryFile(savePath);
+	}
+	else{
+		strcpy ((char *)savePath, (const char *)fn_noext);
+		if(CPUReadBatteryFile(savePath))
+		{
+			if(cpuSaveType == 0)iprintf("SaveReadOK![AUTO]\n");
+			if(cpuSaveType == 1)iprintf("SaveReadOK![EEPROM]\n");
+			if(cpuSaveType == 2)iprintf("SaveReadOK![SRAM]\n");
+			if(cpuSaveType == 3)iprintf("SaveReadOK![FLASHROM]\n");
+			if(cpuSaveType == 4)iprintf("SaveReadOK![EEPROM+SENSOR]\n");
+			if(cpuSaveType == 5)iprintf("SaveReadOK![NONE]\n");			
+		}
+		else
+		{
+			iprintf("failed reading: %s\n",savePath);
+			while(1);
+		}
+		fclose(frh);
+	}
 	
-	//gbaHeader_t *gbaGame;
+	//Save end
+	
+	
+	//gbaHeader_t gbaheader;
 	//gbaGame = (gbaHeader_t*)rom;
 	
 	REG_IME = IME_DISABLE;

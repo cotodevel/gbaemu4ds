@@ -2006,7 +2006,7 @@ void  __attribute__ ((hot)) CPUUpdateRegister(u32 address, u16 value)
 	//REG_IF = value; //ichfly update at read outdated
 	//IF = REG_IF;
 #ifdef gba_handel_IRQ_correct
-	REG_IF = value;
+	REG_IF = IF = value;
 #else
     IF ^= (value & IF);
     UPDATE_REG(0x202, IF);
@@ -2597,6 +2597,26 @@ s8 CPUReadByteSignedpu(u32 address)
 	return (s8)CPUReadByterealpu(address);
 }
 
+
+
+//HBLANK IRQ Disabled emulation
+__attribute__((section(".itcm")))
+void vcounthandler(void){		
+	DISPSTAT |= (REG_DISPSTAT & 0x3);
+	VCOUNT = REG_VCOUNT&0xff;
+	
+	if(VCOUNT == (DISPSTAT >> 8)) //update by V-Count Setting
+	{
+		DISPSTAT |= 0x4;
+	}
+	else{
+		DISPSTAT &= 0xFFFb; //remove vcount
+	}
+	//io update
+	UPDATE_REG(0x06, VCOUNT);
+	UPDATE_REG(0x04, DISPSTAT);
+}
+
 //normal cpu read/write opcodes
 __attribute__((section(".itcm")))
 void updateVC()
@@ -2704,7 +2724,12 @@ u32 CPUReadMemoryreal(u32 address) //ichfly not inline is faster because it is s
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
       if(ioReadable[(address & 0x3fc) + 2])
@@ -2892,7 +2917,12 @@ u16 CPUReadHalfWordreal(u32 address) //ichfly not inline is faster because it is
   
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
 	}
 	
 #ifdef gba_handel_IRQ_correct
@@ -3066,7 +3096,12 @@ iprintf("r8 %02x\n",address);
   
   	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVC();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVC();
+		}
 	}
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update
@@ -3715,7 +3750,12 @@ u32 CPUReadMemoryrealpu(u32 address)
 
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
 	}
     if((address < 0x4000400) && ioReadable[address & 0x3fc]) {
       if(ioReadable[(address & 0x3fc) + 2])
@@ -3858,7 +3898,12 @@ u16 CPUReadHalfWordrealpu(u32 address) //ichfly not inline is faster because it 
   
 	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
 	}
 	
 #ifdef gba_handel_IRQ_correct
@@ -3976,7 +4021,12 @@ iprintf("r8 %02x\n",address);
   
   	if(address > 0x4000003 && address < 0x4000008)//ichfly update
 	{
-		updateVCsub();
+		if(disableHBLANKIRQ == true){
+			vcounthandler();
+		}
+		else{
+			updateVCsub();
+		}
 	}
 #ifdef gba_handel_IRQ_correct
 	if(address == 0x4000202 || address == 0x4000203)//ichfly update

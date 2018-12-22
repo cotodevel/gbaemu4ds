@@ -828,7 +828,10 @@ u8 *utilLoad(const char *file,
 	iprintf("gbaimg is created with %d bytes!",(int)toread);
 	int read_result = 0;
 	read_result = fread(image, 1, toread, f);
-
+	
+	//set up header
+    memcpy((u8*)&gbaheader,(u8*)image,sizeof(gbaHeader_t));
+	
 	#ifndef uppern_read_emulation
 		fclose(f);
 	#else
@@ -956,47 +959,196 @@ void UPDATE_REG(u16 address, u16 value){
 }
 
 
-//the legendary variable
 int i=0;
 
-//VA + ( DTCMTOP - (stack_size)*4) - dtcm_reservedcode[end_of_usedDTCMstorage] (we use for the emu)  in a loop of CACHE_LINE size
 
-// returns unary(decimal) ammount of bits using the Hamming Weight approach 
 
-//8 bit depth Lookuptable 
-//	0	1	2	3	4	5	6	7	8	9	a	b	c	d	e	f
-const u8 /* __attribute__((section(".dtcm"))) */ minilut[0x10] = {
-	0,	1,	1,	2,	1,	2,	2,	3,	1,	2,	2,	3,	2,	3,	3,	4,		//0n
-};
 
-u8 lutu16bitcnt(u16 x){
-	return (minilut[x &0xf] + minilut[(x>>4) &0xf] + minilut[(x>>8) &0xf] + minilut[(x>>12) &0xf]);
+
+
+char* strtoupper(char* s) {
+  assert(s != NULL);
+
+  char* p = s;
+  while (*p != '\0') {
+    *p = toupper(*p);
+    p++;
+  }
+
+  return s;
 }
 
-u8 lutu32bitcnt(u32 x){
-	return (lutu16bitcnt(x & 0xffff) + lutu16bitcnt(x >> 16));
+char* strtolower(char* s) {
+  assert(s != NULL);
+
+  char* p = s;
+  while (*p != '\0') {
+    *p = tolower(*p);
+    p++;
+  }
+
+  return s;
 }
 
 
-//counts leading zeroes :)
-u8 clzero(u32 var){
-   
-    u8 cnt=0;
-    u32 var3;
-    if (var>0xffffffff) return 0;
-   
-    var3=var; //copy
-    var=0xFFFFFFFF-var;
-    while((var>>cnt)&1){
-        cnt++;
+bool useMPUFast = false;
+//coto: if a game is defined here savetype from gamecode will be used
+//		update: saveDecider also changes the MPU bits to give per-game speedup
+int save_decider(){
+
+	//void * memcpy ( void * destination, const void * source, size_t num );
+	int savetype=0;
+	char gamecode[6] = {0};
+	char title[13] = {0};
+	title[12] = '\0';
+	
+	memcpy((char*)gamecode,(u8*)&gbaheader.gamecode,sizeof(gbaheader.gamecode));
+	memcpy((char*)title,(u8*)&gbaheader.title,sizeof(gbaheader.title));
+	
+    if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"bpre01"), //firered 128K
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {    
+        savetype = 3; 
+		disableHBLANKIRQ = true;	//otherwise blackscreens
+	}
+    
+	else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"bpge01"), //greenleaf 128K
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {    
+        savetype = 3; 
+		disableHBLANKIRQ = true;	//otherwise blackscreens
     }
-    if ( (((var3&0xf0000000)>>28) >0x7) && (((var3&0xff000000)>>24)<0xf)){
-        var=((var3&0xf0000000)>>28);
-        var-=8; //bit 31 can't count to zero up to this point
-            while(var&1) {
-                cnt++; var=var>>1;
-            }
+    
+    else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"amze01"), //mario 1 eeprom 64K
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {   
+        savetype = 1; 
+		useMPUFast = true;	//use fast settings
+		disableHBLANKIRQ = true;	//otherwise blackscreens
+	}
+    
+    else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"ax4p01"), //mario 3 128K
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {   
+        savetype = 3; 
+		useMPUFast = true;	//use fast settings
+	}
+	
+	
+	else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"amke01"), //mario kart sc
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {   
+        useMPUFast = true;	//use fast settings
+	}
+	
+	else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"bsbe78"), //sonic battle
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {   
+        useMPUFast = true;	//use fast settings
+	}
+	
+	//all pokemon sapphire / pokemon ruby cases are also 128K Flash
+	else if(
+		(save_deciderByTitle(title, (char*)"POKEMON SAPP",sizeof(gbaheader.title)) == true)
+		||
+		(save_deciderByTitle(title, (char*)"POKEMON RUBY",sizeof(gbaheader.title)) == true)
+	)
+    {
+        savetype = 3; 
     }
-return cnt;
+	
+	else if(
+		(save_deciderByTitle(title, (char*)"SUPER MARIOB",sizeof(gbaheader.title)) == true)	//Mario world
+		||
+		(save_deciderByTitle(title, (char*)"SUPER MARIOC",sizeof(gbaheader.title)) == true)	//Yoshi Island
+	)
+    {
+		useMPUFast = true;	//use fast settings
+	}
+	//SUPER MARIOA & SUPER MARIOD Already covered
+	
+	
+	else if(
+		(save_deciderByTitle(title, (char*)"AGB KIRBY DX",sizeof(gbaheader.title)) == true)	//Kirby nightmare in dreamland
+	)
+    {
+		useMPUFast = true;	//use fast settings
+		disableHBLANKIRQ = true;	//faster
+	}
+	
+	
+	//games that break when HBLANK irqs are enabled for them
+	else if(
+		(save_deciderByTitle(title, (char*)"WORMSWORLDPT",sizeof(gbaheader.title)) == true)	//Worms World Party
+	)
+    {
+		disableHBLANKIRQ = true;	//otherwise blackscreens
+	}
+	
+	
+    int myflashsize = 0x10000;
+
+    //Flash setup: 0 auto / 1 eeprom / 2 sram / 3 flashrom /4 eeprom + sensor / 5 none
+    if(savetype == 3)
+    {
+        myflashsize = 0x20000;
+        cpuSaveType = 3;
+    }
+    else if(savetype == 1)
+    {
+        myflashsize = 0x10000;
+        cpuSaveType = 1; 
+    }
+    else
+        cpuSaveType = savetype;
+
+    //Flash format
+    if(cpuSaveType == 3){
+        flashSetSize(myflashsize);
+        iprintf("[FLASH %d bytes]\n",myflashsize);
+    }
+
+return savetype;
 }
 
+bool pendingSaveFix = false;	//false if already saved new forked save / or game doesn't meet savefix conditions // true if pending a save that was fixed in gba core, but still has not been written/updated to file.
+int  SaveSizeBeforeFix = 0;	//only valid if pendingSaveFix == true
+int  SaveSizeAfterFix = 0;	//only valid if pendingSaveFix == true
+
+
+bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck){
+	if (
+			strncmp( 
+			strtoupper(headerTitleSource), 
+			strtoupper(headerTitleHaystack),
+			SizeToCheck
+			) == 0
+		){
+		return true;
+	}
+	return false;
+}
