@@ -321,7 +321,7 @@ int main() {
 	readUserSettings();
 	
 	irqInit();
-	fifoInit();
+	//fifoInit();
 	
 	// Start the RTC tracking IRQ
 	initClockIRQ();

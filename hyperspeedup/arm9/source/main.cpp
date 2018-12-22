@@ -426,13 +426,17 @@ if(argv[8][0] == '1')
 
 	iprintf("arm7init\n");
 	VblankHandler();
+	
+	REG_IME = IME_ENABLE;	
+	
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
 	REG_IPC_FIFO_TX = syncline;
 	
+	
 	//coto
-	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){}
-		//u32 src = REG_IPC_FIFO_RX;
-		
+	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
+		u32 src = REG_IPC_FIFO_RX;
+	}
 	iprintf("irqinit\n");
 	anytimejmpfilter = 0;
 	
@@ -490,7 +494,6 @@ REG_IPC_FIFO_TX = 0x2222222;
 	nopinlasm();
 	nopinlasm();
 	
-	REG_IME = IME_ENABLE;	
 	cpu_ArmJumpforstackinit((u32)rom, 0);
 	
 	while(true);

@@ -20,8 +20,11 @@
 #ifndef VBA_GBA_H
 #define VBA_GBA_H
 
+#include <nds.h>
 #include "System.h"
 #include "ichflysettings.h"
+
+#define log(...) iprintf(__VA_ARGS__)
 
 #define SAVE_GAME_VERSION_1 1
 #define SAVE_GAME_VERSION_2 2
@@ -466,8 +469,8 @@ s16 CPUReadHalfWordrealpuSigned(u32 address);
 //gba.core.cpp end
 
 //recompiler.cpp
-extern	volatile void emuInstrARM(u32 opcode, u32 *R);
-extern	volatile void emuInstrTHUMB(u16 opcode, u32 *R);
+extern	void emuInstrARM(u32 opcode, u32 *R);
+extern	void emuInstrTHUMB(u16 opcode, u32 *R);
 extern int offset;
 extern int base;
 extern int dest;
