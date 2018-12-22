@@ -805,32 +805,25 @@ u8 *utilLoad(const char *file,
 	
 	generatefilemap(fileSize);
 	
-	if(data == NULL)
-	{
-		//ichfly
-		/*
-		romSize = 0x02400000 - ((u32)sbrk(0)) - 0x80000; //reserve 256K of ROM image.
-		rom = (u8 *)(sbrk(0));              
-		image = data = rom;
-		size = romSize;
-		*/
-		
-		//coto: we should just use what is assigned in Linker (RAM) settings
-		romSize=(int)((u32)&__gbarom_end-(u32)&__gbarom_start);
-		rom = (u8 *)(&__gbarom_start);
-		image = data = rom; //points at EWRAM GBA IMAGE block
-		size = romSize;
-		iprintf("\n EWRAM: gbaromstart: %x -- gbaromend: %x -- gbaromsize : %x \n ",
-		(unsigned int) &__gbarom_start,(unsigned int) &__gbarom_end,(unsigned int)romSize);
-		
+	#ifdef wifidebuger
+	  romSize = 0x02380000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	#else
+	  romSize = 	(int)0x02400000 - ((u32)sbrk(0) + 0x5000 + 0x2000);
+	#endif
+
+	image = rom = 		(u8 *)((u8 *)sbrk(0) + (int)0x2000);	
+	size_t read = fileSize <= romSize ? fileSize : romSize;
+	size_t r= 0x80000;
+	if(cpuIsMultiBoot == true){	//MultiBoot cart?
+		//read binary into workRAM and point the rom to WorkRAM so it executes there
+		rom=workRAM;
 	}
-	int toread = fileSize <= size ? fileSize : size;
-	iprintf("gbaimg is created with %d bytes!",(int)toread);
-	int read_result = 0;
-	read_result = fread(image, 1, toread, f);
+	else{	//Single Cart, Normal Boot
+		r = fread(image, 1, read, f);
+	}
 	
 	//set up header
-    memcpy((u8*)&gbaheader,(u8*)image,sizeof(gbaHeader_t));
+    memcpy((u8*)&gbaheader, (u8*)image, sizeof(gbaHeader_t));
 	
 	#ifndef uppern_read_emulation
 		fclose(f);
@@ -839,13 +832,13 @@ u8 *utilLoad(const char *file,
 		ichflyfilestreamsize = fileSize;
 	#endif
 
-	if(toread != read_result) {
+	if(r != read) {
 		systemMessage(MSG_ERROR_READING_IMAGE,
 		N_("Error reading image %s"), file);
 		while(1);
 	}
 	
-	//if(patchPath[0] != 0)patchit(romSize);
+	if(patchPath[0] != 0)patchit(romSize);
 	
   return image;
 }
