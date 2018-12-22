@@ -10,6 +10,8 @@ void updatetakt();
 
 void enableSound();
 
+void vcount_handler();
+
 #ifdef __cplusplus
 }
 #endif

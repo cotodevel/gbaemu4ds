@@ -2212,9 +2212,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   }
 }
 
-void CPUReset()
-{
-
+void CPUReset(){
 
   if(gbaSaveType == 0) {
     if(eepromInUse)
@@ -2519,14 +2517,11 @@ void CPUReset()
   } 
 
   //ARM_PREFETCH;
-
   systemSaveUpdateCounter = SYSTEM_SAVE_NOT_UPDATED;
-
   cpuDmaHack = false;
-
   //lastTime = systemGetClock();
-
   //SWITicks = 0;
+  rtcEnable(true); //Coto: GBA RTC Support
 }
 
 #ifdef SDL

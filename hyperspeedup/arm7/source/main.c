@@ -2,9 +2,6 @@
 
 #include <nds/arm7/audio.h>
 #include <nds/arm7/serial.h>
-
-//Shared memory region static object
-#include "../../common/clock.h"
 #include "../../common/gba_ipc.h"
 
 #include "main.h"
@@ -334,7 +331,15 @@ int main() {
 	REG_IPC_FIFO_CR = IPC_FIFO_ENABLE;
 	REG_IPC_FIFO_CR = IPC_FIFO_SEND_CLEAR | IPC_FIFO_ENABLE | IPC_FIFO_ERROR;
 
-
+	
+	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
+	
+	//set up ppu: do irq on hblank/vblank/vcount/and vcount line is 159
+    REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ;	//REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
+	
+	u32 curIRQ = REG_IE | IRQ_VCOUNT;
+	irqEnable(curIRQ);
+	
 	//soundbuffA = malloc(32);
 	//soundbuffB = malloc(32);
 
@@ -953,3 +958,10 @@ void checkstart()
 
 }
 #endif
+
+
+//ok
+void vcount_handler(){
+	//IPC ARM7/ARM9 process: handles touchscreen,time,etc
+	gbaemu4ds_ipc();
+}

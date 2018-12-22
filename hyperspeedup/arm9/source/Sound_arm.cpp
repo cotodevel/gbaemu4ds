@@ -18,9 +18,6 @@
 
 #include "ichflysettings.h"
 #include "main.h"
-
-//Shared memory region static object
-#include "../../common/clock.h"
 #include "../../common/gba_ipc.h"
 
 #include "GBA.h"

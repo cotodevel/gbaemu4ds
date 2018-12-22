@@ -20,12 +20,14 @@ TARGET		:=	$(shell basename $(CURDIR))
 BUILD		:=	build
 
 SOURCES		:=	source \
-				source/hbmenustub
+				source/hbmenustub	\
+				../common/
  
 INCLUDES	:=	include	\
 						include/SDL	\
 						include/gl2d \
-						source/hbmenustub
+						source/hbmenustub	\
+				../common/
 DATA		:=	data  
 GRAPHICS	:=	gfx  
 @NITRODATA	:=	nitrofiles

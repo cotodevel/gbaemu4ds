@@ -5,9 +5,6 @@
 ---------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
-
-//Shared memory region static object
-#include "../../common/clock.h"
 #include "../../common/gba_ipc.h"
 
 //reload app
