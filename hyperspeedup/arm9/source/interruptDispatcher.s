@@ -22,6 +22,8 @@
 
 
 ---------------------------------------------------------------------------------*/
+.arch	armv4t
+.cpu arm7tdmi
 
 #include "ichflysettings.h"
 
@@ -111,7 +113,8 @@ got_handler:
 
 	mov SP,r0
 	
-	blx	r1
+	mov lr,pc
+	bx	r1
 	
 exitichfly:
 

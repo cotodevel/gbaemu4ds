@@ -64,6 +64,8 @@ extern void downgreadcpu();
 extern inline void puGba();
 extern inline void puNds();
 
+extern void ARMV5toARMV4Mode();
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,3 +1,5 @@
+.arch	armv4t
+.cpu arm7tdmi
 
 #include "ichflysettings.h"
 
@@ -289,10 +291,8 @@ inter_swi:
 	ldr	sp, =SPtoloadswi	@ use the new stack
 	ldr sp, [sp]
 	
-	@mov lr,pc @ichfly change back if possible
-	@bx r1
-	blx	r1 @ichfly change back if possible
-	
+	mov lr,pc @ichfly change back if possible , coto: change back was possible
+	bx r1
 	
 	ldr	r1, =SPtoloadswi	@save old stack
 	str sp, [r1]
@@ -344,7 +344,8 @@ inter_undefined:
 	
 	ldr	sp, =__sp_undef	@ use the new stack
 	
-	blx	r1 @ichfly change back if possible
+	mov lr,pc
+	bx	r1 @ichfly change back if possible , coto: change back was possible
 	
 	@ restore the registres 0->12
 	ldr	lr, =exRegs

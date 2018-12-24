@@ -1,3 +1,6 @@
+.arch	armv4t
+.cpu arm7tdmi
+
 	.text
 
 	.equ REG_IME, 0x04000208
@@ -272,7 +275,8 @@ wait_irq:
 	sub r0,sp,#4*17 @+1 res you know
 	ldr r1,=exRegs
 	mov r2,#4*16
-	BLX memcpy
+	mov lr,pc
+	BL memcpy
 	pop {r0-r3}
 	
 	sub sp,sp,#0x58
@@ -294,7 +298,8 @@ wait_irq:
 	sub r1,sp,#4*17 @+1 res you know
 	ldr r0,=exRegs
 	mov r2,#4*16
-	BLX memcpy
+	mov lr,pc
+	BL memcpy
 	pop {r0-r3}
 
 

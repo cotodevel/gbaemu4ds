@@ -40,7 +40,7 @@ GAME_SUBTITLE2	:=	2015
 #---------------------------------------------------------------------------------
 # options for code generation  # -save-temps
 #---------------------------------------------------------------------------------
-ARCH	:= -mthumb-interwork -march=armv5te -mtune=arm946e-s -marm -mstructure-size-boundary=32
+ARCH	:= -mthumb-interwork -mcpu=arm7tdmi -march=armv4t -marm -mstructure-size-boundary=32
 CFLAGS	:= -g -Wall -Ofast\
  		-mapcs-frame	\
 		-funsafe-math-optimizations	\

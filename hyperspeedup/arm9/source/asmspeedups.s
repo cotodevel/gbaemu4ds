@@ -1,4 +1,5 @@
-
+.arch	armv4t
+.cpu arm7tdmi
 
 #include "ichflysettings.h"
 

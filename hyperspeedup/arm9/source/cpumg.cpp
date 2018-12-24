@@ -173,12 +173,16 @@ void exInit(void (*customHdl)())
 
 void undifinedresolver()
 {
+	//coto: by downgrading armv5 to armv4 and running always in ARMv4 mode we prevent the below undefined exception.
+	
+	/*
 	u32 tempforwtf = *(u32*)(exRegs[15] - 4);
 	if((tempforwtf &0x0F200090) == 0x00200090) //wtf why dos this tigger an exeption it is strh r1,[r0]+2! ≤‡‡ 0xB2 10 E0 E0 on gba 0xE0E010B2 so think all strh rx,[ry]+z! do that
 	{
 		*(u32*)(exRegs[15] - 4) = tempforwtf & ~0x200000;//ther is just a wrong bit so don't worry patch it to strh r1,[r0]+2
 	}
-	else
+	*/
+	//else
 	{
 		printf("unknown OP\r\n");
 		debugDump();
@@ -439,10 +443,18 @@ void emulateedbiosstart()
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~BIT(13));
 }
 
-void downgreadcpu()
+__attribute__((section(".itcm")))
+void ARMV5toARMV4Mode()	//aka downreadcpu
 {
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() | BIT(15));
 }
+
+__attribute__((section(".itcm")))
+void ARMV4toARMV5Mode()
+{
+	cpu_SetCP15Cnt(cpu_GetCP15Cnt() &~ BIT(15));
+}
+
 
 inline void puGba()
 {
