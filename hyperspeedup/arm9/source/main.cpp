@@ -368,54 +368,103 @@ if(argv[8][0] == '1')
 
 	  iprintf("CPUReset\n");
       CPUReset();
-		
+	
+	
 	//Save start
-	u32 manual_save_type = 0;
-	if(save_decider()==0){
-		if(manual_save_type == 6)
+	bool detectSaveType = false;
+	iprintf("\x1b[2J");
+	iprintf("Press A for detecting save chip hardware, \n press B for hbmenu chosen save chip hardware");
+	while(1){
+		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+		scanKeys();
+		int isdaas = keysDownRepeat();
+		if (isdaas&KEY_A)
 		{
-			myflashsize = 0x20000;
-			cpuSaveType = 3;
+			detectSaveType = true;
+			break;
 		}
-		else
+		if(isdaas&KEY_B)
 		{
-			cpuSaveType = manual_save_type;
+			detectSaveType = false;
+			break;
 		}
-	}
-	int filepathlen = strlen(szFile);
-	char  fn_noext[filepathlen] = {0};
-	memcpy(fn_noext,szFile,filepathlen-3);
-
-	//detect savefile (filename.sav)
-	sprintf(fn_noext,"%ssav",fn_noext);
-	FILE * frh = fopen(fn_noext,"r");
-
-	//coto: added create new savefile
-	if(!frh){
-		iprintf("no savefile found, creating new one... \n");
-		savePath[0] = 0;
-		strcpy ((char *)savePath, (const char *)fn_noext);
-		CPUWriteBatteryFile(savePath);
-	}
-	else{
-		strcpy ((char *)savePath, (const char *)fn_noext);
-		if(CPUReadBatteryFile(savePath))
-		{
-			if(cpuSaveType == 0)iprintf("SaveReadOK![AUTO]\n");
-			if(cpuSaveType == 1)iprintf("SaveReadOK![EEPROM]\n");
-			if(cpuSaveType == 2)iprintf("SaveReadOK![SRAM]\n");
-			if(cpuSaveType == 3)iprintf("SaveReadOK![FLASHROM]\n");
-			if(cpuSaveType == 4)iprintf("SaveReadOK![EEPROM+SENSOR]\n");
-			if(cpuSaveType == 5)iprintf("SaveReadOK![NONE]\n");			
-		}
-		else
-		{
-			iprintf("failed reading: %s\n",savePath);
-			while(1);
-		}
-		fclose(frh);
 	}
 	
+	//Coto's save detection
+	if(detectSaveType == true){
+		cpuSaveType = save_decider();	//if 0 means saveType AUTO
+		int filepathlen = strlen(szFile);
+		char  fn_noext[filepathlen] = {0};
+		memcpy(fn_noext,szFile,filepathlen-3);
+		sprintf(fn_noext,"%s%s",fn_noext,"sav");	//detect savefile (filename.sav)
+		FILE * frh = fopen(fn_noext,"r");
+		if(!frh){	//Create new savefile
+			iprintf("no savefile found, creating new one... \n");
+			savePath[0] = 0;
+			strcpy ((char *)savePath, (const char *)fn_noext);
+			CPUWriteBatteryFile(savePath);
+		}
+		else{
+			strcpy ((char *)savePath, (const char *)fn_noext);
+			if(CPUReadBatteryFile(savePath)){
+				if(cpuSaveType == 0)iprintf("SaveReadOK![AUTO]\n");
+				if(cpuSaveType == 1)iprintf("SaveReadOK![EEPROM]\n");
+				if(cpuSaveType == 2)iprintf("SaveReadOK![SRAM]\n");
+				if(cpuSaveType == 3)iprintf("SaveReadOK![FLASHROM]\n");
+				if(cpuSaveType == 4)iprintf("SaveReadOK![EEPROM+SENSOR]\n");
+				if(cpuSaveType == 5)iprintf("SaveReadOK![NONE]\n");			
+			}
+			else{
+				iprintf("failed reading: %s\n",savePath);
+				while(1);
+			}
+			fclose(frh);
+		}
+	}
+	
+	//Ichfly's save detection
+	else{	
+		myflashsize = 0x10000;
+		u32 ausgewauhlt = (u32)strtol(argv[6],NULL,16);
+		if(ausgewauhlt == 6){
+			save_decider();	//apply necessary patches so most games work
+			
+			myflashsize = 0x20000;
+			saveType = cpuSaveType = 3;
+			flashSetSize(myflashsize);
+		}
+		else{
+			saveType = cpuSaveType = ausgewauhlt;
+		}
+		
+		//strcpy(savePath,argv[2]);					//no, use below savefile name that is filename.ext -> filename.sav
+		
+		int filepathlen = strlen(szFile);
+		char  fn_noext[filepathlen] = {0};
+		memcpy(fn_noext,szFile,filepathlen-3);
+		sprintf(fn_noext,"%s%s",fn_noext,"sav");	//detect savefile (filename.sav)
+		strcpy(savePath,fn_noext);
+		
+		if(savePath[0] != 0){
+			if(CPUReadBatteryFile(savePath)){
+				iprintf("CPUReadBatteryOK");
+			}
+			else{
+				iprintf("CPUReadBatteryFAIL");
+				int i = 0;
+				while(i< 300){
+					//swiWaitForVBlank();
+					if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+					while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+					i++;
+				}
+			}
+		}
+		if(cpuSaveType == 3){
+			flashSetSize(myflashsize);
+		}
+	}
 	//Save end
 	
 	

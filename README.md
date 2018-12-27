@@ -28,5 +28,11 @@ How to boot:
  - Just copy /release folder contents in root directory in SD card, and launch hbmenu.nds. hbmenu.nds must be DLDI-patched (NTR Mode). If prompts for overwrite: Yes to All. 
    Now pick your file. Press A consecutively if you don't know what to do.
  
+Saving:
+By default almost everything will work if you press A for detecting save chip hardware (be it games or homebrew). 
+Otherwise if you press B, the hbmenu save chip hardware settings will override the current save hardware. (Useful for romhacks where you need explicitly define/know the save hardware).
+
+This way, you get 100% save compatibility working.
  
- Coto.
+
+Coto.

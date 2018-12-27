@@ -980,6 +980,16 @@ int save_decider(){
 		disableHBLANKIRQ = true;	//otherwise blackscreens
     }
     
+	else if( strncmp( 
+        strtoupper((char*)gamecode), 
+        strtoupper((char*)"puvv01"), //pkmn ultra violet (romhack)
+        sizeof(gbaheader.gamecode)
+        ) == 0 
+        )
+    {    
+        disableHBLANKIRQ = true;	//otherwise blackscreens
+    }
+	
     else if( strncmp( 
         strtoupper((char*)gamecode), 
         strtoupper((char*)"amze01"), //mario 1 eeprom 64K
