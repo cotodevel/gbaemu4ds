@@ -1,37 +1,10 @@
-#---------------------------------------------------------------------------------
-.SUFFIXES:
-#---------------------------------------------------------------------------------
-ifeq ($(strip $(DEVKITARM)),)
-$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
-endif
+all: buildgbaemu4ds
 
-include $(DEVKITARM)/ds_rules
+#Make
+buildgbaemu4ds:
+	$(MAKE)	-R	-C	hbmenu/
+	$(MAKE)	-R	-C	hyperspeedup/
 
-export TARGET		:=	$(shell basename $(CURDIR))
-export TOPDIR		:=	$(CURDIR)
-
-
-.PHONY: arm7/$(TARGET).elf arm9/arm9.elf
-
-#---------------------------------------------------------------------------------
-# main targets
-#---------------------------------------------------------------------------------
-all: $(TARGET).nds
-
-#---------------------------------------------------------------------------------
-$(TARGET).nds	:	arm7/$(TARGET).elf arm9/arm9.elf
-	ndstool	-c $(TARGET).nds -7 arm7/$(TARGET).elf -9 arm9/arm9.elf	-e9  0x02100000
-
-#---------------------------------------------------------------------------------
-arm7/$(TARGET).elf:
-	$(MAKE) -C arm7
-	
-#---------------------------------------------------------------------------------
-arm9/arm9.elf:
-	$(MAKE) -C arm9
-
-#---------------------------------------------------------------------------------
 clean:
-	$(MAKE) -C arm9 clean
-	$(MAKE) -C arm7 clean
-	rm -f $(TARGET).nds $(TARGET).arm7 arm9.arm9
+	$(MAKE)	clean	-C	hbmenu/
+	$(MAKE)	clean	-C	hyperspeedup/

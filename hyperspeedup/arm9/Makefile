@@ -134,7 +134,7 @@ $(BUILD):
 clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).elf $(TARGET).nds
-
+	@rm -rf ../../build/gbaemu4ds
 #---------------------------------------------------------------------------------
 else
  

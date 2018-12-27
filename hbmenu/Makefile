@@ -115,7 +115,12 @@ endif
  
 .PHONY: bootloader bootstub BootStrap $(BUILD) clean
 
-all:	bootloader bootstub $(BUILD) BootStrap
+all:	bootloader bootstub $(BUILD) BootStrap	buildgbaemu4ds
+	
+
+buildgbaemu4ds:
+	@[ -d ../build ] && echo "Hbmenu directory exists" || mkdir ../build
+	@cp hbmenu.nds ../build
 	
 dist:	all
 	@rm	-fr	hbmenu
@@ -136,7 +141,7 @@ clean:
 	@$(MAKE) -C bootloader clean
 	@$(MAKE) -C bootstub clean
 	@$(MAKE) -C BootStrap clean
-
+	@rm -rf ../build
 data:
 	@mkdir -p data
 
