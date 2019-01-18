@@ -935,7 +935,7 @@ char* strtolower(char* s) {
 bool useMPUFast = false;
 //coto: if a game is defined here savetype from gamecode will be used
 //		update: saveDecider also changes the MPU bits to give per-game speedup
-int save_decider(){
+int save_decider(bool overrideSaveSettings){
 
 	//void * memcpy ( void * destination, const void * source, size_t num );
 	int savetype=0;
@@ -1062,28 +1062,30 @@ int save_decider(){
 	
 	
     int myflashsize = 0x10000;
+	
+	if(overrideSaveSettings == true){
+		//Flash setup: 0 auto / 1 eeprom / 2 sram / 3 flashrom /4 eeprom + sensor / 5 none
+		if(savetype == 3)
+		{
+			myflashsize = 0x20000;
+			cpuSaveType = 3;
+		}
+		else if(savetype == 1)
+		{
+			myflashsize = 0x10000;
+			cpuSaveType = 1; 
+		}
+		else
+			cpuSaveType = savetype;
 
-    //Flash setup: 0 auto / 1 eeprom / 2 sram / 3 flashrom /4 eeprom + sensor / 5 none
-    if(savetype == 3)
-    {
-        myflashsize = 0x20000;
-        cpuSaveType = 3;
-    }
-    else if(savetype == 1)
-    {
-        myflashsize = 0x10000;
-        cpuSaveType = 1; 
-    }
-    else
-        cpuSaveType = savetype;
-
-    //Flash format
-    if(cpuSaveType == 3){
-        flashSetSize(myflashsize);
-        iprintf("[FLASH %d bytes]\n",myflashsize);
-    }
-
-return savetype;
+		//Flash format
+		if(cpuSaveType == 3){
+			flashSetSize(myflashsize);
+			iprintf("[FLASH %d bytes]\n",myflashsize);
+		}
+	}
+	
+	return savetype;
 }
 
 bool pendingSaveFix = false;	//false if already saved new forked save / or game doesn't meet savefix conditions // true if pending a save that was fixed in gba core, but still has not been written/updated to file.

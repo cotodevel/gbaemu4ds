@@ -351,7 +351,6 @@ int main( int argc, char **argv) {
 		while(1);
 	}
 	iprintf("OK\n");
-	//iprintf("Hello World2!");
 	iprintf("CPUInit\n");
 	CPUInit(biosPath, useBios,extraram);
 
@@ -381,7 +380,7 @@ int main( int argc, char **argv) {
 	
 	//Coto's save detection
 	if(detectSaveType == true){
-		cpuSaveType = save_decider();	//if 0 means saveType AUTO
+		cpuSaveType = save_decider(detectSaveType);	//if 0 means saveType AUTO
 		int filepathlen = strlen(szFile);
 		char  fn_noext[filepathlen] = {0};
 		memcpy(fn_noext,szFile,filepathlen-3);
@@ -412,12 +411,11 @@ int main( int argc, char **argv) {
 	}
 	
 	//Ichfly's save detection
-	else{	
+	else{
+		save_decider(detectSaveType);	//apply necessary patches so most games work
 		myflashsize = 0x10000;
 		u32 ausgewauhlt = (u32)strtol(argv[6],NULL,16);
 		if(ausgewauhlt == 6){
-			save_decider();	//apply necessary patches so most games work
-			
 			myflashsize = 0x20000;
 			saveType = cpuSaveType = 3;
 			flashSetSize(myflashsize);

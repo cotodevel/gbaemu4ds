@@ -85,7 +85,7 @@ extern u32 CPUReadMemoryQuick(u32 addr);
 extern u16 swap16(u16 v);
 extern u32 swap32(u32 v);
 
-extern int save_decider();
+extern int save_decider(bool overrideSaveSettings);
 extern bool useMPUFast;
 
 extern bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck);
