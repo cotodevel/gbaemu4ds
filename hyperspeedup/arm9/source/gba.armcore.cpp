@@ -401,7 +401,6 @@ int dummyAddress = 0;
 bool cpuBreakLoop = false;
 int cpuNextEvent = 0;
 
-int gbaSaveType = 0; // used to remember the save type on reset
 bool intState = false;
 bool stopState = false;
 bool holdState = false;
@@ -809,20 +808,21 @@ int romSize = 0x200000; //test normal 0x2000000 current 1/10 oh no only 2.4 MB
 
 bool CPUWriteBatteryFile(const char *fileName)
 {
-  if(gbaSaveType == 0) {
-    if(eepromInUse)
-      gbaSaveType = 3;
+  if(saveType == 0) {
+    if(eepromInUse){
+		saveType = 3;
+	}
     else switch(saveType) {
-    case 1:
-      gbaSaveType = 1;
-      break;
-    case 2:
-      gbaSaveType = 2;
-      break;
-    }
-  }
+		case 1:
+			saveType = 1;
+		break;
+		case 2:
+			saveType = 2;
+			break;
+		}
+	}
   
-  if((gbaSaveType) && (gbaSaveType!=5)) {
+  if(saveType!=5) {
     FILE *filehandle = NULL;
 	//coto: allow savefix support. Means if the read savefile (according to savefix logic) was fixed in memory, 
 	//it is now updated back to file. So the next time the file is read correctly, and not as a saveFix file.
@@ -844,8 +844,8 @@ bool CPUWriteBatteryFile(const char *fileName)
     }
     
     // only save if Flash/Sram in use or EEprom in use
-    if(gbaSaveType != 3) {
-      if(gbaSaveType == 2) {
+    if(saveType != 3) {
+      if(saveType == 2) {
         if(fwrite(flashSaveMemory, 1, flashSize, filehandle) != (size_t)flashSize) {
           fclose(filehandle);
           return false;
@@ -2325,9 +2325,8 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
     cpuBiosSwapped = true;
   }
 #endif
-  gbaSaveType = 0;
-  eepromInUse = 0;
   saveType = 0;
+  eepromInUse = 0;
   useBios = false;
   
   if(useBiosFile) {
@@ -2412,21 +2411,20 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
 
 void CPUReset(){
 
-  if(gbaSaveType == 0) {
+  if(saveType == 0) {
     if(eepromInUse)
-      gbaSaveType = 3;
+      saveType = 3;
     else
-      switch(saveType) {
-      case 1:
-        gbaSaveType = 1;
-        break;
-      case 2:
-        gbaSaveType = 2;
-        break;
-      }
+		switch(saveType) {
+			case 1:
+				saveType = 1;
+			break;
+			case 2:
+				saveType = 2;
+			break;
+		}
   }
   rtcReset();
-
 
   // clean registers
   memset(&reg[0], 0, sizeof(reg));
@@ -2670,14 +2668,14 @@ void CPUReset(){
     cpuFlashEnabled = true;
     cpuEEPROMEnabled = true;
     cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 0;
+    saveType = 0;
     break;
   case 1: // EEPROM
     cpuSramEnabled = false;
     cpuFlashEnabled = false;
     cpuEEPROMEnabled = true;
     cpuEEPROMSensorEnabled = false;
-    saveType = gbaSaveType = 3;
+    saveType = 3;
     // EEPROM usage is automatically detected
     break;
   case 2: // SRAM
@@ -2686,7 +2684,7 @@ void CPUReset(){
     cpuEEPROMEnabled = false;
     cpuEEPROMSensorEnabled = false;
     cpuSaveGameFunc = sramDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 1;
+    saveType = 1;
     break;
   case 3: // FLASH
     cpuSramEnabled = false;
@@ -2694,7 +2692,7 @@ void CPUReset(){
     cpuEEPROMEnabled = false;
     cpuEEPROMSensorEnabled = false;
     cpuSaveGameFunc = flashDelayedWrite; // to insure we detect the write
-    saveType = gbaSaveType = 2;
+    saveType = 2;
     break;
   case 4: // EEPROM+Sensor
     cpuSramEnabled = false;
@@ -2702,7 +2700,7 @@ void CPUReset(){
     cpuEEPROMEnabled = true;
     cpuEEPROMSensorEnabled = true;
     // EEPROM usage is automatically detected
-    saveType = gbaSaveType = 3;
+    saveType = 3;
     break;
   case 5: // NONE
     cpuSramEnabled = false;
@@ -2710,7 +2708,7 @@ void CPUReset(){
     cpuEEPROMEnabled = false;
     cpuEEPROMSensorEnabled = false;
     // no save at all
-    saveType = gbaSaveType = 5;
+    saveType = 5;
     break;
   } 
 

@@ -473,7 +473,6 @@ extern int dummyAddress;
 extern bool cpuBreakLoop;
 extern int cpuNextEvent;
 
-extern int gbaSaveType; // used to remember the save type on reset
 extern bool intState;
 extern bool stopState;
 extern bool holdState;
