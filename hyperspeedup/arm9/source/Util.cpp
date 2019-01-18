@@ -601,10 +601,9 @@ void patchit(int romSize2)
 		while(1);
 	}
 	
-	//coto
-	//ori: int patchnum = (*(u32*)&header[0x10]);
-	int patchnum = (int)((u32)header[0x10]);
-	
+	u32 * ptr = (u32*)&header[0x10];
+	int patchnum = (*ptr);
+
 	for(int i = 0;i < patchnum;i++)
 	{
 		int type;
