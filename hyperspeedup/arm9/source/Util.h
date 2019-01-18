@@ -85,7 +85,6 @@ extern u32 CPUReadMemoryQuick(u32 addr);
 extern u16 swap16(u16 v);
 extern u32 swap32(u32 v);
 
-extern u32 nopinlasm();
 extern int save_decider();
 extern bool useMPUFast;
 

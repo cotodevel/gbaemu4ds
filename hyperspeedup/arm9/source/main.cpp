@@ -57,17 +57,17 @@ int main( int argc, char **argv) {
 
 	ARMV5toARMV4Mode();	//so undefined resolver deals with proper armv4 opcodes and we iron out patches // for upcoming prefetch logic
 
-  biosPath[0] = 0;
-  savePath[0] = 0;
-  patchPath[0] = 0;
+	biosPath[0] = 0;
+	savePath[0] = 0;
+	patchPath[0] = 0;
 
-//reboot app
-bool isdsisdhardware=false;
-installBootStub(isdsisdhardware);
+	//reboot app
+	bool isdsisdhardware=false;
+	installBootStub(isdsisdhardware);
 
-//---------------------------------------------------------------------------------
-//set the mode for 2 text layers and two extended background layers
-//videoSetMode(MODE_5_2D);
+	//---------------------------------------------------------------------------------
+	//set the mode for 2 text layers and two extended background layers
+	//videoSetMode(MODE_5_2D);
 	videoSetModeSub(MODE_5_2D);	
 	
 	vramSetPrimaryBanks(	
@@ -76,9 +76,9 @@ installBootStub(isdsisdhardware);
 	VRAM_C_LCD,	//6840000h-685FFFFh
 	VRAM_D_LCD	//6860000h-687FFFFh
 	);
-vramSetBanks_EFG(VRAM_E_MAIN_SPRITE/*for gba sprite*/,VRAM_F_LCD/*cant use*/,VRAM_G_LCD/*cant use*/);
-vramSetBankH(VRAM_H_SUB_BG); //only sub /*for prints to lowern screan*/ 
-vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
+	vramSetBanks_EFG(VRAM_E_MAIN_SPRITE/*for gba sprite*/,VRAM_F_LCD/*cant use*/,VRAM_G_LCD/*cant use*/);
+	vramSetBankH(VRAM_H_SUB_BG); //only sub /*for prints to lowern screan*/ 
+	vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 
 
 #ifdef advanced_irq_check
@@ -89,8 +89,6 @@ vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 #endif
 	__irqSet(IRQ_FIFO_NOT_EMPTY,arm7dmareq,irqTable); //todo async
 	irqEnable(IRQ_FIFO_NOT_EMPTY);
-
-
 
 	//bg = bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0,0);
 	consoleDemoInit();
@@ -103,94 +101,90 @@ vramSetBankI(VRAM_I_SUB_BG_0x06208000); //only sub
 	//soundEnable(); //sound finaly
 	//fifoSetDatamsgHandler(FIFO_USER_02, arm7debugMsgHandler, 0);
 
-
-
-
 	DISPCNT  = 0x0080;
 
-//rootenabelde[2] = fatMountSimple  ("sd", &__io_dsisd); //DSi//sems to be inited by fatInitDefault
- //fatInitDefault();
- //nitroFSInit();
-bool temptest = true;
-#ifdef standalone
-if (0 != argc )
-{
-	if(argc > 1)
+	//rootenabelde[2] = fatMountSimple  ("sd", &__io_dsisd); //DSi//sems to be inited by fatInitDefault
+	//fatInitDefault();
+	//nitroFSInit();
+	bool temptest = true;
+	#ifdef standalone
+	if (0 != argc )
 	{
-		if(argv[1][0] == '1')
+		if(argc > 1)
 		{
-			temptest = false;
+			if(argv[1][0] == '1')
+			{
+				temptest = false;
+			}
+		}
+		if(argc > 2)
+		{
+			if(argv[2][0] == '1')
+			{
+				lcdSwap();
+			}
 		}
 	}
-	if(argc > 2)
+	#else
+			if(argv[5][0] == '1')
+			{
+				lcdSwap();
+			}
+	#endif
+	if(!(_io_dldi_stub.friendlyName[0] == 0x52 && _io_dldi_stub.friendlyName[5] == 0x4E) && temptest)
 	{
-		if(argv[2][0] == '1')
-		{
-			lcdSwap();
+			iprintf("Warning: you try to run gbaemu DS on %s gbaemu may not work\n press A to continue and ignore this",_io_dldi_stub.friendlyName);
+		while(1) {
+			scanKeys();
+			if (keysDown()&KEY_A) break;
+			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+			while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 		}
 	}
-}
-#else
-		if(argv[5][0] == '1')
+	else
+	{	
+		//antysoftreset
+		/*if(*(u32*)((u8*)(IntrMain) + 0x18) == 0xE51FF004)
 		{
-			lcdSwap();
-		}
-#endif
-if(!(_io_dldi_stub.friendlyName[0] == 0x52 && _io_dldi_stub.friendlyName[5] == 0x4E) && temptest)
-{
-		iprintf("Warning: you try to run gbaemu DS on %s gbaemu may not work\n press A to continue and ignore this",_io_dldi_stub.friendlyName);
-	while(1) {
-		scanKeys();
-		if (keysDown()&KEY_A) break;
-		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+			int oldIME = enterCriticalSection();
+			*(u32*)((u8*)(IntrMain) + 0x18) = 0xE14F0000;
+			*(u32*)((u8*)(IntrMain) + 0x1C) = 0xE92D5002;
+			leaveCriticalSection(oldIME);
+
+
+		  //send seed patch
+		  //fifoSendValue32(FIFO_USER_01,0x40000000);
+		  //fifoSendValue32(FIFO_USER_01,0xAF8CA2B8);
+
+		}*/
 	}
-}
-else
-{	
-	//antysoftreset
-	/*if(*(u32*)((u8*)(IntrMain) + 0x18) == 0xE51FF004)
+	//data protbuff
+	#ifdef arm9advsound
+	REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
+	REG_IPC_FIFO_TX = arm7arm9buffer = (u32)arm7exchangefild; //buffer for arm7
+	#endif
+	//test
+
+	/*REG_IPC_FIFO_TX = 0;
+	while(true)
 	{
-		int oldIME = enterCriticalSection();
-		*(u32*)((u8*)(IntrMain) + 0x18) = 0xE14F0000;
-		*(u32*)((u8*)(IntrMain) + 0x1C) = 0xE92D5002;
-		leaveCriticalSection(oldIME);
-
-
-	  //send seed patch
-	  //fifoSendValue32(FIFO_USER_01,0x40000000);
-	  //fifoSendValue32(FIFO_USER_01,0xAF8CA2B8);
-
+		int i = REG_IPC_FIFO_RX;
+		iprintf("%08X\r\n",i);
+		REG_IPC_FIFO_TX = i;
 
 	}*/
-}
-//data protbuff
-#ifdef arm9advsound
-REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
-REG_IPC_FIFO_TX = arm7arm9buffer = (u32)arm7exchangefild; //buffer for arm7
-#endif
-//test
 
-/*REG_IPC_FIFO_TX = 0;
-while(true)
-{
-	int i = REG_IPC_FIFO_RX;
-	iprintf("%08X\r\n",i);
-	REG_IPC_FIFO_TX = i;
-
-}*/
-
-/*	iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
-malloc(0x4000);
-iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
+	/*	iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
+	malloc(0x4000);
+	iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 	while(1);*/ //test getHeapEnd() is the needed thing
 	iprintf("Init Fat...");
-    
-    if(fatInitDefault()){
-        iprintf("OK\n");
-    }else{
-        iprintf("failed\n");
-        int i = 0;
+	
+	if(fatInitDefault()){
+		iprintf("OK\n");
+	}else{
+		iprintf("failed\n");
+		int i = 0;
 		while(i< 300)
 		{
 			//swiWaitForVBlank();
@@ -198,7 +192,7 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 			while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 			i++;
 		}
-    }
+	}
 
 	//irqInit();
 	iprintf("\x1b[2J");
@@ -211,53 +205,50 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 	int ausgewauhlt = 0;
 	int myflashsize = 0x10000;
 	u32 pressed = 0;
+	do 
+	{
+		if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+		scanKeys();
+		pressed = keysDownRepeat();
+	} while (pressed);
 
+
+	while(1){
+		iprintf("\x1b[2J");
+		for(int i = 0; i < 7; i++)
+		{
+			if(i == ausgewauhlt) iprintf("->");
+			else iprintf("  ");
+			iprintf(savetypeschar[i]);
+			iprintf("\n");
+		}
 		do 
 		{
 			if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
 			while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 			scanKeys();
 			pressed = keysDownRepeat();
-		} while (pressed);
-
-
-		while(1)
+		} while (!pressed);
+		
+		if (pressed&KEY_A)
 		{
-			iprintf("\x1b[2J");
-
-			for(int i = 0; i < 7; i++)
+			if(ausgewauhlt == 6)
 			{
-				if(i == ausgewauhlt) iprintf("->");
-				else iprintf("  ");
-				iprintf(savetypeschar[i]);
-				iprintf("\n");
+				myflashsize = 0x20000;
+				cpuSaveType = 3;
 			}
-			do 
+			else
 			{
-				if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-				while(!(REG_DISPSTAT & DISP_IN_VBLANK));
-				scanKeys();
-				pressed = keysDownRepeat();
-			} while (!pressed);
-
-			if (pressed&KEY_A)
-			{
-				if(ausgewauhlt == 6)
-				{
-					myflashsize = 0x20000;
-					cpuSaveType = 3;
-				}
-				else
-				{
-					cpuSaveType = ausgewauhlt;
-				}
-				break;
+				cpuSaveType = ausgewauhlt;
 			}
-			if (pressed&KEY_DOWN && ausgewauhlt != 6){ ausgewauhlt++;}
-			if (pressed&KEY_UP && ausgewauhlt != 0) {ausgewauhlt--;}
+			break;
 		}
-			while(1) 
-	{
+		if (pressed&KEY_DOWN && ausgewauhlt != 6){ ausgewauhlt++;}
+		if (pressed&KEY_UP && ausgewauhlt != 0) {ausgewauhlt--;}
+	}
+	
+	while(1){
 		iprintf("\x1b[2J");
 		iprintf("fps 60/%i\n",frameskip + 1);
 		//swiWaitForVBlank();
@@ -269,6 +260,7 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 		if (isdaas&KEY_UP) frameskip++;
 		if (isdaas&KEY_DOWN && frameskip != 0) frameskip--;
 	}
+	
 	int syncline =159;
 	while(1) 
 	{
@@ -285,7 +277,8 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 		if (isdaas&KEY_RIGHT) syncline+=10;
 		if (isdaas&KEY_LEFT && syncline != 0) syncline-=10;
 	}
-		bool slow;
+	
+	bool slow = false;
 	iprintf("\x1b[2J");
 	iprintf("press B for slow emuation A for normal\n");
 	while(1) 
@@ -306,37 +299,35 @@ iprintf("\n%x %x %x",getHeapStart(),getHeapEnd(),getHeapLimit());
 			break;
 		}
 	}
-
-
-#else
-strcpy(szFile,argv[1]);
-strcpy(savePath,argv[2]);
-strcpy(biosPath,argv[3]);
-strcpy(patchPath,argv[4]);
-if(argv[11][0] == '1')cpuIsMultiBoot = true;
-else cpuIsMultiBoot = false;
-int myflashsize = 0x10000;
-u32 ausgewauhlt = (u32)strtol(argv[6],NULL,16);
-if(ausgewauhlt == 6)
-{
-	myflashsize = 0x20000;
-	cpuSaveType = 3;
-}
-else
-{
-	cpuSaveType = ausgewauhlt;
-}
-frameskip = (u32)strtol(argv[7],NULL,16);
-int syncline =(u32)strtol(argv[9],NULL,16);
-bool slow;
-if(argv[10][0] == '1')slow = true;
-else slow = false;
-if(argv[8][0] == '1')
-{
-	REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
-	REG_IPC_FIFO_TX = 0;
-}
-#endif
+	#else
+	strcpy(szFile,argv[1]);
+	strcpy(savePath,argv[2]);
+	strcpy(biosPath,argv[3]);
+	strcpy(patchPath,argv[4]);
+	if(argv[11][0] == '1')cpuIsMultiBoot = true;
+	else cpuIsMultiBoot = false;
+	int myflashsize = 0x10000;
+	u32 ausgewauhlt = (u32)strtol(argv[6],NULL,16);
+	if(ausgewauhlt == 6)
+	{
+		myflashsize = 0x20000;
+		cpuSaveType = 3;
+	}
+	else
+	{
+		cpuSaveType = ausgewauhlt;
+	}
+	frameskip = (u32)strtol(argv[7],NULL,16);
+	int syncline =(u32)strtol(argv[9],NULL,16);
+	bool slow;
+	if(argv[10][0] == '1')slow = true;
+	else slow = false;
+	if(argv[8][0] == '1')
+	{
+		REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
+		REG_IPC_FIFO_TX = 0;
+	}
+	#endif
 
 	bool extraram =false; 
 	//if(!REG_DSIMODE) extraram = ram_init(DETECT_RAM); 
@@ -345,30 +336,27 @@ if(argv[8][0] == '1')
 	initspeedupfelder();
 	iprintf("\x1b[2J");
 
-  parseDebug = true;
+	parseDebug = true;
 
-  //if(argc == 2) {
-  //iprintf("%s",szFile);
-  //while(1);
-    bool failed = false;
- 
+	//if(argc == 2) {
+	//iprintf("%s",szFile);
+	//while(1);
+	bool failed = false;
+
 	iprintf("CPULoadRom...");
-
-      failed = !CPULoadRom(szFile,extraram);
-	  
-	  if(failed)
-	  {
+	failed = !CPULoadRom(szFile,extraram);
+	if(failed)
+	{
 		printf("failed");
 		while(1);
-	  }
-	  iprintf("OK\n");
-	  	//iprintf("Hello World2!");
-		iprintf("CPUInit\n");
-		CPUInit(biosPath, useBios,extraram);
+	}
+	iprintf("OK\n");
+	//iprintf("Hello World2!");
+	iprintf("CPUInit\n");
+	CPUInit(biosPath, useBios,extraram);
 
-	  iprintf("CPUReset\n");
-      CPUReset();
-	
+	iprintf("CPUReset\n");
+	CPUReset();
 	
 	//Save start
 	bool detectSaveType = false;
@@ -467,27 +455,18 @@ if(argv[8][0] == '1')
 	}
 	//Save end
 	
-	
-	//gbaHeader_t gbaheader;
-	//gbaGame = (gbaHeader_t*)rom;
-	
 	REG_IME = IME_DISABLE;
 	
 	iprintf("BIOS_RegisterRamReset\n");
 	cpu_SetCP15Cnt(cpu_GetCP15Cnt() & ~0x1); //disable pu to write to the internalRAM
 	BIOS_RegisterRamReset(0xFF);
 	
-	//void 	dmaCopy (const void *source, void *dest, uint32 size)
-	//dmaCopy( (void*)rom,(void*)0x02000000, sizeof(buf_romimg));
-
 	iprintf("arm7init\n");
 	VblankHandler();
 	
-	REG_IME = IME_ENABLE;	
-	
+	REG_IME = IME_ENABLE;		
 	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
 	REG_IPC_FIFO_TX = syncline;
-	
 	
 	//coto
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){
@@ -497,28 +476,29 @@ if(argv[8][0] == '1')
 	anytimejmpfilter = 0;
 	
 	//anytimejmp = (VoidFn)0x3007FFC; //bios import
-/*
-REG_IPC_FIFO_TX = 0; //test backcall
-REG_IPC_FIFO_TX = 0x1234567;
-				if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-				while(!(REG_DISPSTAT & DISP_IN_VBLANK));*/
+	/*
+	REG_IPC_FIFO_TX = 0; //test backcall
+	REG_IPC_FIFO_TX = 0x1234567;
+	if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));
+	*/
 	iprintf("emulateedbiosstart\n");
 
 	emulateedbiosstart();
-/*REG_IPC_FIFO_TX = 0; //test backcall
-REG_IPC_FIFO_TX = 0x1111111;
-				if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-				while(!(REG_DISPSTAT & DISP_IN_VBLANK));*/
-
+	/*
+	REG_IPC_FIFO_TX = 0; //test backcall
+	REG_IPC_FIFO_TX = 0x1111111;
+	if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));*/
     iprintf("ndsMode\n");
 
 	ndsMode();
-/*REG_IPC_FIFO_TX = 0; //test backcall
-REG_IPC_FIFO_TX = 0x2222222;
-				if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
-				while(!(REG_DISPSTAT & DISP_IN_VBLANK));*/
+	/*
+	REG_IPC_FIFO_TX = 0; //test backcall
+	REG_IPC_FIFO_TX = 0x2222222;
+	if((REG_DISPSTAT & DISP_IN_VBLANK)) while((REG_DISPSTAT & DISP_IN_VBLANK)); //workaround
+		while(!(REG_DISPSTAT & DISP_IN_VBLANK));*/
     iprintf("gbaInit\n");
-
 
 #ifdef capture_and_pars
 	videoBgDisableSub(0);
@@ -533,25 +513,14 @@ REG_IPC_FIFO_TX = 0x2222222;
 	bgUpdate();
 #endif
 
-	gbaInit(useMPUFast);
-	
+	gbaInit(useMPUFast);	
 	iprintf("gbaMode2\n");
 	gbaMode2();
 	
 	iprintf("jump to IMAGE @ EWRAM (%08X)\n\r",(unsigned int)(rom));
-	iprintf("(0)[%x] (1)[%x] (2)[%x] (3)[%x] ",(unsigned int)*((u32*)rom+0x0),(unsigned int)*((u32*)rom+1),(unsigned int)*((u32*)rom+2),(unsigned int)*((u32*)rom+3));
-	
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	nopinlasm();
-	
 	cpu_ArmJumpforstackinit((u32)rom, 0);
 	
-	while(true);
+	while(1==1){
+	}
 	return 0;
 }

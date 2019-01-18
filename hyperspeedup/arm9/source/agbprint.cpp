@@ -20,7 +20,6 @@
 #include <string.h>
 
 #include "GBA.h"
-#include "Port.h"
 #include "Util.h"
 
 #define debuggerWriteHalfWord(addr, value) \

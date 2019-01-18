@@ -120,23 +120,10 @@ extern u32 cpu_GetCP15Cnt(); //get PU status: 0 disable, 1 enable
 //instruction cache CP15
 extern void IC_InvalidateAll();
 extern void IC_InvalidateRange(const void *, u32 v);
-extern void setitcmbase(); //@ ITCM base = 0 , size = 32 MB
-extern void icacheenable(int);
 
 //data cache CP15
 extern void DC_FlushAll();
 extern void DC_FlushRange(const void *, u32 v);
-extern void setdtcmbase(); //@ DTCM base = __dtcm_start, size = 16 KB
-extern void drainwrite();
-extern void dcacheenable(int); //Cachability Bits for Data/Unified Protection Region (R/W)
-extern void setgbamap();
-
-u32 getdtcmbase();
-u32 getitcmbase();
-
-extern u32 DC_clean_invalidate_range(u32 VA_range);
-
-
 
 //ex_s.s
 extern u32 savedsp;

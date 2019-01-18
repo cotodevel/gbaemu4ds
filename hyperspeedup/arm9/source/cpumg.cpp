@@ -39,7 +39,6 @@
 #include "Cheats.h"
 #include "NLS.h"
 #include "elf.h"
-#include "Port.h"
 
 
 #define PU_PAGE_4K		(0x0B << 1)

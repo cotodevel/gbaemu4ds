@@ -20,7 +20,6 @@
 
 #include "System.h"
 #include "GBA.h"
-#include "Port.h"
 #include "Util.h"
 #include "NLS.h"
 

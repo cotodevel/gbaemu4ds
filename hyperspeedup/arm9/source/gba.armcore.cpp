@@ -57,7 +57,6 @@ bool disableMessage = false;
 #include "NLS.h"
 #include "elf.h"
 #include "Util.h"
-#include "Port.h"
 #include "RTC.h"
 #include "agbprint.h"
 #include "fatmore.h"

@@ -77,21 +77,10 @@ extern "C" {
 #include "Flash.h"
 #include "GBA.h"
 #include "RTC.h"
-#include "Port.h"
 
 #ifndef _MSC_VER
 #define _stricmp strcasecmp
 #endif // ! _MSC_VER
-
-u32 nopinlasm(){
-__asm__ volatile(
-				"nop""\n\t"
-				: 	// = write only (value+=value) / + read/write with output / & output only reg
-				:	//1st arg takes rw, 2nd and later ro
-				:
-				); 
-return 0;
-}
 
 /*
 static int (ZEXPORT *utilGzWriteFunc)(gzFile, const voidp, unsigned int) = NULL;
@@ -1100,7 +1089,6 @@ return savetype;
 bool pendingSaveFix = false;	//false if already saved new forked save / or game doesn't meet savefix conditions // true if pending a save that was fixed in gba core, but still has not been written/updated to file.
 int  SaveSizeBeforeFix = 0;	//only valid if pendingSaveFix == true
 int  SaveSizeAfterFix = 0;	//only valid if pendingSaveFix == true
-
 
 bool save_deciderByTitle(char * headerTitleSource, char * headerTitleHaystack, int SizeToCheck){
 	if (
