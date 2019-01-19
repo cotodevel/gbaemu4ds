@@ -2401,12 +2401,7 @@ void CPUInit(const char *biosFileName, bool useBiosFile,bool extram)
   for(i = 0x304; i < 0x400; i++)
     ioReadable[i] = false;
 
-  if(romSize < 0x1fe2000) {
-    *((u16 *)&rom[0x1fe209c]) = 0xdffa; // SWI 0xFA
-    *((u16 *)&rom[0x1fe209e]) = 0x4770; // BX LR
-  } else {
-    agbPrintEnable(false);
-  }
+	agbPrintEnable(false);
 }
 
 void CPUReset(){
