@@ -22,9 +22,6 @@ extern u32 readbankedlr(u32 CPSR);
 extern void cpupausemodeexit();
 extern void cpupausemode();
 
-extern u16 gbaIME;
-extern u16 gbaDISPCNT;
-extern u16 gbaBGxCNT[4];
 extern char disbuffer[0x2000];
 
 extern void debugDump();

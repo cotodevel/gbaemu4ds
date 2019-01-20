@@ -63,11 +63,6 @@
 #define PU_PAGE_2G		(0x1E << 1)
 #define PU_PAGE_4G		(0x1F << 1)
 
-u16 gbaIME = 0;
-u16 gbaDISPCNT = 0;
-u16 gbaBGxCNT[4] = {0, 0, 0, 0};
-
-
 char disbuffer[0x2000];
 
 #ifdef lastdebug
@@ -261,9 +256,8 @@ void gbaswieulatedbios()
 	//while(1);
 }
 
-
-void BIOScall(int op,  u32 *R)
-{
+__attribute__((section(".itcm")))
+void BIOScall(int op,  u32 *R){
 	int comment = op & 0x003F;
 	
 	switch(comment) {
@@ -432,7 +426,6 @@ void switch_to_unprivileged_mode()
 {
 	u32 temp = cpuGetCPSR();
 	temp = temp & ~0x1F;
-	//coto fix: temp = temp |= 0x10;
 	temp |= 0x10;
 	cpuSetCPSR(temp);
 }
