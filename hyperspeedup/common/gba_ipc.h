@@ -182,6 +182,13 @@ struct sIPCSharedGBA{
 #define KEY_YARM7 (1<<1)
 #define KEY_HINGE (1<<7)
 
+#define FIFO_SWI_SLEEPMODE (u32)(0xff1100aa 	& ~0xC0000000)
+#define ARM9_REQ_SWI_TO_ARM7 (u32)(0xff1100ab	& ~0xC0000000)
+#define ARM7_REQ_SWI_TO_ARM9 (u32)(0xff1100ac	& ~0xC0000000)
+
+#define ARM7_TURNOFF_SOUND (u32)(0xff1100ad	& ~0xC0000000)
+//ARM7_TURNON_SOUND is issued on LID open IRQ
+
 #define GBA_IPC ((volatile struct sIPCSharedGBA*)0x027FF000)
 
 #endif
@@ -200,6 +207,17 @@ extern u8 gba_get_dayofweekrtc();
 extern u8 gba_get_hourrtc();
 extern u8 gba_get_minrtc();
 extern u8 gba_get_secrtc();
+
+#ifdef ARM7
+extern void SendArm9Command(u32 command1, u32 command2);
+#endif
+#ifdef ARM9
+extern void SendArm7Command(u32 command1, u32 command2);
+#endif
+
+extern bool ARM7asleep;
+extern void setARM7asleep(bool value);
+extern bool getARM7asleep();
 
 #ifdef __cplusplus
 }

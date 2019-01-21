@@ -2,15 +2,17 @@
 extern "C" {
 #endif
 
-void checkstart();
+extern void checkstart();
+extern void updatevol();
+extern void updatetakt();
+extern void enableSound();
+extern void vcount_handler();
 
-void updatevol();
+extern u32 power;
+extern u32 ie_save;
+extern void lid_closing_handler(u32 WAKEUP_IRQS);
+extern void lid_open_irq_handler();
 
-void updatetakt();
-
-void enableSound();
-
-void vcount_handler();
 
 #ifdef __cplusplus
 }

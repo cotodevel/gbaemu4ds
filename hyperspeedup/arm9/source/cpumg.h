@@ -58,10 +58,16 @@ extern void switch_to_unprivileged_mode();
 extern void emulateedbiosstart();
 extern void downgreadcpu();
 
-extern inline void puGba();
-extern inline void puNds();
+extern void puGba();
+extern void puNds();
 
 extern void ARMV5toARMV4Mode();
+
+//GBA SWI sleep mode (swi 0x3)
+extern void backup_mpu_setprot();
+extern void restore_mpu_setprot();
+extern u32 MPUPERMBACKUPSET_SWI;	//MPUd/itcmmemorypermissionsfromcaller
+extern void IRQWait(uint32 reentrant,uint32 irqstowait);
 
 #ifdef __cplusplus
 }

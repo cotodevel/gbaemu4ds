@@ -492,9 +492,13 @@ exitdirectcpu:
 	subs    pc, lr, #4
 	
 	
-	.section	.dtcm,"ax",%progbits
+.section	.dtcm,"ax",%progbits
 
-		.global BIOSDBG_SPSR
+.global MPUPERMBACKUPSET_SWI	@swi mpu save sleep mode
+MPUPERMBACKUPSET_SWI:
+	.word 0x00000000
+
+.global BIOSDBG_SPSR
 BIOSDBG_SPSR:
 	.word 0
 

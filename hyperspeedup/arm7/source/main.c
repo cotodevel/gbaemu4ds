@@ -55,10 +55,8 @@ vu32 debugsrc2  = 0;
 vu32 debugfr1 = 0;
 vu32 debugfr2  = 0;
 
-void senddebug32(u32 val)
-{
-	REG_IPC_FIFO_TX = 0x4000BEEF;
-	REG_IPC_FIFO_TX = val;
+void senddebug32(u32 val){
+	SendArm9Command((u32)0x4000BEEF,val);
 }
 
 #ifdef notdef
@@ -118,12 +116,12 @@ void dmaBtimerinter()
 void dmaAtimerinter()
 {
 #ifdef neu_sound_16fifo
-	if(dmaApart)REG_IPC_FIFO_TX = debugsrc1 + 0x400001;
-	else REG_IPC_FIFO_TX = debugsrc1 + 0x400000;
+	
+	if(dmaApart)SendArm9Command((u32)(debugsrc1 + 0x400001),0);
+	else SendArm9Command((u32)(debugsrc1 + 0x400000),0);
 #else
-	REG_IPC_FIFO_TX = debugsrc1 + 0x400000;
-	if(dmaApart)REG_IPC_FIFO_TX = (u32)(soundbuffA + 0x10); // time criticall todo lockup
-	else REG_IPC_FIFO_TX = (u32)soundbuffA;
+	if(dmaApart)SendArm9Command((u32)(soundbuffA + 0x10),0); // time criticall todo lockup
+	else SendArm9Command((u32)(soundbuffA),0);
 #endif
 	debugsrc1+=0x10;
 	if(dmaApart == 0) dmaApart = 1;
@@ -132,12 +130,12 @@ void dmaAtimerinter()
 void dmaBtimerinter()
 {
 #ifdef neu_sound_16fifo
-	if(dmaApart)REG_IPC_FIFO_TX = debugsrc1 + 0x400002;
-	else REG_IPC_FIFO_TX = debugsrc1 + 0x400003;
+	if(dmaApart)SendArm9Command((u32)(debugsrc1 + 0x400002),0);
+	else SendArm9Command((u32)(debugsrc1 + 0x400003),0);
 #else
-	REG_IPC_FIFO_TX = debugsrc2 + 0x400000;
-	if(dmaBpart)REG_IPC_FIFO_TX = (u32)(soundbuffB + 0x10); //time criticall todo lockup
-	else REG_IPC_FIFO_TX = (u32)soundbuffB;
+	SendArm9Command((u32)(debugsrc2 + 0x400000),0);
+	if(dmaBpart) SendArm9Command((u32)(soundbuffB + 0x10),0); //time criticall todo lockup
+	else SendArm9Command((u32)(soundbuffB),0);
 #endif
 	debugsrc2+=0x10;
 	if(dmaBpart == 0) dmaBpart = 1;
@@ -145,11 +143,64 @@ void dmaBtimerinter()
 }
 bool autodetectdetect = false;
 
+u32 power = 0;
+u32 ie_save = 0;
+void lid_closing_handler(u32 WAKEUP_IRQS){
+	disableSound();
+	SendArm9Command((u32)FIFO_SWI_SLEEPMODE, (u32)0);	//ARM9 asleep and wait for IRQ_LID to happen
+	
+	ie_save = REG_IE;
+	// Turn the speaker down.
+	if (REG_POWERCNT & 1) swiChangeSoundBias(0,0x400);
+	// Save current power state.
+	power = readPowerManagement(PM_CONTROL_REG);
+	// Set sleep LED.
+	writePowerManagement(PM_CONTROL_REG, PM_LED_CONTROL(1));
+	
+	// Enable IRQ_LID on interrupt vectors
+	REG_IE = WAKEUP_IRQS;
+	
+	// Power down till we get our interrupt.
+	swiIntrWait(1,WAKEUP_IRQS); //waits for PM lid open irq (WAKEUP_IRQS)
+}
 
-void newvalwrite(u32 addr,u32 val)
+void lid_open_irq_handler(){	
+	//100ms
+	swiDelay(838000);
+	// Restore the interrupt state.
+	REG_IE = ie_save;
+	// Restore power state.
+	writePowerManagement(PM_CONTROL_REG, power);
+	// Turn the speaker up.
+	if (REG_POWERCNT & 1) swiChangeSoundBias(1,0x400);
+    
+	REG_IF = IRQ_LID; //is it hw toggled? (physical lid)	
+	enableSound();
+	setARM7asleep(false);	//ARM9 Resume work
+}
+
+
+void newvalwrite(u32 addr, u32 val)
 {
-			switch(addr)
-			{
+			switch(addr){
+				case(ARM7_TURNOFF_SOUND):{
+					disableSound();
+				}
+				break;
+				
+				//arm9 wants to enter gba->nds sleep mode
+				case(FIFO_SWI_SLEEPMODE):{
+					//sleepmode bouncer (ARM9 is caller, ARM7 is callee)
+					SendArm9Command((u32)FIFO_SWI_SLEEPMODE, (u32)val);
+				}
+				break;
+				
+				//raise sleepmode from arm9 with custom IRQs
+				case(ARM9_REQ_SWI_TO_ARM7):{
+					lid_closing_handler(val);
+				}
+				break;
+				
 			  case 0xBC:
 				DMA1SAD_L = val;
 				break;
@@ -260,7 +311,7 @@ void newvalwrite(u32 addr,u32 val)
 			case 0x1FFFFFFB: //wait
 				if(autodetectdetect  && (REG_KEYXY & 0x1) /* && (REG_VCOUNT > 160 || REG_VCOUNT < callline)*/ )
 				{
-					REG_IPC_FIFO_TX = 0x4100BEEF; //send cmd 0x4100BEEF
+					SendArm9Command((u32)0x4100BEEF,0);
 				}
 				break;
 			case 0x1FFFFFFC: //setauto
@@ -275,11 +326,10 @@ void newvalwrite(u32 addr,u32 val)
   					} else {
 						keys &= ~KEY_TOUCH;
 					}
-					touchReadXY(&tempPos);	
-					REG_IPC_FIFO_TX = 1; //send cmd 1
-					REG_IPC_FIFO_TX = keys;
-					REG_IPC_FIFO_TX = tempPos.px;
-					REG_IPC_FIFO_TX = tempPos.py;
+					touchReadXY(&tempPos);
+					SendArm9Command((u32)1,keys);	//send cmd 1
+					//REG_IPC_FIFO_TX = tempPos.px;
+					//REG_IPC_FIFO_TX = tempPos.py;
 				}
 				break;
 			case 0x1FFFFFFF: //set callline
@@ -311,6 +361,9 @@ void newvalwrite(u32 addr,u32 val)
 
 
 #define noenterCriticalSection
+
+static u16 lastlidval = 0;
+
 //---------------------------------------------------------------------------------
 int main() {
 //---------------------------------------------------------------------------------
@@ -324,7 +377,6 @@ int main() {
 	initClockIRQ();
 
 	//enableSound();
-
 	enableSound();
 
 	REG_IPC_SYNC = 0;
@@ -333,11 +385,12 @@ int main() {
 
 	
 	irqSet(IRQ_VCOUNT, 			(void*)vcount_handler);					//when VCOUNTER time
+	irqSet(IRQ_LID, 			(void*)lid_open_irq_handler);			//when opening the LID of DS time
 	
 	//set up ppu: do irq on hblank/vblank/vcount/and vcount line is 159
     REG_DISPSTAT = REG_DISPSTAT | DISP_YTRIGGER_IRQ;	//REG_DISPSTAT = REG_DISPSTAT | DISP_HBLANK_IRQ | DISP_VBLANK_IRQ | DISP_YTRIGGER_IRQ | (159 << 15);
 	
-	u32 curIRQ = REG_IE | IRQ_VCOUNT;
+	u32 curIRQ = REG_IE | IRQ_VCOUNT| IRQ_LID;
 	irqEnable(curIRQ);
 	
 	//soundbuffA = malloc(32);
@@ -351,6 +404,8 @@ int main() {
 
 	bool ykeypp = false;
 	bool isincallline = false;
+	setARM7asleep(false);
+	
 	while (true) {
 		//sound alloc
 		//0-3 matching gba
@@ -359,7 +414,9 @@ int main() {
 		//swiWaitForVBlank();
 		if((REG_VCOUNT == callline) && (REG_KEYXY & 0x1)) //X not pressed && (REG_IPC_FIFO_CR & IPC_FIFO_SEND_EMPTY)
 		{
-			if(!isincallline)REG_IPC_FIFO_TX = 0x3F00BEEF; //send cmd 0x3F00BEEF
+			if(!isincallline){
+				SendArm9Command((u32)0x3F00BEEF,0);	//send cmd 0x3F00BEEF
+			}
 			isincallline = true;
 			//while(REG_VCOUNT == callline); //don't send 2 or more
 		}
@@ -371,7 +428,7 @@ int main() {
 		{
 			if(!ykeypp)
 			{
-				REG_IPC_FIFO_TX = 0x4200BEEF;
+				SendArm9Command((u32)0x4200BEEF,0);
 				//while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
 				//int val2 = REG_IPC_FIFO_RX; //Value skip
 				ykeypp = true;
@@ -381,31 +438,7 @@ int main() {
 		{
 			ykeypp = false;
 		}
-		if(*(u16*)0x04000136 & 0x80) //close nds
-		{
-			u32 ie_save = REG_IE;
-			// Turn the speaker down.
-			if (REG_POWERCNT & 1) swiChangeSoundBias(0,0x400);
-			// Save current power state.
-			u32 power = readPowerManagement(PM_CONTROL_REG);
-			// Set sleep LED.
-			writePowerManagement(PM_CONTROL_REG, PM_LED_CONTROL(1));
-			// Register for the lid interrupt.
-			REG_IE = IRQ_LID;
-			// Power down till we get our interrupt.
-			swiSleep(); //waits for PM (lid open) interrupt
-			//100ms
-			swiDelay(838000);
-			// Restore the interrupt state.
-			REG_IE = ie_save;
-			// Restore power state.
-			writePowerManagement(PM_CONTROL_REG, power);
-			// Turn the speaker up.
-			if (REG_POWERCNT & 1) swiChangeSoundBias(1,0x400);
-			// update clock tracking
-			resyncClock(); 
-		}
-
+		
 		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
 		{
 #ifndef noenterCriticalSection
@@ -440,9 +473,18 @@ int main() {
 			leaveCriticalSection(oldIME);
 #endif
 		}
+		
+		
+		//Close nds lid @ ARM7
+		if((*(u16*)0x04000136 & 0x80) && (!(lastlidval > 0))){
+			SendArm9Command((u32)ARM7_REQ_SWI_TO_ARM9, (u32)IRQ_LID);	//enterGBASleepMode();	//cant use, we need IRQ_LID
+		}
+		lastlidval = *(u16*)0x04000136 & 0x80;
+		
 	}
 	return 0;
 }
+
 
 void updatevol()
 {

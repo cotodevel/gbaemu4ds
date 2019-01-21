@@ -160,8 +160,9 @@ int main( int argc, char **argv) {
 	}
 	//data protbuff
 	#ifdef arm9advsound
-	REG_IPC_FIFO_TX = 0x1FFFFFFA; //load buffer
-	REG_IPC_FIFO_TX = arm7arm9buffer = (u32)arm7exchangefild; //buffer for arm7
+	arm7arm9buffer = (u32)arm7exchangefild; 
+	SendArm7Command((u32)0x1FFFFFFA, (u32)arm7exchangefild); //(1)load buffer , (2)buffer for arm7
+	
 	#endif
 	//test
 
@@ -324,8 +325,7 @@ int main( int argc, char **argv) {
 	else slow = false;
 	if(argv[8][0] == '1')
 	{
-		REG_IPC_FIFO_TX = 0x1FFFFFFC; //send cmd
-		REG_IPC_FIFO_TX = 0;
+		SendArm7Command((u32)0x1FFFFFFC, 0);	//send cmd
 	}
 	#endif
 
@@ -462,9 +462,8 @@ int main( int argc, char **argv) {
 	iprintf("arm7init\n");
 	VblankHandler();
 	
-	REG_IME = IME_ENABLE;		
-	REG_IPC_FIFO_TX = 0x1FFFFFFF; //cmd
-	REG_IPC_FIFO_TX = syncline;
+	REG_IME = IME_ENABLE;
+	SendArm7Command((u32)0x1FFFFFFF, (u32)syncline);	//cmd
 	
 	//coto
 	while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY)){

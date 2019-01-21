@@ -39,6 +39,7 @@
 #include "Cheats.h"
 #include "NLS.h"
 #include "elf.h"
+#include "gba_ipc.h"
 
 
 #define PU_PAGE_4K		(0x0B << 1)
@@ -283,7 +284,7 @@ void BIOScall(int op,  u32 *R){
 		//VblankHandler();
 		
 		break;
-	  case 0x03:
+	  case 0x03:{
 #ifdef DEV_VERSION
 		  iprintf("Stop\n");
 #endif
@@ -291,8 +292,11 @@ void BIOScall(int op,  u32 *R){
 			//holdType = -1;
 			//stopState = true;
 			//cpuNextEvent = cpuTotalTicks;
-			ichflyswiIntrWait(1,(IE & 0x6080));
-		  break;
+			
+			//sleepmode swi 0x3 gba
+			SendArm7Command((u32)ARM9_REQ_SWI_TO_ARM7, (u32)IRQ_LID);
+	  }
+      break;
 	  case 0x04:
 #ifdef DEV_VERSION
 		  iprintf("IntrWait: 0x%08x,0x%08x\n",
@@ -314,8 +318,7 @@ void BIOScall(int op,  u32 *R){
 		//while(!(REG_DISPSTAT & DISP_IN_VBLANK));
 #ifndef sounddebugeraddv
 		//send cmd
-		REG_IPC_FIFO_TX = 0x1FFFFFFB; //tell the arm7
-		REG_IPC_FIFO_TX = 0;
+		SendArm7Command(0x1FFFFFFB,0);	//tell the arm7
 #endif
 		ichflyswiWaitForVBlank();
 
@@ -378,15 +381,15 @@ void BIOScall(int op,  u32 *R){
 
 		BIOS_Diff16bitUnFilter();
 		break;
-	  case 0x19:
+	  case 0x19:{
 	//#ifdef DEV_VERSION
-		  iprintf("SoundBiasSet: 0x%08x \n",
-			  (unsigned int)R[0]);
+		  //iprintf("SoundBiasSet: 0x%08x \n",(unsigned int)R[0]);
 	//#endif    
 		//if(reg[0].I) //ichfly sound todo
 		  //systemSoundPause(); //ichfly sound todo
 		//else //ichfly sound todo
 		  //systemSoundResume(); //ichfly sound todo
+		}
 		break;
 	  case 0x1F:
 		BIOS_MidiKey2Freq();
