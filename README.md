@@ -19,19 +19,25 @@ PS: If you are a coder, use always differencing and merging tools. These really 
 
 Instructions:
 
-How to build: 
- - Open msys2 console: Head to hbmenu folder write "make clean", then "make", then copy the hbmenu.nds file to any directory in SD card.
- - Head to hyperspeedup, write "make clean", then "make", then copy the advirqsound.loader file to any SDRoot/gbaemu4ds folder. Create it if missing.
- 
+Step 1):
+- Download latest gbaemu4ds-alive sources from: https://bitbucket.org/Coto88/gbaemu4ds/get/gbaemu4ds-alive-stable.zip
 
-How to boot: 
- - Just copy /release folder contents in root directory in SD card, and launch hbmenu.nds. hbmenu.nds must be DLDI-patched (NTR Mode). If prompts for overwrite: Yes to All. 
-   Now pick your file. Press A consecutively if you don't know what to do.
- 
-Saving:
+How to Boot:
+- Follow Step 1)
+- Copy the /release folder contents, to SD:/ root folder. (where SD is the Mounted Media according your OS), if it prompts for overwrite: Yes to All.
+- Create a /gba folder in SD:/ root folder. (where SD is the Mounted Media according your OS). Copy your homebrew , etc here.
+- Now run hbmenu.nds, and press A to browse through the /gba directory. Press A to choose the file a lot of times and that's it.
+
+How to build:
+- Follow Step 1)
+- Unzip gbaemu4ds sources. Write down that dir path.
+- Open msys2 console: Head to same directory path written earlier, write "make clean", then "make", wait for the build to happen. After building is done, copy the /build folder contents to SD:/ root folder. (where SD is the Mounted Media according your OS). 
+
+
+
+Force Save 100% compatibility mode:
 By default almost everything will work if you press A for detecting save chip hardware (be it games or homebrew). 
-Otherwise if you press B, the hbmenu save chip hardware settings will override the current save hardware. (Useful for romhacks where you need explicitly define/know the save hardware).
-
+Otherwise if you can´t save and you know the save chip used, if you press B, the hbmenu save chip hardware settings will override the current save hardware.
 This way, you get 100% save compatibility working.
  
 
