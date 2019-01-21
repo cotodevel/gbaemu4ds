@@ -7,6 +7,7 @@ extern void updatevol();
 extern void updatetakt();
 extern void enableSound();
 extern void vcount_handler();
+extern void vblank_handler();
 
 extern u32 power;
 extern u32 ie_save;

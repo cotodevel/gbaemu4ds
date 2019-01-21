@@ -375,8 +375,6 @@ int main() {
 	
 	// Start the RTC tracking IRQ
 	initClockIRQ();
-
-	//enableSound();
 	enableSound();
 
 	REG_IPC_SYNC = 0;
@@ -439,8 +437,9 @@ int main() {
 			ykeypp = false;
 		}
 		
-		while(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
-		{
+		
+		if(!(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY))
+	{
 #ifndef noenterCriticalSection
 			int oldIME = enterCriticalSection();
 #endif
@@ -452,7 +451,6 @@ int main() {
 			}
 #endif
 			u32 addr = (REG_IPC_FIFO_RX & ~0xC0000000/*todo*/); //addr + flags //flags 2 most upperen Bits dma = 0 u8 = 1 u16 = 2 u32 = 3
-			while(REG_IPC_FIFO_CR & IPC_FIFO_RECV_EMPTY);
 			u32 val = REG_IPC_FIFO_RX; //Value skip add for speedup
 #ifdef checkforerror
 			if(REG_IPC_FIFO_CR & IPC_FIFO_ERROR)
