@@ -71,9 +71,7 @@ int	FAT_getAttr(const char *file) {
 }
 
 
-//int	FAT_setAttr(const char *file, uint8_t attr );
-
-int	FAT_setAttr(const char *file, uint8_t attr ) {
+int	FAT_setAttr(const char *file, int attr ) {
 
 	// Defines...
 	DIR_ENTRY_POSITION entryEnd;

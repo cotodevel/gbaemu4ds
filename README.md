@@ -3,9 +3,11 @@ These sources use devkitARM r43. And any dldi "carts" are supported.
 Hello, after years of work (2015), and about 150 "testing builds" I managed to create at least three branches from (different) gbaemu4ds sources. Of which I managed to merge together into
 a single branch.
 
-Branch: wormsgbacompatible
+Branch: wormsgbacompatible. devkitARM version: r45, libnds at commit 4c3bf52 and libfat at commit 3375e8f. (both on github)
 
 This branch allows to boot Worms World Party, Worms Armageddon and possibly other Worms games using the same game engine.
+
+
 
 Instructions:
 

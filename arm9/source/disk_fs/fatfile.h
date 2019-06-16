@@ -107,7 +107,7 @@ Returns 0 on success, an error code on failure.
 extern int _FAT_syncToDisc (FILE_STRUCT* file);
 
 extern int	FAT_getAttr(const char *file);
-extern int	FAT_setAttr(const char *file, uint8_t attr );
+extern int	FAT_setAttr(const char *file, int attr );
 
 #ifdef __cplusplus
 }
