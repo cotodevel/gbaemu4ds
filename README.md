@@ -16,27 +16,27 @@ Features:
 3)RTC support
 4)cleanup gbaemu4ds source code. 
 5)mode 0 support. You will see games that use mode0 correctly or glitched. Other modes might work correctly.
-6)In-game soft-reset method (A+B+SELECT+START)
-7) Force Save 100% compatibility mode:
+6)In-game soft-reset method (A+B+SELECT+START).
+7)Force Save 100% compatibility mode:
 By default almost everything will work if you press A for detecting save chip hardware (be it games or homebrew). 
-Otherwise if you can´t save and you know the save chip used, if you press B, the hbmenu save chip hardware settings will override the current save hardware.
+Otherwise if you can't save and you know the save chip used, if you press B, the hbmenu save chip hardware settings will override the current save hardware.
 This way, you get 100% save compatibility working.
 
 Instructions:
 
 Step 1):
-- Download latest gbaemu4ds-alive sources from: https://bitbucket.org/Coto88/gbaemu4ds/get/gbaemu4ds-alive-stable.zip
+-Download latest gbaemu4ds-alive sources from: https://bitbucket.org/Coto88/gbaemu4ds/get/gbaemu4ds-alive-stable.zip
 
 How to Boot:
-	- Follow Step 1)
-	- Copy the /release folder contents, to SD:/ root folder. (where SD is the Mounted Media according your OS), if it prompts for overwrite: Yes to All.
-	- Create a /gba folder in SD:/ root folder. (where SD is the Mounted Media according your OS). Copy your homebrew , etc here.
-	- Now run hbmenu.nds, and press A to browse through the /gba directory. Press A to choose the file a lot of times and that's it.
+-Follow Step 1)
+-Copy the /release folder contents, to SD:/ root folder. (where SD is the Mounted Media according your OS), if it prompts for overwrite: Yes to All.
+-Create a /gba folder in SD:/ root folder. (where SD is the Mounted Media according your OS). Copy your homebrew , etc here.
+-Now run hbmenu.nds, and press A to browse through the /gba directory. Press A to choose the file a lot of times and that's it.
 
 How to build:
-	- Follow Step 1)
-	- Unzip gbaemu4ds sources. Write down that dir path.
-	- Open msys2 console: Head to same directory path written earlier, write "make clean", then "make", wait for the build to happen. After building is done, copy the /build folder contents to SD:/ root folder. (where SD is the Mounted Media according your OS). 
+-Follow Step 1)
+-Unzip gbaemu4ds sources. Write down that dir path.
+-Open msys2 console: Head to same directory path written earlier, write "make clean", then "make", wait for the build to happen. After building is done, copy the /build folder contents to SD:/ root folder. (where SD is the Mounted Media according your OS). 
 
 
 
