@@ -80,7 +80,7 @@ void arm7dmareq()
 					setARM7asleep(true);
 					while(getARM7asleep() == true){
 						asm("mov 	r0,#0");
-						asm("mcrne 	p15,0,r0,c7,c0,4");	//NDS9	-	Halt function	CP15
+						asm("mcr 	p15,0,r0,c7,c0,4");	//NDS9	-	Halt function	CP15
 					}
 					
 					asm("nop");
